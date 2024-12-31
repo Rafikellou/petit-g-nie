@@ -1,0 +1,219 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary: 139, 92, 246; /* RGB values for #8B5CF6 */
+  --primary-dark: 124, 58, 237; /* RGB values for #7C3AED */
+  --background: #0F172A;
+  --card-bg: rgba(255, 255, 255, 0.05);
+  --card-border: rgba(255, 255, 255, 0.1);
+}
+
+@layer base {
+  body {
+    @apply bg-[var(--background)] text-white;
+  }
+
+  /* Typographie moderne */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-sans tracking-tight;
+  }
+
+  /* Scrollbar stylisée */
+  ::-webkit-scrollbar {
+    @apply w-1.5;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-[var(--background)] rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gradient-to-b from-[rgb(var(--primary))] to-[rgb(var(--primary-dark))] rounded-full;
+  }
+}
+
+@layer components {
+  /* Boutons */
+  .btn-primary {
+    @apply px-4 py-2 bg-[rgb(var(--primary))] 
+    hover:bg-[rgb(var(--primary-dark))]
+    rounded-lg transition-colors duration-200 
+    flex items-center gap-2 font-medium;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 bg-white/10 hover:bg-white/20 
+    rounded-lg transition-colors duration-200 
+    flex items-center gap-2;
+  }
+
+  .btn-icon {
+    @apply p-2 hover:bg-white/10 rounded-full 
+    transition-colors duration-200;
+  }
+
+  /* Cartes et conteneurs */
+  .card {
+    @apply p-6 bg-[var(--card-bg)] backdrop-blur-xl
+    border border-[var(--card-border)]
+    rounded-lg transition-all duration-200;
+  }
+
+  /* Cartes avec effet glassmorphism */
+  .glass-card {
+    @apply relative overflow-hidden rounded-2xl
+    bg-[var(--card-bg)] backdrop-blur-xl
+    border border-[var(--card-border)]
+    transition-all duration-200;
+  }
+
+  .glass-card:hover {
+    @apply border-[rgba(var(--primary),0.2)]
+    shadow-[0_4px_12px_rgba(var(--primary),0.1)];
+  }
+
+  /* Inputs */
+  .input {
+    @apply p-3 bg-white/10 rounded-lg
+    border border-white/10 text-white
+    focus:border-[rgb(var(--primary))]
+    focus:outline-none focus:ring-2
+    focus:ring-[rgb(var(--primary))]/20
+    transition-all duration-200;
+  }
+
+  /* Inputs stylisés */
+  .input-primary {
+    @apply w-full p-3 bg-white/10 rounded-lg
+    border border-white/10
+    focus:border-[rgba(var(--primary),1)]
+    focus:outline-none
+    focus:ring-2
+    focus:ring-[rgba(var(--primary),0.2)]
+    transition-all duration-200;
+  }
+
+  /* Navigation */
+  .nav-link {
+    @apply flex items-center gap-2 px-4 py-2
+    rounded-lg transition-colors duration-200
+    hover:bg-white/10;
+  }
+
+  .nav-link.active {
+    @apply bg-[rgb(var(--primary))] text-white;
+  }
+
+  /* Animations */
+  .animate-fade-in {
+    @apply animate-[fadeIn_0.3s_ease-in-out];
+  }
+
+  .animate-slide-up {
+    @apply animate-[slideUp_0.3s_ease-in-out];
+  }
+
+  /* Badges et étiquettes */
+  .badge {
+    @apply px-3 py-1 rounded-full text-sm font-medium
+    border border-[rgba(var(--primary),0.2)];
+    background: linear-gradient(
+      to right,
+      rgba(var(--primary), 0.2),
+      rgba(var(--primary-dark), 0.2)
+    );
+  }
+
+  /* Conteneurs d'icônes */
+  .icon-container {
+    @apply w-10 h-10 rounded-xl
+    flex items-center justify-center
+    transition-all duration-200;
+    background: linear-gradient(
+      to bottom right,
+      rgba(var(--primary), 0.1),
+      rgba(var(--primary-dark), 0.1)
+    );
+  }
+
+  .icon-container:hover {
+    background: linear-gradient(
+      to bottom right,
+      rgba(var(--primary), 0.2),
+      rgba(var(--primary-dark), 0.2)
+    );
+  }
+
+  /* Effets de texte */
+  .gradient-text {
+    background: linear-gradient(
+      to right,
+      rgb(var(--primary)),
+      rgb(var(--primary-dark))
+    );
+    @apply bg-clip-text text-transparent;
+  }
+
+  /* Sections avec fond glassmorphism */
+  .glass-section {
+    @apply relative rounded-3xl overflow-hidden
+    bg-[var(--card-bg)] backdrop-blur-xl
+    border border-[var(--card-border)]
+    p-8;
+  }
+
+  /* Animation de chargement */
+  .loading-gradient {
+    @apply animate-pulse bg-gradient-to-r
+    from-[var(--background)] via-[var(--background)] to-[var(--background)];
+  }
+
+  /* Styles pour les effets de cartes */
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .transform-style-3d {
+    transform-style: preserve-3d;
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+
+  .rotate-y-180 {
+    transform: rotateY(180deg);
+  }
+
+  /* Styles pour le gradient de texte */
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-blue-400;
+  }
+
+  /* Styles pour les cartes en verre */
+  .glass-card {
+    @apply bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

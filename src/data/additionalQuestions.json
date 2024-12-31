@@ -1,0 +1,76 @@
+{
+  "mathQuestions": [
+    {
+      "id": "math-ce1-6",
+      "question": "Combien font 15 + 7 ?",
+      "options": ["21", "22", "23", "24"],
+      "correctAnswer": 1,
+      "subject": "math"
+    },
+    {
+      "id": "math-ce1-7",
+      "question": "Range ces nombres du plus grand au plus petit : 28, 82, 28, 22",
+      "options": ["82, 28, 28, 22", "28, 82, 22, 28", "82, 22, 28, 28", "22, 28, 28, 82"],
+      "correctAnswer": 0,
+      "subject": "math"
+    },
+    {
+      "id": "math-ce1-8",
+      "question": "Combien font 40 - 15 ?",
+      "options": ["25", "24", "26", "23"],
+      "correctAnswer": 0,
+      "subject": "math"
+    },
+    {
+      "id": "math-ce1-9",
+      "question": "Quel est le double de 8 ?",
+      "options": ["14", "15", "16", "17"],
+      "correctAnswer": 2,
+      "subject": "math"
+    },
+    {
+      "id": "math-ce1-10",
+      "question": "Dans le nombre 75, quel est le chiffre des unités ?",
+      "options": ["7", "5", "75", "15"],
+      "correctAnswer": 1,
+      "subject": "math"
+    }
+  ],
+  "frenchQuestions": [
+    {
+      "id": "french-ce1-6",
+      "question": "Trouve le verbe dans la phrase : 'Le chat mange sa pâtée.'",
+      "options": ["chat", "mange", "pâtée", "le"],
+      "correctAnswer": 1,
+      "subject": "french"
+    },
+    {
+      "id": "french-ce1-7",
+      "question": "Quel est le féminin du mot 'lion' ?",
+      "options": ["lione", "lionne", "lionne", "lionnesse"],
+      "correctAnswer": 1,
+      "subject": "french"
+    },
+    {
+      "id": "french-ce1-8",
+      "question": "Complète la phrase : 'Les oiseaux ... dans le ciel.'",
+      "options": ["vole", "voles", "volent", "voler"],
+      "correctAnswer": 2,
+      "subject": "french"
+    },
+    {
+      "id": "french-ce1-9",
+      "question": "Trouve le nom commun : 'Marie joue dans le jardin.'",
+      "options": ["Marie", "joue", "jardin", "dans"],
+      "correctAnswer": 2,
+      "subject": "french"
+    },
+    {
+      "id": "french-ce1-10",
+      "question": "Quel est le contraire du mot 'grand' ?",
+      "options": ["gros", "petit", "large", "court"],
+      "correctAnswer": 1,
+      "subject": "french"
+    }
+  ]
+}

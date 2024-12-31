@@ -1,0 +1,507 @@
+[
+  {
+    "class": "CE1",
+    "subject": "Français",
+    "topic": "Lecture et compréhension",
+    "period": "Début d'année",
+    "specificity": "Lecture de phrases simples",
+    "type": "short",
+    "question": "Qui est le personnage principal dans cette phrase : 'Léa joue au ballon avec Max.'",
+    "options": {
+      "A": "Léa",
+      "B": "Max",
+      "C": "Le ballon",
+      "D": "Aucun"
+    },
+    "correctAnswer": "A"
+  },
+  {
+    "class": "CE1",
+    "subject": "Français",
+    "topic": "Lecture et compréhension",
+    "period": "Début d'année",
+    "specificity": "Lecture de phrases simples",
+    "type": "short",
+    "question": "Où se déroule l'action dans cette phrase : 'Ils sont à la rivière.'",
+    "options": {
+      "A": "La rivière",
+      "B": "La maison",
+      "C": "La forêt",
+      "D": "La ville"
+    },
+    "correctAnswer": "A"
+  },
+  {
+    "class": "CE1",
+    "subject": "Français",
+    "topic": "Lecture et compréhension",
+    "period": "Début d'année",
+    "specificity": "Lecture de phrases simples",
+    "type": "short",
+    "question": "Complète cette phrase : 'Paul mange un ___.'",
+    "options": {
+      "A": "livre",
+      "B": "pomme",
+      "C": "table",
+      "D": "voiture"
+    },
+    "correctAnswer": "B"
+  },
+  {
+    "class": "CE1",
+    "subject": "Français",
+    "topic": "Lecture et compréhension",
+    "period": "Début d'année",
+    "specificity": "Lecture de phrases simples",
+    "type": "short",
+    "question": "Quelle est l'action de Max dans cette phrase : 'Max court vite.'",
+    "options": {
+      "A": "Manger",
+      "B": "Courir",
+      "C": "Lire",
+      "D": "Dormir"
+    },
+    "correctAnswer": "B"
+  },
+  {
+    "class": "CE1",
+    "subject": "Français",
+    "topic": "Lecture et compréhension",
+    "period": "Début d'année",
+    "specificity": "Lecture de phrases simples",
+    "type": "short",
+    "question": "Qui est mentionné dans cette phrase : 'Julie écrit une lettre à son amie.'",
+    "options": {
+      "A": "Julie",
+      "B": "Son amie",
+      "C": "La lettre",
+      "D": "Les deux"
+    },
+    "correctAnswer": "D"
+  },
+  {
+    "class": "CE1",
+    "subject": "Français",
+    "topic": "Lecture et compréhension",
+    "period": "Milieu d'année",
+    "specificity": "Lecture d’histoires courtes avec questions de compréhension",
+    "type": "long",
+    "referenceText": "Marie adore son jardin. Elle y plante des roses, des tulipes et des marguerites. Chaque matin, elle prend soin de ses plantes et les arrose.",
+    "question": "Quels types de fleurs Marie plante-t-elle ?",
+    "options": {
+      "A": "Des roses et des jonquilles",
+      "B": "Des roses, des tulipes et des marguerites",
+      "C": "Des tulipes et des orchidées",
+      "D": "Des marguerites uniquement"
+    },
+    "correctAnswer": "B"
+  },
+  {
+    "class": "CE1",
+    "subject": "Français",
+    "topic": "Lecture et compréhension",
+    "period": "Milieu d'année",
+    "specificity": "Lecture d’histoires courtes avec questions de compréhension",
+    "type": "long",
+    "referenceText": "Hugo a un chien et un chat. Chaque soir, il joue au ballon avec son chien et donne un bol de lait à son chat.",
+    "question": "Que fait Hugo avec son chien chaque soir ?",
+    "options": {
+      "A": "Il joue au ballon",
+      "B": "Il lui donne un bol de lait",
+      "C": "Il le promène dans le parc",
+      "D": "Il lui raconte une histoire"
+    },
+    "correctAnswer": "A"
+  },
+  {
+    "class": "CE1",
+    "subject": "Français",
+    "topic": "Lecture et compréhension",
+    "period": "Milieu d'année",
+    "specificity": "Lecture d’histoires courtes avec questions de compréhension",
+    "type": "long",
+    "referenceText": "Clara adore le piano. Elle pratique tous les jours après l’école. Elle a même appris une nouvelle chanson pour l’anniversaire de sa maman.",
+    "question": "Quand Clara pratique-t-elle le piano ?",
+    "options": {
+      "A": "Le matin avant l’école",
+      "B": "Pendant les cours",
+      "C": "Tous les jours après l’école",
+      "D": "Le week-end uniquement"
+    },
+    "correctAnswer": "C"
+  },
+  {
+    "class": "CE1",
+    "subject": "Français",
+    "topic": "Lecture et compréhension",
+    "period": "Milieu d'année",
+    "specificity": "Lecture d’histoires courtes avec questions de compréhension",
+    "type": "long",
+    "referenceText": "Lucas et son papa construisent une cabane dans leur jardin. Ils utilisent des planches, des clous et un marteau. Après deux jours de travail, leur cabane est terminée.",
+    "question": "Que construisent Lucas et son papa ?",
+    "options": {
+      "A": "Un pont",
+      "B": "Une cabane",
+      "C": "Une maison",
+      "D": "Une balançoire"
+    },
+    "correctAnswer": "B"
+  },
+  {
+    "class": "CE1",
+    "subject": "Français",
+    "topic": "Lecture et compréhension",
+    "period": "Milieu d'année",
+    "specificity": "Lecture d’histoires courtes avec questions de compréhension",
+    "type": "long",
+    "referenceText": "Élise adore lire des livres. Chaque semaine, elle emprunte de nouveaux romans à la bibliothèque. Elle préfère les histoires de princesses et de chevaliers.",
+    "question": "Quels types d’histoires Élise préfère-t-elle ?",
+    "options": {
+      "A": "Les histoires de science-fiction",
+      "B": "Les histoires d’animaux",
+      "C": "Les histoires de princesses et de chevaliers",
+      "D": "Les livres de cuisine"
+    },
+    "correctAnswer": "C"
+  },
+  {
+    "class": "CE1",
+    "subject": "Français",
+    "topic": "Lecture et compréhension",
+    "period": "Fin d'année",
+    "specificity": "Lecture d’histoires plus longues et reconstitution de l’ordre des événements",
+    "type": "long",
+    "referenceText": "Paul et Léa ont décidé de partir en randonnée en forêt. Ils ont préparé leurs sacs avec des bouteilles d’eau et des sandwiches. Pendant leur balade, ils ont vu un renard et plusieurs oiseaux.",
+    "question": "Quel animal Paul et Léa ont-ils vu pendant leur randonnée ?",
+    "options": {
+      "A": "Un lapin",
+      "B": "Un renard",
+      "C": "Un chien",
+      "D": "Un écureuil"
+    },
+    "correctAnswer": "B"
+  },
+  {
+    "class": "CE1",
+    "subject": "Français",
+    "topic": "Lecture et compréhension",
+    "period": "Fin d'année",
+    "specificity": "Lecture d’histoires plus longues et reconstitution de l’ordre des événements",
+    "type": "long",
+    "referenceText": "Julie et Clara ont organisé un goûter dans le parc. Elles ont invité leurs amis. Tout le monde a mangé des gâteaux et bu du jus de fruits. Après, ils ont joué à cache-cache.",
+    "question": "Qu’ont fait Julie et Clara après le goûter ?",
+    "options": {
+      "A": "Elles ont mangé des gâteaux",
+      "B": "Elles ont bu du jus de fruits",
+      "C": "Elles ont joué à cache-cache",
+      "D": "Elles sont allées à la piscine"
+    },
+    "correctAnswer": "C"
+  },
+  {
+    "class": "CE1",
+    "subject": "Français",
+    "topic": "Lecture et compréhension",
+    "period": "Fin d'année",
+    "specificity": "Lecture d’histoires plus longues et reconstitution de l’ordre des événements",
+    "type": "long",
+    "referenceText": "Hugo adore les étoiles. Un soir, avec son télescope, il a observé la lune et des constellations. Il a même vu une étoile filante.",
+    "question": "Qu’a vu Hugo avec son télescope ?",
+    "options": {
+      "A": "Une comète",
+      "B": "Une étoile filante",
+      "C": "Un satellite",
+      "D": "Un avion"
+    },
+    "correctAnswer": "B"
+  },
+  {
+    "class": "CE1",
+    "subject": "Français",
+    "topic": "Lecture et compréhension",
+    "period": "Fin d'année",
+    "specificity": "Lecture d’histoires plus longues et reconstitution de l’ordre des événements",
+    "type": "long",
+    "referenceText": "Lucas adore les aventures. Avec ses amis, il a construit un radeau pour explorer une petite rivière. Leur aventure était pleine de rires et de découvertes.",
+    "question": "Que construisent Lucas et ses amis ?",
+    "options": {
+      "A": "Un bateau",
+      "B": "Un radeau",
+      "C": "Une cabane",
+      "D": "Un pont"
+    },
+    "correctAnswer": "B"
+  },
+  {
+    "class": "CE1",
+    "subject": "Français",
+    "topic": "Lecture et compréhension",
+    "period": "Fin d'année",
+    "specificity": "Lecture d’histoires plus longues et reconstitution de l’ordre des événements",
+    "type": "long",
+    "referenceText": "Marie adore peindre. Un jour, elle a décidé de peindre un paysage de montagne. Elle a utilisé des couleurs vives et a ajouté un soleil brillant.",
+    "question": "Que peint Marie ?",
+    "options": {
+      "A": "Un portrait",
+      "B": "Un paysage de montagne",
+      "C": "Un arbre",
+      "D": "Un village"
+    },
+    "correctAnswer": "B"
+  },
+  {
+    "class": "CE1",
+    "subject": "Mathématiques",
+    "topic": "Numération",
+    "period": "Début d'année",
+    "specificity": "Lecture et écriture des nombres jusqu’à 50",
+    "type": "short",
+    "question": "Quel est le nombre suivant après 42 ?",
+    "options": {
+      "A": "41",
+      "B": "50",
+      "C": "43",
+      "D": "40"
+    },
+    "correctAnswer": "C"
+  },
+  {
+    "class": "CE1",
+    "subject": "Mathématiques",
+    "topic": "Numération",
+    "period": "Début d'année",
+    "specificity": "Lecture et écriture des nombres jusqu’à 50",
+    "type": "short",
+    "question": "Comment écrit-on le nombre 23 en lettres ?",
+    "options": {
+      "A": "dix-sept",
+      "B": "vingt-trois",
+      "C": "trente-deux",
+      "D": "vingt-sept"
+    },
+    "correctAnswer": "B"
+  },
+  {
+    "class": "CE1",
+    "subject": "Mathématiques",
+    "topic": "Numération",
+    "period": "Début d'année",
+    "specificity": "Lecture et écriture des nombres jusqu’à 50",
+    "type": "short",
+    "question": "Quel est le plus grand nombre parmi ces choix ?",
+    "options": {
+      "A": "25",
+      "B": "32",
+      "C": "18",
+      "D": "50"
+    },
+    "correctAnswer": "D"
+  },
+  {
+    "class": "CE1",
+    "subject": "Mathématiques",
+    "topic": "Numération",
+    "period": "Début d'année",
+    "specificity": "Lecture et écriture des nombres jusqu’à 50",
+    "type": "short",
+    "question": "Quel est le nombre précédent 30 ?",
+    "options": {
+      "A": "29",
+      "B": "28",
+      "C": "31",
+      "D": "32"
+    },
+    "correctAnswer": "A"
+  },
+  {
+    "class": "CE1",
+    "subject": "Mathématiques",
+    "topic": "Numération",
+    "period": "Début d'année",
+    "specificity": "Lecture et écriture des nombres jusqu’à 50",
+    "type": "short",
+    "question": "Quel est le nombre qui vient juste avant 14 ?",
+    "options": {
+      "A": "13",
+      "B": "15",
+      "C": "12",
+      "D": "16"
+    },
+    "correctAnswer": "A"
+  },
+  {
+    "class": "CE1",
+    "subject": "Mathématiques",
+    "topic": "Numération",
+    "period": "Début d'année",
+    "specificity": "Lecture et écriture des nombres jusqu’à 50",
+    "type": "short",
+    "question": "Quelle est la décomposition correcte de 27 ?",
+    "options": {
+      "A": "20+7",
+      "B": "30-3",
+      "C": "10+17",
+      "D": "25+2"
+    },
+    "correctAnswer": "A"
+  },
+  {
+    "class": "CE1",
+    "subject": "Mathématiques",
+    "topic": "Numération",
+    "period": "Début d'année",
+    "specificity": "Lecture et écriture des nombres jusqu’à 50",
+    "type": "short",
+    "question": "Quel est le nombre manquant : 12, 13, ___, 15 ?",
+    "options": {
+      "A": "14",
+      "B": "11",
+      "C": "16",
+      "D": "10"
+    },
+    "correctAnswer": "A"
+  },
+  {
+    "class": "CE1",
+    "subject": "Mathématiques",
+    "topic": "Numération",
+    "period": "Début d'année",
+    "specificity": "Lecture et écriture des nombres jusqu’à 50",
+    "type": "short",
+    "question": "Écris le nombre qui vient après 39 ?",
+    "options": {
+      "A": "40",
+      "B": "41",
+      "C": "38",
+      "D": "42"
+    },
+    "correctAnswer": "A"
+  },
+  {
+    "class": "CE1",
+    "subject": "Mathématiques",
+    "topic": "Numération",
+    "period": "Début d'année",
+    "specificity": "Lecture et écriture des nombres jusqu’à 50",
+    "type": "short",
+    "question": "Quelle est la somme de 20 et 10 ?",
+    "options": {
+      "A": "30",
+      "B": "40",
+      "C": "50",
+      "D": "25"
+    },
+    "correctAnswer": "A"
+  },
+  {
+    "class": "CE1",
+    "subject": "Mathématiques",
+    "topic": "Numération",
+    "period": "Début d'année",
+    "specificity": "Lecture et écriture des nombres jusqu’à 50",
+    "type": "short",
+    "question": "Quel est le nombre suivant dans la suite : 10, 20, 30, ?",
+    "options": {
+      "A": "40",
+      "B": "50",
+      "C": "35",
+      "D": "25"
+    },
+    "correctAnswer": "A"
+  },
+  {
+    "class": "CE1",
+    "subject": "Mathématiques",
+    "topic": "Numération",
+    "period": "Début d'année",
+    "specificity": "Lecture et écriture des nombres jusqu’à 50",
+    "type": "short",
+    "question": "Quel est le plus petit nombre parmi ces choix ?",
+    "options": {
+      "A": "5",
+      "B": "15",
+      "C": "25",
+      "D": "35"
+    },
+    "correctAnswer": "A"
+  },
+  {
+    "class": "CE1",
+    "subject": "Mathématiques",
+    "topic": "Numération",
+    "period": "Début d'année",
+    "specificity": "Lecture et écriture des nombres jusqu’à 50",
+    "type": "short",
+    "question": "Comment écrit-on 12 en lettres ?",
+    "options": {
+      "A": "dix",
+      "B": "vingt",
+      "C": "deux",
+      "D": "douze"
+    },
+    "correctAnswer": "D"
+  },
+  {
+    "class": "CE1",
+    "subject": "Mathématiques",
+    "topic": "Numération",
+    "period": "Début d'année",
+    "specificity": "Lecture et écriture des nombres jusqu’à 50",
+    "type": "short",
+    "question": "Complète : 20 est plus ___ que 15.",
+    "options": {
+      "A": "grand",
+      "B": "petit",
+      "C": "égal",
+      "D": "modéré"
+    },
+    "correctAnswer": "A"
+  },
+  {
+    "class": "CE1",
+    "subject": "Mathématiques",
+    "topic": "Numération",
+    "period": "Début d'année",
+    "specificity": "Lecture et écriture des nombres jusqu’à 50",
+    "type": "short",
+    "question": "Quel est le plus grand nombre pair jusqu’à 50 ?",
+    "options": {
+      "A": "50",
+      "B": "48",
+      "C": "46",
+      "D": "49"
+    },
+    "correctAnswer": "A"
+  },
+  {
+    "class": "CE1",
+    "subject": "Mathématiques",
+    "topic": "Numération",
+    "period": "Début d'année",
+    "specificity": "Lecture et écriture des nombres jusqu’à 50",
+    "type": "short",
+    "question": "Quel est le chiffre des dizaines dans 45 ?",
+    "options": {
+      "A": "4",
+      "B": "5",
+      "C": "6",
+      "D": "3"
+    },
+    "correctAnswer": "A"
+  },
+  {
+    "class": "CE1",
+    "subject": "Mathématiques",
+    "topic": "Numération",
+    "period": "Début d'année",
+    "specificity": "Lecture et écriture des nombres jusqu’à 50",
+    "type": "short",
+    "question": "Quel est le chiffre des unités dans 38 ?",
+    "options": {
+      "A": "3",
+      "B": "8",
+      "C": "9"
+    },
+    "correctAnswer": "B"
+  }
+]
