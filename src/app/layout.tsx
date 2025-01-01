@@ -2,13 +2,21 @@ import './globals.css'
 import { Inter } from 'next/font/google'
 import Link from 'next/link'
 import { AchievementsProvider } from '@/contexts/AchievementsContext';
-import { Lock } from 'lucide-react';
+import { Users, GraduationCap } from 'lucide-react';
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata = {
   title: 'Futur Génie',
   description: 'Votre assistant personnel pour apprendre le français',
+  viewport: 'width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no',
+  themeColor: '#0F172A',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Futur Génie',
+  },
+  manifest: '/manifest.json',
 }
 
 export default function RootLayout({
@@ -18,50 +26,50 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr">
-      <body className={inter.className}>
+      <head>
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Futur Génie" />
+        <link rel="apple-touch-icon" href="/icon-192x192.png" />
+        <link rel="apple-touch-startup-image" href="/splash.png" />
+      </head>
+      <body className={`${inter.className} safe-top safe-bottom`}>
         <AchievementsProvider>
           <div className="min-h-screen">
-            <nav className="fixed top-0 left-0 right-0 z-50 bg-[var(--background-dark)]/80 backdrop-blur-xl border-b border-[var(--card-border)]">
-              <div className="container mx-auto px-6 py-4">
+            <nav className="fixed top-0 left-0 right-0 z-50 bg-[var(--background-dark)]/80 backdrop-blur-xl border-b border-[var(--card-border)] safe-top">
+              <div className="container mx-auto px-4 sm:px-6 py-4">
                 <div className="flex items-center justify-between">
                   <Link href="/" className="flex items-center gap-3">
-                    <div className="icon-container w-12 h-12">
-                      <span className="text-xl font-bold text-[var(--primary)]">JB</span>
+                    <div className="icon-container w-10 h-10 sm:w-12 sm:h-12">
+                      <span className="text-lg sm:text-xl font-bold text-[var(--primary)]">JB</span>
                     </div>
-                    <span className="text-xl font-semibold text-gradient">La Salle Rouen</span>
+                    <span className="text-lg sm:text-xl font-semibold text-gradient">La Salle Rouen</span>
                   </Link>
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 sm:gap-4">
                     <Link 
                       href="/parent" 
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
+                      className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors text-sm sm:text-base"
                     >
-                      <Lock className="w-4 h-4" />
-                      <span>Espace Parent</span>
+                      <Users className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <span className="hidden sm:inline">Espace Parents</span>
                     </Link>
                     <Link 
                       href="/teacher" 
-                      className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-[rgb(var(--primary))] to-[rgb(var(--primary-dark))] hover:opacity-90 transition-opacity"
+                      className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 transition-colors text-sm sm:text-base"
                     >
-                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M20 17V19C20 20.1046 19.1046 21 18 21H6C4.89543 21 4 20.1046 4 19V17M15 8L12 5M12 5L9 8M12 5V16" 
-                          stroke="currentColor" 
-                          strokeWidth="2" 
-                          strokeLinecap="round" 
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                      <span>Espace Enseignant</span>
+                      <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <span className="hidden sm:inline">Espace Enseignant</span>
                     </Link>
                   </div>
                 </div>
               </div>
             </nav>
-            <main className="pt-20">
+            <div className="pt-[calc(var(--safe-top)+4rem)]">
               {children}
-            </main>
+            </div>
           </div>
         </AchievementsProvider>
       </body>
     </html>
-  );
+  )
 }

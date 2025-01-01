@@ -20,10 +20,10 @@ export default function Home() {
 
       <div className="max-w-6xl mx-auto px-6 relative">
         <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold gradient-text mb-4">
+          <h1 className="text-3xl md:text-4xl font-bold gradient-text mb-4">
             Bienvenue sur Futur Génie !
           </h1>
-          <p className="text-xl text-white/70">
+          <p className="text-lg text-white/70">
             Votre compagnon d'apprentissage intelligent et personnalisé
           </p>
         </div>
