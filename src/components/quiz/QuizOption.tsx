@@ -21,8 +21,8 @@ export const QuizOption: FC<QuizOptionProps> = ({
   return (
     <button
       className={cn(
-        'w-full p-4 rounded-lg text-left transition-all duration-200',
-        'border-2 hover:border-white/30',
+        'w-full p-3 sm:p-4 rounded-lg text-left transition-all duration-200',
+        'border hover:border-white/30 text-sm sm:text-base',
         isSelected && !isRevealed && 'border-white/50 bg-white/5',
         isRevealed && isSelected && isCorrect && 'border-green-500 bg-green-500/20',
         isRevealed && isSelected && !isCorrect && 'border-red-500 bg-red-500/20',
@@ -32,7 +32,7 @@ export const QuizOption: FC<QuizOptionProps> = ({
       onClick={onClick}
       disabled={disabled}
     >
-      <span className="text-lg">{label}</span>
+      <span className="text-base sm:text-lg break-words">{label}</span>
     </button>
   );
 };

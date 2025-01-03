@@ -48,67 +48,61 @@ export default function TeacherSidebar() {
   return (
     <>
       {/* Menu burger pour mobile */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-gray-900 px-4 py-3 flex items-center justify-between border-b border-gray-800">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center text-white font-bold">
-            FG
-          </div>
-          <span className="text-lg font-semibold text-white">Futur Génie</span>
-        </div>
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-[var(--background)] px-4 py-3 flex items-center justify-between border-b border-[var(--card-border)]">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="p-2 text-gray-400 hover:text-white transition-colors"
+          className="burger-menu btn-icon"
+          aria-label="Toggle menu"
         >
-          {isOpen ? <X size={24} /> : <Menu size={24} />}
+          {isOpen ? <X /> : <Menu />}
         </button>
+        <span className="font-semibold">Menu</span>
       </div>
 
-      {/* Overlay sombre quand le menu est ouvert sur mobile */}
-      {isOpen && (
-        <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-40"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
-
-      {/* Sidebar */}
-      <div className={`
-        fixed top-0 left-0 z-50 h-screen bg-gray-900 transform transition-transform duration-300 ease-in-out
-        lg:translate-x-0 lg:w-64
-        w-64 ${isOpen ? 'translate-x-0' : '-translate-x-full'}
-      `}>
-        {/* Logo et titre (caché sur mobile car déjà dans le header) */}
-        <div className="hidden lg:flex items-center gap-2 p-4 mb-4">
-          <div className="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center text-white font-bold">
-            FG
-          </div>
-          <span className="text-lg font-semibold text-white">Futur Génie</span>
+      {/* Menu mobile */}
+      <div className={`mobile-menu ${isOpen ? 'visible' : 'hidden'} lg:hidden`}>
+        <div className="pt-16 px-4">
+          <nav className="space-y-1">
+            {navigationItems.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`nav-link ${isActive ? 'active' : ''}`}
+                  onClick={() => setIsOpen(false)}
+                >
+                  <item.icon className="w-5 h-5" />
+                  <span>{item.name}</span>
+                </Link>
+              );
+            })}
+          </nav>
         </div>
+      </div>
 
-        {/* Navigation */}
-        <nav className="px-2 py-4">
-          {navigationItems.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setIsOpen(false)}
-                className={`
-                  flex items-center gap-2 px-4 py-3 rounded-lg mb-1
-                  transition-colors duration-200
-                  ${isActive
-                    ? 'bg-indigo-500 text-white'
-                    : 'text-gray-400 hover:bg-gray-800 hover:text-white'
-                  }
-                `}
-              >
-                <item.icon size={20} />
-                <span>{item.name}</span>
-              </Link>
-            );
-          })}
-        </nav>
+      {/* Menu desktop */}
+      <div className="hidden lg:flex flex-col fixed top-0 left-0 h-full w-64 bg-[var(--background)] border-r border-[var(--card-border)] safe-top">
+        <div className="p-4">
+          <div className="icon-container mb-6">
+            <span className="text-xl font-bold gradient-text">FG</span>
+          </div>
+          <nav className="space-y-1">
+            {navigationItems.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className={`nav-link ${isActive ? 'active' : ''}`}
+                >
+                  <item.icon className="w-5 h-5" />
+                  <span>{item.name}</span>
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
       </div>
     </>
   );

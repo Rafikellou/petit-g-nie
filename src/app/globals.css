@@ -8,6 +8,10 @@
   --background: #0F172A;
   --card-bg: rgba(255, 255, 255, 0.05);
   --card-border: rgba(255, 255, 255, 0.1);
+  --sat: env(safe-area-inset-top);
+  --sab: env(safe-area-inset-bottom);
+  --sal: env(safe-area-inset-left);
+  --sar: env(safe-area-inset-right);
 }
 
 @layer base {
@@ -32,21 +36,59 @@
   ::-webkit-scrollbar-thumb {
     @apply bg-gradient-to-b from-[rgb(var(--primary))] to-[rgb(var(--primary-dark))] rounded-full;
   }
+
+  /* Support pour les marges de sécurité iOS */
+  html {
+    -webkit-text-size-adjust: 100%;
+    touch-action: manipulation;
+  }
+
+  /* Désactiver le surlignage au toucher sur iOS */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Gérer les marges de sécurité */
+  .safe-top {
+    padding-top: var(--sat);
+  }
+
+  .safe-bottom {
+    padding-bottom: var(--sab);
+  }
+
+  /* Styles pour le mode plein écran */
+  @supports (padding: max(0px)) {
+    .safe-top {
+      padding-top: max(var(--sat), 20px);
+    }
+
+    .safe-bottom {
+      padding-bottom: max(var(--sab), 20px);
+    }
+
+    body {
+      padding-left: min(var(--sal), 1rem);
+      padding-right: min(var(--sar), 1rem);
+    }
+  }
 }
 
 @layer components {
   /* Boutons */
   .btn-primary {
-    @apply px-4 py-2 bg-[rgb(var(--primary))] 
+    @apply px-3 py-2 sm:px-4 sm:py-2 bg-[rgb(var(--primary))] 
     hover:bg-[rgb(var(--primary-dark))]
     rounded-lg transition-colors duration-200 
-    flex items-center gap-2 font-medium;
+    flex items-center gap-2 font-medium
+    text-sm sm:text-base;
   }
 
   .btn-secondary {
-    @apply px-4 py-2 bg-white/10 hover:bg-white/20 
+    @apply px-3 py-2 sm:px-4 sm:py-2 bg-white/10 hover:bg-white/20 
     rounded-lg transition-colors duration-200 
-    flex items-center gap-2;
+    flex items-center gap-2
+    text-sm sm:text-base;
   }
 
   .btn-icon {
@@ -56,17 +98,18 @@
 
   /* Cartes et conteneurs */
   .card {
-    @apply p-6 bg-[var(--card-bg)] backdrop-blur-xl
+    @apply p-4 sm:p-6 bg-[var(--card-bg)] backdrop-blur-xl
     border border-[var(--card-border)]
     rounded-lg transition-all duration-200;
   }
 
   /* Cartes avec effet glassmorphism */
   .glass-card {
-    @apply relative overflow-hidden rounded-2xl
+    @apply relative overflow-hidden rounded-xl sm:rounded-2xl
     bg-[var(--card-bg)] backdrop-blur-xl
     border border-[var(--card-border)]
-    transition-all duration-200;
+    transition-all duration-200
+    p-4 sm:p-8;
   }
 
   .glass-card:hover {
@@ -196,6 +239,104 @@
   .glass-card {
     @apply bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10;
   }
+
+  /* Typographie responsive */
+  .text-gradient {
+    @apply text-2xl sm:text-4xl font-bold;
+  }
+
+  /* Container principal */
+  .main-container {
+    @apply max-w-3xl mx-auto px-4 sm:px-6 py-16 sm:py-24;
+  }
+
+  /* Espacement responsive */
+  .space-y-responsive {
+    @apply space-y-4 sm:space-y-6;
+  }
+
+  .space-x-responsive {
+    @apply space-x-2 sm:space-x-4;
+  }
+
+  /* Grille responsive */
+  .grid-responsive {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6;
+  }
+}
+
+/* Optimisations pour mobile */
+@media (max-width: 640px) {
+  /* Ajustement des tailles de police pour mobile */
+  h1 {
+    @apply text-2xl;
+  }
+  h2 {
+    @apply text-xl;
+  }
+  h3 {
+    @apply text-lg;
+  }
+  p, span, a, button {
+    @apply text-sm;
+  }
+
+  /* Ajustements des espacements */
+  .card, .glass-card {
+    @apply p-4;
+  }
+
+  /* Style pour le menu burger sur mobile */
+  .tab-navigation {
+    @apply hidden;
+  }
+
+  .burger-menu {
+    @apply block;
+  }
+
+  .mobile-menu {
+    @apply fixed top-0 left-0 w-full h-full bg-[var(--background)] 
+    transform transition-transform duration-300 ease-in-out z-50;
+  }
+
+  .mobile-menu.hidden {
+    @apply -translate-x-full;
+  }
+
+  .mobile-menu.visible {
+    @apply translate-x-0;
+  }
+}
+
+/* Optimisations pour l'affichage plein écran */
+@media (display-mode: fullscreen) {
+  body {
+    @apply min-h-screen w-screen overflow-x-hidden;
+  }
+}
+
+/* Support pour l'affichage en plein écran */
+:fullscreen, ::backdrop {
+  @apply bg-[var(--background)];
+}
+
+/* PWA optimizations */
+@media all and (display-mode: standalone) {
+  body {
+    @apply min-h-[-webkit-fill-available];
+  }
+}
+
+/* Prevent pull-to-refresh and overscroll behavior */
+body {
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Improve tap targets on mobile */
+button, a, input, select {
+  @apply min-h-[44px] min-w-[44px];
 }
 
 @keyframes fadeIn {

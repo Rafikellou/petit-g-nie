@@ -2,13 +2,14 @@
 
 import { FC, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Pencil, Keyboard } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Canvas } from '@/components/dictee/Canvas';
-import { KeyboardInput } from '@/components/dictee/KeyboardInput';
+import { ArrowLeft } from 'lucide-react';
+import { DicteeInteractive } from '@/components/dictee/DicteeInteractive';
+
+// Texte de démonstration (à remplacer par une vraie base de données)
+const demoText = "L'été dernier, nous sommes allés en vacances à la mer. Le soleil brillait tous les jours, et nous avons passé beaucoup de temps à nager et à construire des châteaux de sable.";
 
 const DicteePage: FC = () => {
-  const [mode, setMode] = useState<'stylet' | 'clavier'>('stylet');
+  const [userInput, setUserInput] = useState('');
 
   return (
     <main className="min-h-screen py-24">
@@ -32,34 +33,16 @@ const DicteePage: FC = () => {
             Dictée Interactive
           </h1>
           <p className="text-white/70 text-lg">
-            Choisis ton mode préféré et commence ta dictée
+            Écoutez attentivement et écrivez ce que vous entendez
           </p>
         </div>
 
-        <Tabs defaultValue="stylet" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
-            <TabsTrigger value="stylet" className="flex items-center gap-2">
-              <Pencil className="w-4 h-4" />
-              Mode Stylet
-            </TabsTrigger>
-            <TabsTrigger value="clavier" className="flex items-center gap-2">
-              <Keyboard className="w-4 h-4" />
-              Mode Clavier
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="stylet" className="mt-0">
-            <div className="glass-card p-8">
-              <Canvas />
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="clavier" className="mt-0">
-            <div className="glass-card p-8">
-              <KeyboardInput />
-            </div>
-          </TabsContent>
-        </Tabs>
+        <div className="card max-w-3xl mx-auto">
+          <DicteeInteractive
+            text={demoText}
+            onInputChange={setUserInput}
+          />
+        </div>
       </div>
     </main>
   );
