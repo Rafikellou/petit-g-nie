@@ -22,7 +22,6 @@
     "@tailwindcss/forms": "^0.5.9",
     "@types/canvas-confetti": "^1.9.0",
     "canvas-confetti": "^1.9.3",
-    "canvas": "^2.11.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
