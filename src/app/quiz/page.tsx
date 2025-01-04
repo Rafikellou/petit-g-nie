@@ -112,33 +112,24 @@ const QuizSession: React.FC<QuizSessionProps> = ({ quiz, onComplete, onClose }) 
         <h2 className="text-xl font-medium">{currentQuestion.question}</h2>
 
         <div className="space-y-3">
-          {currentQuestion.answers.map((answer, index) => (
+          {currentQuestion.options.map((option, index) => (
             <button
               key={index}
-              onClick={() => !isAnswerChecked && setSelectedAnswer(answer)}
+              onClick={() => !isAnswerChecked && setSelectedAnswer(index.toString())}
               disabled={isAnswerChecked}
               className={`w-full p-4 rounded-lg text-left transition tap-target touch-manipulation ${
                 isAnswerChecked
-                  ? answer === currentQuestion.correctAnswer
+                  ? index === currentQuestion.correctAnswer
                     ? 'bg-green-500/20 border border-green-500/40'
-                    : answer === selectedAnswer
+                    : parseInt(selectedAnswer!, 10) === index
                     ? 'bg-red-500/20 border border-red-500/40'
                     : 'bg-white/5 border border-white/10'
-                  : answer === selectedAnswer
+                  : parseInt(selectedAnswer!, 10) === index
                   ? 'bg-primary/20 border border-primary'
                   : 'bg-white/5 border border-white/10 hover:bg-white/10'
               }`}
             >
-              <div className="flex items-center justify-between">
-                <span>{answer}</span>
-                {isAnswerChecked && (
-                  answer === currentQuestion.correctAnswer ? (
-                    <CheckCircle className="w-5 h-5 text-green-500" />
-                  ) : answer === selectedAnswer ? (
-                    <XCircle className="w-5 h-5 text-red-500" />
-                  ) : null
-                )}
-              </div>
+              {option}
             </button>
           ))}
         </div>
