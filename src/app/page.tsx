@@ -51,7 +51,7 @@ const navigationLinks: NavLink[] = [
   {
     href: '/jeux',
     title: 'Jouer',
-    description: 'Apprends en t'amusant avec nos jeux éducatifs',
+    description: "Apprends en t'amusannt avec nos jeux éducatifs",
     icon: GamepadIcon,
     color: 'text-pink-400',
     bgGradient: 'from-pink-500/20 to-rose-500/20'
