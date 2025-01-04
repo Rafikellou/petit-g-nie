@@ -11,14 +11,15 @@ export interface Question {
 }
 
 export interface Audiobook {
-  id: string
-  title: string
-  description: string
-  audio_url: string
-  duration: number
-  age_range: string[]
-  coverImage: string
-  chapters: number
+  id: string;
+  title: string;
+  description: string;
+  audio_url: string;
+  duration: string;
+  age_range: string[];
+  coverImage: string;
+  chapters: number;
+  progress?: number;
 }
 
 export const quizService = {
