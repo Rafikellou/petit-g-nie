@@ -2,15 +2,12 @@ import { FC, useRef, useState, useEffect } from 'react';
 import { Play, Pause, SkipBack, SkipForward } from 'lucide-react';
 
 interface AudioPlayerProps {
-  src?: string;
-  audioUrl?: string;
-  gradient: string;
-  onComplete?: () => void;
-  onTimeUpdate?: (time: number) => void;
+  src: string;
+  onProgress: (currentProgress: number) => void;
+  onPlayPause: () => void;
 }
 
-export const AudioPlayer: FC<AudioPlayerProps> = ({ src, audioUrl, gradient, onComplete, onTimeUpdate }) => {
-  const audioSrc = src || audioUrl;
+export const AudioPlayer: FC<AudioPlayerProps> = ({ src, onProgress, onPlayPause }) => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -26,20 +23,16 @@ export const AudioPlayer: FC<AudioPlayerProps> = ({ src, audioUrl, gradient, onC
     };
 
     const handleTimeUpdate = () => {
-      if (!isDragging) {
-        setCurrentTime(audio.currentTime);
-        if (onTimeUpdate) {
-          onTimeUpdate(audio.currentTime);
-        }
+      if (!isDragging && audioRef.current) {
+        const progress = audioRef.current.currentTime / duration;
+        setCurrentTime(audioRef.current.currentTime);
+        onProgress(progress);
       }
     };
 
     const handleEnded = () => {
       setIsPlaying(false);
       setCurrentTime(0);
-      if (onComplete) {
-        onComplete();
-      }
     };
 
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);
@@ -51,17 +44,18 @@ export const AudioPlayer: FC<AudioPlayerProps> = ({ src, audioUrl, gradient, onC
       audio.removeEventListener('timeupdate', handleTimeUpdate);
       audio.removeEventListener('ended', handleEnded);
     };
-  }, [isDragging, onComplete, onTimeUpdate]);
+  }, [isDragging, duration]);
 
-  const togglePlay = () => {
-    if (!audioRef.current) return;
-
-    if (isPlaying) {
-      audioRef.current.pause();
-    } else {
-      audioRef.current.play();
+  const togglePlayPause = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+      onPlayPause();
     }
-    setIsPlaying(!isPlaying);
   };
 
   const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -93,7 +87,7 @@ export const AudioPlayer: FC<AudioPlayerProps> = ({ src, audioUrl, gradient, onC
 
   return (
     <div className="w-full">
-      <audio ref={audioRef} src={audioSrc} preload="metadata" />
+      <audio ref={audioRef} src={src} preload="metadata" />
 
       {/* Barre de progression */}
       <div
@@ -104,7 +98,7 @@ export const AudioPlayer: FC<AudioPlayerProps> = ({ src, audioUrl, gradient, onC
         onMouseLeave={() => setIsDragging(false)}
       >
         <div
-          className={`absolute left-0 top-0 h-full bg-gradient-to-r ${gradient} rounded-full`}
+          className={`absolute left-0 top-0 h-full bg-gradient-to-r to-blue-500 from-blue-900 rounded-full`}
           style={{ width: `${(currentTime / duration) * 100}%` }}
         />
         <div
@@ -128,8 +122,8 @@ export const AudioPlayer: FC<AudioPlayerProps> = ({ src, audioUrl, gradient, onC
           <SkipBack className="w-8 h-8" />
         </button>
         <button
-          className={`w-16 h-16 rounded-full bg-gradient-to-r ${gradient} flex items-center justify-center hover:scale-105 transition-transform`}
-          onClick={togglePlay}
+          className={`w-16 h-16 rounded-full bg-gradient-to-r to-blue-500 from-blue-900 flex items-center justify-center hover:scale-105 transition-transform`}
+          onClick={togglePlayPause}
         >
           {isPlaying ? (
             <Pause className="w-8 h-8 text-white" />
