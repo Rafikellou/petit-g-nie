@@ -4,12 +4,39 @@ import { FC, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Users, BookOpen, Award, TrendingUp, Search, Loader2 } from 'lucide-react';
 import { mockTeachers, mockStudents, mockProgress } from '@/data/users';
+import type { StudentProgress } from '@/data/users';
 import StudentProgress from '@/components/teacher/StudentProgress';
 import { Toaster } from 'react-hot-toast';
 import { Button } from '@/components/ui/ios-button';
 
 // Simuler un enseignant connecté
 const LOGGED_IN_TEACHER_ID = 'teacher1';
+
+// Fonction pour calculer le pourcentage global de progression
+const calculateOverallProgress = (progress: StudentProgress) => {
+  if (!progress) return 0;
+  
+  // Calculer le pourcentage d'histoires complétées
+  const storiesCompleted = Object.values(progress.storiesProgress || {}).reduce((total, characterStories) => {
+    return total + Object.values(characterStories).filter(story => story.completed).length;
+  }, 0);
+  
+  const totalStories = Object.values(progress.storiesProgress || {}).reduce((total, characterStories) => {
+    return total + Object.keys(characterStories).length;
+  }, 0);
+
+  // Calculer la moyenne des scores des quiz
+  const quizScores = Object.values(progress.quizResults || {}).map(quiz => quiz.score);
+  const averageQuizScore = quizScores.length > 0 
+    ? quizScores.reduce((a, b) => a + b, 0) / quizScores.length 
+    : 0;
+
+  // Combiner les métriques (50% histoires, 50% quiz)
+  const storiesWeight = totalStories > 0 ? (storiesCompleted / totalStories) * 50 : 0;
+  const quizWeight = quizScores.length > 0 ? (averageQuizScore / 100) * 50 : 0;
+
+  return Math.round(storiesWeight + quizWeight);
+};
 
 const TeacherDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -145,6 +172,8 @@ const TeacherDashboard = () => {
             const progress = mockProgress[studentId];
             if (!student) return null;
 
+            const overallProgress = calculateOverallProgress(progress);
+
             return (
               <div 
                 key={studentId}
@@ -163,7 +192,7 @@ const TeacherDashboard = () => {
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-white/70">Progression</p>
-                    <p className="text-lg font-bold">{progress?.overall || 0}%</p>
+                    <p className="text-lg font-bold">{overallProgress}%</p>
                   </div>
                 </div>
               </div>
