@@ -8,12 +8,11 @@ import { commonEnglishWords } from '@/data/english-words';
 import { Button } from '@/components/ui/ios-button';
 
 interface EnglishWord {
-  english: string;
-  french: string;
-  phonetic: string;
-  examples: string[];
-  difficulty: 'easy' | 'medium' | 'hard';
-  category: 'noun' | 'verb' | 'adjective' | 'adverb' | 'other';
+  word: string;
+  translation: string;
+  category: string;
+  image: string;
+  example: string;
 }
 
 interface FavoriteWord extends EnglishWord {
@@ -61,9 +60,9 @@ export default function EnglishLearning() {
   };
 
   const toggleFavorite = () => {
-    const isFavorite = favorites.some(f => f.english === currentWord.english);
+    const isFavorite = favorites.some(f => f.word === currentWord.word);
     const newFavorites = isFavorite
-      ? favorites.filter(f => f.english !== currentWord.english)
+      ? favorites.filter(f => f.word !== currentWord.word)
       : [...favorites, {
           ...currentWord,
           addedAt: new Date().toISOString(),
@@ -103,7 +102,7 @@ export default function EnglishLearning() {
             {currentWord.image && (
               <Image
                 src={currentWord.image}
-                alt={currentWord.english}
+                alt={currentWord.word}
                 fill
                 className="object-cover"
               />
@@ -113,11 +112,11 @@ export default function EnglishLearning() {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-2xl font-bold mb-1">{currentWord.english}</h3>
-                <p className="text-white/70">{currentWord.french}</p>
+                <h3 className="text-2xl font-bold mb-1">{currentWord.word}</h3>
+                <p className="text-white/70">{currentWord.translation}</p>
               </div>
               <button
-                onClick={() => playPronunciation(currentWord.english)}
+                onClick={() => playPronunciation(currentWord.word)}
                 className="p-3 hover:bg-white/10 rounded-full transition tap-target touch-manipulation"
                 aria-label="Écouter la prononciation"
               >
@@ -137,11 +136,11 @@ export default function EnglishLearning() {
               <button
                 onClick={toggleFavorite}
                 className={`p-3 rounded-full transition tap-target touch-manipulation ${
-                  favorites.some(f => f.english === currentWord.english)
+                  favorites.some(f => f.word === currentWord.word)
                     ? 'text-yellow-400 hover:text-yellow-500'
                     : 'text-white/70 hover:text-white'
                 }`}
-                aria-label={favorites.some(f => f.english === currentWord.english) ? "Retirer des favoris" : "Ajouter aux favoris"}
+                aria-label={favorites.some(f => f.word === currentWord.word) ? "Retirer des favoris" : "Ajouter aux favoris"}
               >
                 <Star className="w-6 h-6" />
               </button>
@@ -170,10 +169,10 @@ export default function EnglishLearning() {
             <div className="flex flex-wrap gap-2">
               {favorites.map(word => (
                 <div
-                  key={word.english}
+                  key={word.word}
                   className="px-3 py-1 bg-white/10 rounded-full text-sm"
                 >
-                  {word.english}
+                  {word.word}
                 </div>
               ))}
             </div>
