@@ -11,18 +11,10 @@ export default function GlobalError({
 }) {
   const logGlobalError = async () => {
     const errorLog: ErrorLog = {
-      error: {
-        name: error.name,
-        message: error.message,
-        digest: error.digest,
-        code: error.code,
-        context: error.context,
-        timestamp: new Date().toISOString(),
-      },
-      timestamp: new Date().toISOString(),
-      url: typeof window !== 'undefined' ? window.location.href : '',
-      userAgent: typeof window !== 'undefined' ? navigator.userAgent : '',
-      severity: 'critical'
+      message: error.message,
+      stack: error.stack,
+      digest: error.digest,
+      timestamp: new Date().toISOString()
     };
 
     try {
