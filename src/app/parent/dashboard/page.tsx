@@ -8,6 +8,7 @@ import WeeklyProgressChart from '@/components/charts/WeeklyProgressChart';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type Subject = 'français' | 'mathématiques' | 'histoire-géo' | 'sciences';
+type SubjectFilter = Subject | 'all';
 
 const SUBJECTS: { id: Subject; name: string }[] = [
   { id: 'français', name: 'Français' },
@@ -18,7 +19,7 @@ const SUBJECTS: { id: Subject; name: string }[] = [
 
 const ParentDashboard: FC = () => {
   const { progress, getQuizScoresBySubject, getLearningTimeData } = useProgress();
-  const [selectedSubject, setSelectedSubject] = useState<'all' | Subject>('all');
+  const [selectedSubject, setSelectedSubject] = useState<SubjectFilter>('all');
   const currentLevel = levels.find(l => l.level === progress.currentLevel);
   const nextLevel = levels.find(l => l.level === progress.currentLevel + 1);
 
