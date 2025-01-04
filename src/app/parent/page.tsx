@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Lock, ArrowRight, RefreshCw } from 'lucide-react';
+import Link from 'next/link';
+import { Lock, ArrowRight, RefreshCw, ArrowLeft, Mail, AlertCircle, CheckCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/ios-button';
 
 export default function ParentSpace() {
   const router = useRouter();
@@ -10,6 +12,7 @@ export default function ParentSpace() {
   const [error, setError] = useState('');
   const [showResetForm, setShowResetForm] = useState(false);
   const [email, setEmail] = useState('');
+  const [resetSent, setResetSent] = useState(false);
 
   const handlePinChange = (index: number, value: string) => {
     if (value.length > 1) return;
@@ -19,120 +22,205 @@ export default function ParentSpace() {
     newPin[index] = value;
     setPin(newPin);
 
-    // Déplacer automatiquement le focus vers le champ suivant
+    // Auto-focus next input
     if (value && index < 3) {
       const nextInput = document.getElementById(`pin-${index + 1}`);
       nextInput?.focus();
     }
-
-    // Vérifier le PIN lorsque tous les chiffres sont entrés
-    if (index === 3 && value) {
-      const enteredPin = newPin.join('');
-      if (enteredPin === '0000') {
-        // Rediriger vers le tableau de bord parent avec un ID par défaut
-        router.push('/parent/dashboard?id=parent1');
-      } else {
-        setError('Code PIN incorrect');
-        setPin(['', '', '', '']);
-        document.getElementById('pin-0')?.focus();
-      }
-    }
   };
 
-  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
+  const handlePinKeyDown = (index: number, e: React.KeyboardEvent) => {
     if (e.key === 'Backspace' && !pin[index] && index > 0) {
       const prevInput = document.getElementById(`pin-${index - 1}`);
       prevInput?.focus();
     }
   };
 
-  const handleResetPin = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert('Un email de réinitialisation a été envoyé à ' + email);
-    setShowResetForm(false);
-    setEmail('');
+    setError('');
+
+    const pinCode = pin.join('');
+    if (pinCode.length !== 4) {
+      setError('Veuillez entrer les 4 chiffres du code');
+      return;
+    }
+
+    try {
+      // Simuler une vérification du code PIN
+      if (pinCode === '1234') {
+        router.push('/parent/dashboard');
+      } else {
+        setError('Code PIN incorrect');
+      }
+    } catch (err) {
+      setError('Une erreur est survenue');
+    }
+  };
+
+  const handleResetSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+
+    if (!email) {
+      setError('Veuillez entrer votre adresse email');
+      return;
+    }
+
+    try {
+      // Simuler l'envoi d'un email de réinitialisation
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setResetSent(true);
+    } catch (err) {
+      setError('Une erreur est survenue');
+    }
   };
 
   return (
-    <div className="min-h-screen py-24">
-      <div className="max-w-md mx-auto px-6">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-500/20 mb-4">
-            <Lock className="w-8 h-8 text-indigo-500" />
+    <div className="min-h-screen bg-background safe-area-inset">
+      <header className="bg-surface-dark border-b border-white/10 pt-safe-top">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex items-center justify-between">
+            <Link 
+              href="/"
+              className="flex items-center space-x-2 text-white hover:text-white/80 transition tap-target touch-manipulation"
+              aria-label="Retour à l'accueil"
+            >
+              <ArrowLeft className="w-6 h-6" />
+              <span className="text-lg font-medium">Retour</span>
+            </Link>
+            <h1 className="text-xl font-bold">Espace Parents</h1>
           </div>
-          <h1 className="text-3xl font-bold mb-2">Espace Parent</h1>
-          <p className="text-gray-400">
-            Entrez votre code PIN à 4 chiffres pour accéder à l'espace parent
+        </div>
+      </header>
+
+      <main className="max-w-md mx-auto px-4 sm:px-6 py-8 space-y-8">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Lock className="w-8 h-8 text-primary" />
+          </div>
+          <h2 className="text-2xl md:text-3xl font-bold mb-2">
+            {showResetForm ? 'Réinitialiser le code' : 'Entrez votre code PIN'}
+          </h2>
+          <p className="text-white/70">
+            {showResetForm 
+              ? 'Entrez votre email pour recevoir un nouveau code'
+              : 'Accédez au suivi de votre enfant'}
           </p>
         </div>
 
         {!showResetForm ? (
-          <>
-            <div className="flex justify-center gap-4 mb-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="flex justify-center gap-4">
               {pin.map((digit, index) => (
                 <input
                   key={index}
                   id={`pin-${index}`}
                   type="text"
+                  inputMode="numeric"
                   maxLength={1}
                   value={digit}
                   onChange={(e) => handlePinChange(index, e.target.value)}
-                  onKeyDown={(e) => handleKeyDown(index, e)}
-                  className="w-14 h-14 text-center text-2xl font-bold bg-gray-900 border-2 border-gray-700 rounded-lg focus:border-indigo-500 focus:outline-none"
+                  onKeyDown={(e) => handlePinKeyDown(index, e)}
+                  className="w-14 h-14 text-center text-2xl font-bold bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               ))}
             </div>
 
             {error && (
-              <div className="text-red-500 text-center mb-4">
-                {error}
+              <div className="flex items-center space-x-2 text-red-400 text-sm">
+                <AlertCircle className="w-4 h-4" />
+                <span>{error}</span>
               </div>
             )}
 
-            <div className="text-center">
-              <button
-                onClick={() => setShowResetForm(true)}
-                className="text-indigo-500 hover:text-indigo-400 flex items-center gap-2 mx-auto"
+            <div className="space-y-4">
+              <Button
+                type="submit"
+                className="w-full min-h-[44px] flex items-center justify-center space-x-2"
               >
-                <RefreshCw className="w-4 h-4" />
-                <span>Réinitialiser le code PIN</span>
-              </button>
-            </div>
-          </>
-        ) : (
-          <form onSubmit={handleResetPin} className="space-y-4">
-            <div>
-              <label className="block text-sm text-gray-400 mb-1">
-                Email associé au compte
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full px-4 py-2 bg-gray-900 border border-gray-700 rounded-lg focus:border-indigo-500 focus:outline-none"
-                placeholder="exemple@email.com"
-              />
-            </div>
-            <div className="flex gap-4">
+                <span>Continuer</span>
+                <ArrowRight className="w-5 h-5" />
+              </Button>
+
               <button
                 type="button"
-                onClick={() => setShowResetForm(false)}
-                className="flex-1 px-4 py-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
+                onClick={() => setShowResetForm(true)}
+                className="w-full text-sm text-white/60 hover:text-white transition tap-target touch-manipulation"
               >
-                Annuler
-              </button>
-              <button
-                type="submit"
-                className="flex-1 px-4 py-2 bg-indigo-500 rounded-lg hover:bg-indigo-600 transition-colors flex items-center justify-center gap-2"
-              >
-                <span>Réinitialiser</span>
-                <ArrowRight className="w-4 h-4" />
+                Code oublié ?
               </button>
             </div>
           </form>
+        ) : (
+          <div className="space-y-6">
+            {resetSent ? (
+              <div className="text-center space-y-4">
+                <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto">
+                  <CheckCircle className="w-8 h-8 text-green-500" />
+                </div>
+                <p className="text-white/70">
+                  Un email de réinitialisation a été envoyé à {email}
+                </p>
+                <Button
+                  onClick={() => {
+                    setShowResetForm(false);
+                    setResetSent(false);
+                    setEmail('');
+                  }}
+                  className="w-full min-h-[44px]"
+                >
+                  Retour
+                </Button>
+              </div>
+            ) : (
+              <form onSubmit={handleResetSubmit} className="space-y-6">
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium mb-2">
+                    Adresse email
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                      placeholder="exemple@email.com"
+                    />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
+                  </div>
+                </div>
+
+                {error && (
+                  <div className="flex items-center space-x-2 text-red-400 text-sm">
+                    <AlertCircle className="w-4 h-4" />
+                    <span>{error}</span>
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  <Button
+                    type="submit"
+                    className="w-full min-h-[44px] flex items-center justify-center space-x-2"
+                  >
+                    <RefreshCw className="w-5 h-5" />
+                    <span>Réinitialiser</span>
+                  </Button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowResetForm(false)}
+                    className="w-full text-sm text-white/60 hover:text-white transition tap-target touch-manipulation"
+                  >
+                    Retour
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }

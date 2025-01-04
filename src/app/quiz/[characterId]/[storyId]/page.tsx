@@ -3,13 +3,15 @@
 import { FC, useState, useEffect } from 'react';
 import { notFound, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, CheckCircle, XCircle, Award } from 'lucide-react';
 import { characters } from '@/data/characters';
 import { quizzes } from '@/data/quizzes';
 import { QuizQuestion } from '@/components/quiz/QuizQuestion';
 import { useProgress } from '@/hooks/useProgress';
 import { useAchievements } from '@/contexts/AchievementsContext';
 import { CharacterStory } from '@/types/story-types';
+import { Button } from '@/components/ui/ios-button';
+import confetti from 'canvas-confetti';
 
 interface Props {
   params: {
@@ -97,38 +99,40 @@ const QuizPage: FC<Props> = ({ params }) => {
   }, [score, updateProgress, showBadgeUnlock, params.characterId, params.storyId]);
 
   return (
-    <main className="min-h-screen py-24">
-      {/* Effets d'arrière-plan */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-[radial-gradient(circle_at_center,rgba(0,242,195,0.03),transparent_70%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(108,99,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(108,99,255,0.05)_1px,transparent_1px)] bg-[size:14px_14px]" />
-      </div>
+    <div className="min-h-screen bg-background safe-area-inset">
+      <header className="bg-surface-dark border-b border-white/10 pt-safe-top">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex items-center justify-between">
+            <Link 
+              href={`/stories/${params.characterId}/${params.storyId}`}
+              className="flex items-center space-x-2 text-white hover:text-white/80 transition tap-target touch-manipulation"
+              aria-label="Retour à l'histoire"
+            >
+              <ArrowLeft className="w-6 h-6" />
+              <span className="text-lg font-medium">Retour</span>
+            </Link>
+            <h1 className="text-xl font-bold">Quiz</h1>
+          </div>
+        </div>
+      </header>
 
-      <div className="max-w-3xl mx-auto px-6 relative">
-        <Link
-          href={`/stories/${params.characterId}/${params.storyId}`}
-          className="inline-flex items-center text-white/70 hover:text-white mb-8 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Retour à l'histoire
-        </Link>
-
-        <div className="glass-card p-8">
+      <main className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
+        <div className="glass-card p-6 space-y-6">
           {score === null ? (
             <>
               {/* En-tête du quiz */}
-              <div className="mb-8">
-                <h1 className="text-4xl font-bold text-gradient mb-4">
-                  Quiz : {quiz.title}
+              <div className="space-y-2">
+                <h1 className="text-2xl font-bold text-gradient">
+                  {quiz.title}
                 </h1>
-                <p className="text-white/70">
+                <p className="text-white/70 text-sm">
                   {quiz.description}
                 </p>
               </div>
 
               {/* Progression */}
-              <div className="mb-8">
-                <div className="flex justify-between text-sm text-white/50 mb-2">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm text-white/60">
                   <span>Question {currentQuestionIndex + 1} sur {quiz.questions.length}</span>
                   <span>{Math.round((currentQuestionIndex / quiz.questions.length) * 100)}%</span>
                 </div>
@@ -149,55 +153,80 @@ const QuizPage: FC<Props> = ({ params }) => {
               />
 
               {/* Boutons d'action */}
-              <div className="mt-8 flex justify-end gap-4">
+              <div className="pt-4">
                 {!isQuestionRevealed ? (
-                  <button
-                    className={`px-6 py-3 rounded-lg bg-gradient-to-r ${character.gradient} text-white hover:scale-105 transition-transform`}
+                  <Button
                     onClick={handleRevealAnswer}
                     disabled={selectedAnswers[currentQuestionIndex] === null}
+                    className="w-full min-h-[44px]"
                   >
                     Vérifier la réponse
-                  </button>
+                  </Button>
                 ) : (
-                  <button
-                    className={`px-6 py-3 rounded-lg bg-gradient-to-r ${character.gradient} text-white hover:scale-105 transition-transform`}
+                  <Button
                     onClick={handleNextQuestion}
+                    className="w-full min-h-[44px]"
                   >
                     {currentQuestionIndex < quiz.questions.length - 1
                       ? 'Question suivante'
                       : 'Terminer le quiz'}
-                  </button>
+                  </Button>
                 )}
               </div>
             </>
           ) : (
             // Écran de résultat
-            <div className="text-center">
-              <h2 className="text-4xl font-bold mb-4">
-                {score >= 80 ? '🎉 Félicitations !' : score >= 50 ? '👍 Bien joué !' : '😊 Continue tes efforts !'}
-              </h2>
-              <p className="text-2xl mb-8">
-                Tu as obtenu un score de {Math.round(score)}%
-              </p>
-              <div className="flex justify-center gap-4">
-                <button
-                  className="px-6 py-3 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
+            <div className="text-center space-y-6">
+              <div className="w-20 h-20 mx-auto rounded-full bg-primary/20 flex items-center justify-center">
+                <Award className="w-10 h-10 text-primary" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold mb-2">
+                  {score >= 80 ? '🎉 Félicitations !' : score >= 50 ? '👍 Bien joué !' : '😊 Continue tes efforts !'}
+                </h2>
+                <p className="text-white/70">Tu as obtenu un score de {Math.round(score)}%</p>
+              </div>
+              <div className="space-y-3">
+                <Button
                   onClick={handleRetry}
+                  className="w-full min-h-[44px]"
                 >
                   Recommencer le quiz
-                </button>
+                </Button>
                 <Link
                   href={`/characters/${params.characterId}`}
-                  className={`px-6 py-3 rounded-lg bg-gradient-to-r ${character.gradient} text-white hover:scale-105 transition-transform`}
+                  className="block"
                 >
-                  Retour aux histoires
+                  <Button
+                    className="w-full min-h-[44px]"
+                  >
+                    Retour aux histoires
+                  </Button>
                 </Link>
               </div>
             </div>
           )}
         </div>
-      </div>
-    </main>
+
+        {/* Indicateurs de réponses */}
+        {score === null && (
+          <div className="flex justify-center space-x-2 mt-6">
+            {selectedAnswers.map((answer, index) => (
+              <div
+                key={index}
+                className={`w-2 h-2 rounded-full ${
+                  index === currentQuestionIndex
+                    ? 'bg-primary'
+                    : answer !== null
+                    ? 'bg-white/40'
+                    : 'bg-white/20'
+                }`}
+              />
+            ))}
+          </div>
+        )}
+      </main>
+    </div>
   );
 };
 

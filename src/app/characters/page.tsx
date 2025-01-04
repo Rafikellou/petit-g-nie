@@ -1,55 +1,64 @@
 import { FC } from 'react';
 import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 import { characters } from '@/data/characters';
 
 const CharactersPage: FC = () => {
   return (
-    <main className="min-h-screen py-24">
-      {/* Effets d'arrière-plan */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-[radial-gradient(circle_at_center,rgba(0,242,195,0.03),transparent_70%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(108,99,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(108,99,255,0.05)_1px,transparent_1px)] bg-[size:14px_14px]" />
-      </div>
+    <div className="min-h-screen bg-background safe-area-inset">
+      <header className="bg-surface-dark border-b border-white/10 pt-safe-top">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex items-center justify-between">
+            <Link 
+              href="/"
+              className="flex items-center space-x-2 text-white hover:text-white/80 transition tap-target touch-manipulation"
+              aria-label="Retour à l'accueil"
+            >
+              <ArrowLeft className="w-6 h-6" />
+              <span className="text-lg font-medium">Retour</span>
+            </Link>
+            <h1 className="text-xl font-bold">Personnages</h1>
+          </div>
+        </div>
+      </header>
 
-      <div className="max-w-6xl mx-auto px-6 relative">
-        <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold text-gradient mb-4">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl md:text-3xl font-bold mb-2">
             Choisis ton personnage
-          </h1>
-          <p className="text-xl text-white/70">
+          </h2>
+          <p className="text-white/70">
             Chaque personnage a ses propres histoires et aventures à partager
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {Object.values(characters).map((character) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {characters.map((character) => (
             <Link
               key={character.id}
-              href={`/characters/${character.id}`}
-              className="glass-card p-8 hover:scale-[1.02] transition-transform duration-200"
+              href={`/stories/${character.id}`}
+              className="glass-card p-6 hover:bg-white/5 transition tap-target touch-manipulation"
             >
-              <div className="h-full flex flex-col items-center">
-                <div className={`w-32 h-32 rounded-full mb-6 bg-gradient-to-r ${character.gradient} flex items-center justify-center`}>
-                  <span className={`text-6xl ${character.textColor}`}>
-                    {character.image ? (
-                      <img
-                        src={character.image}
-                        alt={character.name}
-                        className="w-24 h-24 object-cover rounded-full"
-                      />
-                    ) : (
-                      '👤'
-                    )}
-                  </span>
+              <div className="aspect-square rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-4">
+                {character.emoji && (
+                  <span className="text-6xl">{character.emoji}</span>
+                )}
+              </div>
+              <h3 className="text-xl font-bold mb-2">{character.name}</h3>
+              <p className="text-white/70">{character.description}</p>
+              <div className="mt-4 flex items-center space-x-2">
+                <div className="px-3 py-1 rounded-full bg-white/10 text-sm">
+                  {character.stories?.length || 0} histoires
                 </div>
-                <h2 className="text-2xl font-bold mb-4 text-center">{character.name}</h2>
-                <p className="text-white/70 text-center">{character.description}</p>
+                <div className="px-3 py-1 rounded-full bg-white/10 text-sm">
+                  Niveau {character.level}
+                </div>
               </div>
             </Link>
           ))}
         </div>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 };
 

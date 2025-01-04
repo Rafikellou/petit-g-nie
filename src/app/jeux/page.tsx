@@ -2,85 +2,138 @@
 
 import { FC } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Brain, Gamepad2, Grid } from 'lucide-react';
+import { ArrowLeft, Brain, Gamepad2, Grid, Trophy, Star, Clock } from 'lucide-react';
 
 const JeuxPage: FC = () => {
   const jeux = [
     {
       id: 'memory',
       title: 'Memory Match',
-      description: 'Retrouve les paires de cartes identiques et développe ta mémoire visuelle',
-      icon: <Brain className="w-8 h-8 text-purple-400" />,
-      gradient: 'from-purple-500/20 to-blue-500/20',
-      textColor: 'text-purple-400',
+      description: 'Retrouve les paires de cartes identiques',
+      icon: Brain,
+      color: 'purple',
+      stats: {
+        highScore: 1200,
+        stars: 4,
+        timeSpent: '45 min'
+      }
     },
     {
       id: 'simon',
       title: 'Simon',
-      description: 'Reproduis la séquence de couleurs et de sons pour tester ta mémoire',
-      icon: <Gamepad2 className="w-8 h-8 text-green-400" />,
-      gradient: 'from-green-500/20 to-teal-500/20',
-      textColor: 'text-green-400',
+      description: 'Reproduis la séquence de couleurs et de sons',
+      icon: Gamepad2,
+      color: 'green',
+      stats: {
+        highScore: 850,
+        stars: 3,
+        timeSpent: '30 min'
+      }
     },
     {
-      id: 'sudoku',
-      title: 'Sudoku Junior',
-      description: 'Résous des grilles de logique adaptées à ton niveau',
-      icon: <Grid className="w-8 h-8 text-blue-400" />,
-      gradient: 'from-blue-500/20 to-indigo-500/20',
-      textColor: 'text-blue-400',
-    },
+      id: 'puzzle',
+      title: 'Puzzle',
+      description: 'Reconstitue les images en déplaçant les pièces',
+      icon: Grid,
+      color: 'blue',
+      stats: {
+        highScore: 950,
+        stars: 5,
+        timeSpent: '1h 15min'
+      }
+    }
   ];
 
   return (
-    <main className="min-h-screen py-24">
-      {/* Effets d'arrière-plan */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-[radial-gradient(circle_at_center,rgba(0,242,195,0.03),transparent_70%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(108,99,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(108,99,255,0.05)_1px,transparent_1px)] bg-[size:14px_14px]" />
-      </div>
+    <div className="min-h-screen bg-background safe-area-inset">
+      <header className="bg-surface-dark border-b border-white/10 pt-safe-top">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex items-center justify-between">
+            <Link 
+              href="/"
+              className="flex items-center space-x-2 text-white hover:text-white/80 transition tap-target touch-manipulation"
+              aria-label="Retour à l'accueil"
+            >
+              <ArrowLeft className="w-6 h-6" />
+              <span className="text-lg font-medium">Retour</span>
+            </Link>
+            <h1 className="text-xl font-bold">Jeux</h1>
+          </div>
+        </div>
+      </header>
 
-      <div className="max-w-6xl mx-auto px-6 relative">
-        <Link
-          href="/"
-          className="inline-flex items-center text-white/70 hover:text-white mb-8 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Retour à l'accueil
-        </Link>
-
-        <div className="text-center mb-16">
-          <h1 className="text-4xl font-bold gradient-text mb-4">
-            Jeux Éducatifs
-          </h1>
-          <p className="text-xl text-white/70">
-            Développe tes capacités tout en t'amusant
-          </p>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+        <div className="text-center">
+          <h2 className="text-2xl md:text-3xl font-bold mb-2">Choisis ton jeu</h2>
+          <p className="text-white/70">Apprends en t'amusant avec nos jeux éducatifs</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {jeux.map((jeu) => (
-            <Link 
-              key={jeu.id}
-              href={`/jeux/${jeu.id}`} 
-              className="glass-card p-8 hover:scale-[1.02] transition-transform"
-            >
-              <div className="h-full flex flex-col">
-                <div className="flex items-center justify-center mb-6">
-                  <div className={`rounded-full bg-gradient-to-r ${jeu.gradient} p-4`}>
-                    {jeu.icon}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {jeux.map((jeu) => {
+            const IconComponent = jeu.icon;
+            return (
+              <Link
+                key={jeu.id}
+                href={`/jeux/${jeu.id}`}
+                className="glass-card p-6 hover:bg-white/5 transition tap-target touch-manipulation"
+              >
+                <div className="flex items-center space-x-4 mb-4">
+                  <div className={`w-12 h-12 rounded-full bg-${jeu.color}-500/20 flex items-center justify-center`}>
+                    <IconComponent className={`w-6 h-6 text-${jeu.color}-400`} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium">{jeu.title}</h3>
+                    <p className="text-sm text-white/70">{jeu.description}</p>
                   </div>
                 </div>
-                <h2 className="text-2xl font-bold mb-4 text-center">{jeu.title}</h2>
-                <p className="text-white/70 text-center flex-grow">
-                  {jeu.description}
-                </p>
-              </div>
-            </Link>
-          ))}
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="flex items-center space-x-2">
+                    <Trophy className="w-4 h-4 text-yellow-400" />
+                    <span className="text-sm">{jeu.stats.highScore}</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Star className="w-4 h-4 text-yellow-400" />
+                    <span className="text-sm">{jeu.stats.stars}/5</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Clock className="w-4 h-4 text-white/70" />
+                    <span className="text-sm">{jeu.stats.timeSpent}</span>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
         </div>
-      </div>
-    </main>
+
+        {/* Section des succès */}
+        <div className="glass-card p-6">
+          <h3 className="text-lg font-medium mb-4">Tes succès</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="p-4 bg-white/5 rounded-lg text-center">
+              <Trophy className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
+              <p className="font-medium">3000</p>
+              <p className="text-sm text-white/70">Score total</p>
+            </div>
+            <div className="p-4 bg-white/5 rounded-lg text-center">
+              <Star className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
+              <p className="font-medium">12</p>
+              <p className="text-sm text-white/70">Étoiles gagnées</p>
+            </div>
+            <div className="p-4 bg-white/5 rounded-lg text-center">
+              <Clock className="w-8 h-8 text-white/70 mx-auto mb-2" />
+              <p className="font-medium">2h 30min</p>
+              <p className="text-sm text-white/70">Temps de jeu</p>
+            </div>
+            <div className="p-4 bg-white/5 rounded-lg text-center">
+              <Gamepad2 className="w-8 h-8 text-white/70 mx-auto mb-2" />
+              <p className="font-medium">15</p>
+              <p className="text-sm text-white/70">Parties jouées</p>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
   );
 };
 

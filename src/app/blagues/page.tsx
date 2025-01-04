@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Smile, ThumbsUp, Filter, Sparkles, Send } from 'lucide-react';
+import { Smile, ThumbsUp, Filter, Sparkles, Send, ArrowLeft, Loader2 } from 'lucide-react';
 import { MOCK_JOKES, Joke } from '@/data/jokes';
 import confetti from 'canvas-confetti';
+import Link from 'next/link';
+import { Button } from '@/components/ui/ios-button';
 
 export default function JokesPage() {
   const [jokes, setJokes] = useState<Joke[]>(MOCK_JOKES);
@@ -18,180 +20,199 @@ export default function JokesPage() {
     question: '',
     answer: ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleJokeReveal = () => {
-    setShowAnswer(true);
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 }
-    });
-  };
+  const handleJokeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newJoke.question || !newJoke.answer) return;
 
-  const handleLike = (jokeId: string) => {
-    setJokes(prevJokes =>
-      prevJokes.map(joke =>
-        joke.id === jokeId
-          ? { ...joke, likes: joke.likes + 1 }
-          : joke
-      )
-    );
-  };
-
-  const getRandomJoke = () => {
-    const filteredJokes = jokes.filter(joke => {
-      if (filters.category !== 'all' && joke.category !== filters.category) return false;
-      if (filters.difficulty !== 'all' && joke.difficulty !== filters.difficulty) return false;
-      return true;
-    });
-
-    const randomJoke = filteredJokes[Math.floor(Math.random() * filteredJokes.length)];
-    setSelectedJoke(randomJoke);
-    setShowAnswer(false);
-  };
-
-  const submitNewJoke = () => {
-    if (newJoke.question && newJoke.answer) {
+    setIsSubmitting(true);
+    try {
+      // Simuler un délai d'envoi
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       const joke: Joke = {
         id: String(jokes.length + 1),
         question: newJoke.question,
         answer: newJoke.answer,
-        category: 'general',
-        difficulty: 'easy',
-        ageRange: { min: 6, max: 12 },
-        likes: 0,
-        isApproved: false
+        category: 'custom',
+        difficulty: 'medium',
+        ageRange: '7-12',
+        likes: 0
       };
-      setJokes(prev => [...prev, joke]);
+
+      setJokes(prev => [joke, ...prev]);
       setNewJoke({ question: '', answer: '' });
-      alert('Merci ! Ta blague a été soumise et sera examinée par nos modérateurs.');
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  useEffect(() => {
-    getRandomJoke();
-  }, [filters]); // eslint-disable-line react-hooks/exhaustive-deps
-
   return (
-    <div className="container mx-auto p-8 space-y-8">
-      {/* En-tête */}
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">
-          La Boîte à Blagues
-        </h1>
-        <p className="text-white/70">
-          Découvre et partage des blagues amusantes et éducatives !
-        </p>
-      </div>
+    <div className="min-h-screen bg-background safe-area-inset">
+      <header className="bg-surface-dark border-b border-white/10 pt-safe-top">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex items-center justify-between">
+            <Link 
+              href="/"
+              className="flex items-center space-x-2 text-white hover:text-white/80 transition tap-target touch-manipulation"
+              aria-label="Retour à l'accueil"
+            >
+              <ArrowLeft className="w-6 h-6" />
+              <span className="text-lg font-medium">Retour</span>
+            </Link>
+            <h1 className="text-xl font-bold">Blagues</h1>
+          </div>
+        </div>
+      </header>
 
-      {/* Filtres */}
-      <div className="card">
-        <div className="flex items-center gap-4 flex-wrap">
-          <div className="flex items-center gap-2">
-            <Filter className="w-5 h-5 text-white/70" />
-            <select
-              className="input"
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+        {/* Filtres */}
+        <div className="glass-card p-6">
+          <div className="flex items-center space-x-2 mb-4">
+            <Filter className="w-5 h-5" />
+            <h2 className="text-lg font-medium">Filtres</h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <select 
               value={filters.category}
               onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
+              className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white min-h-[44px]"
             >
               <option value="all">Toutes les catégories</option>
-              <option value="math">Mathématiques</option>
-              <option value="science">Sciences</option>
-              <option value="language">Langue</option>
-              <option value="general">Général</option>
+              <option value="animaux">Animaux</option>
+              <option value="ecole">École</option>
+              <option value="sport">Sport</option>
             </select>
-          </div>
-          <div>
-            <select
-              className="input"
+            <select 
               value={filters.difficulty}
               onChange={(e) => setFilters(prev => ({ ...prev, difficulty: e.target.value }))}
+              className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white min-h-[44px]"
             >
               <option value="all">Toutes les difficultés</option>
               <option value="easy">Facile</option>
               <option value="medium">Moyen</option>
               <option value="hard">Difficile</option>
             </select>
+            <select 
+              value={filters.ageRange}
+              onChange={(e) => setFilters(prev => ({ ...prev, ageRange: e.target.value }))}
+              className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white min-h-[44px]"
+            >
+              <option value="all">Tous les âges</option>
+              <option value="5-7">5-7 ans</option>
+              <option value="7-12">7-12 ans</option>
+              <option value="12+">12+ ans</option>
+            </select>
           </div>
         </div>
-      </div>
 
-      {/* Blague actuelle */}
-      {selectedJoke && (
-        <div className="card text-center space-y-6">
-          <div className="text-2xl font-medium">
-            {selectedJoke.question}
+        {/* Formulaire d'ajout */}
+        <div className="glass-card p-6">
+          <div className="flex items-center space-x-2 mb-4">
+            <Sparkles className="w-5 h-5" />
+            <h2 className="text-lg font-medium">Ajouter une blague</h2>
           </div>
-          
-          {!showAnswer ? (
-            <button
-              onClick={handleJokeReveal}
-              className="btn-primary"
+          <form onSubmit={handleJokeSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="question" className="block text-sm font-medium mb-2">
+                Question
+              </label>
+              <input
+                id="question"
+                type="text"
+                value={newJoke.question}
+                onChange={(e) => setNewJoke(prev => ({ ...prev, question: e.target.value }))}
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent min-h-[44px]"
+                placeholder="Quelle est votre blague ?"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="answer" className="block text-sm font-medium mb-2">
+                Réponse
+              </label>
+              <input
+                id="answer"
+                type="text"
+                value={newJoke.answer}
+                onChange={(e) => setNewJoke(prev => ({ ...prev, answer: e.target.value }))}
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent min-h-[44px]"
+                placeholder="La réponse..."
+                required
+              />
+            </div>
+            <Button
+              type="submit"
+              className="w-full min-h-[44px] flex items-center justify-center space-x-2"
+              disabled={isSubmitting}
             >
-              Voir la réponse
-            </button>
-          ) : (
-            <div className="space-y-4">
-              <div className="text-xl text-yellow-300 font-medium animate-fade-in">
-                {selectedJoke.answer}
-              </div>
-              <div className="flex justify-center gap-4">
-                <button
-                  onClick={() => handleLike(selectedJoke.id)}
-                  className="btn-secondary"
+              {isSubmitting ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <>
+                  <Send className="w-5 h-5" />
+                  <span>Ajouter la blague</span>
+                </>
+              )}
+            </Button>
+          </form>
+        </div>
+
+        {/* Liste des blagues */}
+        <div className="space-y-4">
+          {jokes.map(joke => (
+            <div 
+              key={joke.id}
+              className="glass-card p-6 hover:bg-white/5 transition cursor-pointer tap-target touch-manipulation"
+              onClick={() => {
+                setSelectedJoke(joke);
+                setShowAnswer(false);
+              }}
+            >
+              <p className="text-lg mb-2">{joke.question}</p>
+              {selectedJoke?.id === joke.id && showAnswer && (
+                <p className="text-primary font-medium mt-4">{joke.answer}</p>
+              )}
+              <div className="flex items-center justify-between mt-4">
+                <Button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (selectedJoke?.id === joke.id) {
+                      setShowAnswer(!showAnswer);
+                    } else {
+                      setSelectedJoke(joke);
+                      setShowAnswer(true);
+                    }
+                  }}
+                  className="min-h-[44px]"
                 >
-                  <ThumbsUp className="w-5 h-5" />
-                  <span>{selectedJoke.likes}</span>
-                </button>
-                <button
-                  onClick={getRandomJoke}
-                  className="btn-primary"
+                  {selectedJoke?.id === joke.id && showAnswer ? 'Cacher' : 'Voir la réponse'}
+                </Button>
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setJokes(prev => 
+                      prev.map(j => 
+                        j.id === joke.id ? { ...j, likes: j.likes + 1 } : j
+                      )
+                    );
+                  }}
+                  className="p-2 hover:bg-white/10 rounded-full transition tap-target touch-manipulation"
+                  aria-label="J'aime cette blague"
                 >
-                  <Sparkles className="w-5 h-5" />
-                  Une autre !
+                  <ThumbsUp className="w-6 h-6" />
                 </button>
               </div>
             </div>
-          )}
+          ))}
         </div>
-      )}
-
-      {/* Soumettre une blague */}
-      <div className="card">
-        <h3 className="text-xl font-bold mb-4">
-          Tu as une blague à partager ?
-        </h3>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-white/70 mb-2">Ta question</label>
-            <input
-              type="text"
-              value={newJoke.question}
-              onChange={(e) => setNewJoke(prev => ({ ...prev, question: e.target.value }))}
-              placeholder="Pourquoi... ?"
-              className="input w-full"
-            />
-          </div>
-          <div>
-            <label className="block text-white/70 mb-2">Ta réponse</label>
-            <input
-              type="text"
-              value={newJoke.answer}
-              onChange={(e) => setNewJoke(prev => ({ ...prev, answer: e.target.value }))}
-              placeholder="Parce que... !"
-              className="input w-full"
-            />
-          </div>
-          <button
-            onClick={submitNewJoke}
-            disabled={!newJoke.question || !newJoke.answer}
-            className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Send className="w-5 h-5" />
-            Envoyer ma blague
-          </button>
-        </div>
-      </div>
+      </main>
     </div>
   );
 }

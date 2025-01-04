@@ -2,17 +2,24 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Play } from 'lucide-react';
+import Link from 'next/link';
+import { Play, ArrowLeft, Volume2, ChevronLeft, ChevronRight, Star } from 'lucide-react';
 import { commonEnglishWords } from '@/data/english-words';
+import { Button } from '@/components/ui/ios-button';
 
 export default function EnglishLearning() {
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [synth, setSynth] = useState<SpeechSynthesis | null>(null);
+  const [favorites, setFavorites] = useState<string[]>([]);
   const currentWord = commonEnglishWords[currentWordIndex];
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setSynth(window.speechSynthesis);
+      const savedFavorites = localStorage.getItem('englishFavorites');
+      if (savedFavorites) {
+        setFavorites(JSON.parse(savedFavorites));
+      }
     }
   }, []);
 
@@ -21,22 +28,15 @@ export default function EnglishLearning() {
       synth.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'en-US';
-      utterance.rate = 0.9;
-      
-      const voices = synth.getVoices();
-      const englishVoice = voices.find(voice => 
-        voice.lang.startsWith('en-') && !voice.localService
-      );
-      if (englishVoice) {
-        utterance.voice = englishVoice;
-      }
-
+      utterance.rate = 0.8;
       synth.speak(utterance);
     }
   };
 
   const nextWord = () => {
-    setCurrentWordIndex((prev) => (prev + 1) % commonEnglishWords.length);
+    setCurrentWordIndex((prev) => 
+      prev === commonEnglishWords.length - 1 ? 0 : prev + 1
+    );
   };
 
   const previousWord = () => {
@@ -45,71 +45,121 @@ export default function EnglishLearning() {
     );
   };
 
+  const toggleFavorite = () => {
+    const newFavorites = favorites.includes(currentWord.english)
+      ? favorites.filter(word => word !== currentWord.english)
+      : [...favorites, currentWord.english];
+    
+    setFavorites(newFavorites);
+    localStorage.setItem('englishFavorites', JSON.stringify(newFavorites));
+  };
+
   return (
-    <div className="min-h-screen">
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        <h1 className="text-4xl font-bold text-gradient mb-12 text-center">
-          Apprendre l&apos;anglais
-        </h1>
-
-        <div className="glass-card p-8">
-          <div className="relative w-full h-[400px] mb-8 rounded-lg overflow-hidden bg-gray-100">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Image
-                src={currentWord.image}
-                alt={currentWord.word}
-                fill
-                className="object-contain"
-                priority
-              />
-            </div>
-          </div>
-
-          <div className="text-center">
-            <h2 className="text-3xl font-bold mb-2 text-gradient">
-              {currentWord.word}
-            </h2>
-            <p className="text-xl text-white/70 mb-4">
-              {currentWord.translation}
-            </p>
-            <p className="text-lg text-white/90 mb-8 italic">
-              {currentWord.example}
-            </p>
-
-            <div className="flex justify-center gap-4 mb-8">
-              <button
-                onClick={() => playPronunciation(currentWord.word)}
-                className="btn-primary"
-              >
-                <Play className="w-5 h-5" />
-                Écouter le mot
-              </button>
-              <button
-                onClick={() => playPronunciation(currentWord.example)}
-                className="btn-primary"
-              >
-                <Play className="w-5 h-5" />
-                Écouter la phrase
-              </button>
-            </div>
-
-            <div className="flex justify-between gap-4">
-              <button
-                onClick={previousWord}
-                className="btn-secondary flex-1"
-              >
-                Précédent
-              </button>
-              <button
-                onClick={nextWord}
-                className="btn-secondary flex-1"
-              >
-                Suivant
-              </button>
-            </div>
+    <div className="min-h-screen bg-background safe-area-inset">
+      <header className="bg-surface-dark border-b border-white/10 pt-safe-top">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex items-center justify-between">
+            <Link 
+              href="/"
+              className="flex items-center space-x-2 text-white hover:text-white/80 transition tap-target touch-manipulation"
+              aria-label="Retour à l'accueil"
+            >
+              <ArrowLeft className="w-6 h-6" />
+              <span className="text-lg font-medium">Retour</span>
+            </Link>
+            <h1 className="text-xl font-bold">Anglais</h1>
           </div>
         </div>
-      </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+        <div className="text-center">
+          <h2 className="text-2xl md:text-3xl font-bold mb-2">Apprends l'anglais</h2>
+          <p className="text-white/70">Découvre de nouveaux mots en anglais</p>
+        </div>
+
+        <div className="glass-card p-6 max-w-2xl mx-auto">
+          <div className="aspect-video relative rounded-lg overflow-hidden mb-6">
+            {currentWord.image && (
+              <Image
+                src={currentWord.image}
+                alt={currentWord.english}
+                fill
+                className="object-cover"
+              />
+            )}
+          </div>
+
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-2xl font-bold mb-1">{currentWord.english}</h3>
+                <p className="text-white/70">{currentWord.french}</p>
+              </div>
+              <button
+                onClick={() => playPronunciation(currentWord.english)}
+                className="p-3 hover:bg-white/10 rounded-full transition tap-target touch-manipulation"
+                aria-label="Écouter la prononciation"
+              >
+                <Volume2 className="w-6 h-6" />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between">
+              <Button
+                onClick={previousWord}
+                className="min-h-[44px] flex items-center space-x-2"
+              >
+                <ChevronLeft className="w-5 h-5" />
+                <span>Précédent</span>
+              </Button>
+
+              <button
+                onClick={toggleFavorite}
+                className={`p-3 rounded-full transition tap-target touch-manipulation ${
+                  favorites.includes(currentWord.english)
+                    ? 'text-yellow-400 hover:text-yellow-500'
+                    : 'text-white/70 hover:text-white'
+                }`}
+                aria-label={favorites.includes(currentWord.english) ? "Retirer des favoris" : "Ajouter aux favoris"}
+              >
+                <Star className="w-6 h-6" />
+              </button>
+
+              <Button
+                onClick={nextWord}
+                className="min-h-[44px] flex items-center space-x-2"
+              >
+                <span>Suivant</span>
+                <ChevronRight className="w-5 h-5" />
+              </Button>
+            </div>
+
+            {currentWord.example && (
+              <div className="p-4 bg-white/5 rounded-lg">
+                <p className="text-sm font-medium mb-1">Exemple :</p>
+                <p className="text-white/70 italic">{currentWord.example}</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {favorites.length > 0 && (
+          <div className="glass-card p-6">
+            <h3 className="text-lg font-medium mb-4">Mots favoris</h3>
+            <div className="flex flex-wrap gap-2">
+              {favorites.map(word => (
+                <div
+                  key={word}
+                  className="px-3 py-1 bg-white/10 rounded-full text-sm"
+                >
+                  {word}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </main>
     </div>
   );
 }

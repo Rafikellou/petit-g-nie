@@ -2,186 +2,176 @@
 
 import { FC } from 'react';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import Image from 'next/image';
+import { ArrowLeft, Trophy, Star, Clock, Target, Book, Award, TrendingUp } from 'lucide-react';
 import { useProgress } from '@/hooks/useProgress';
 import { badges, levels } from '@/data/achievements';
 import { characters } from '@/data/characters';
 import WeeklyProgressChart from '@/components/charts/WeeklyProgressChart';
 
 const weeklyData = [
-  { day: 'Lun', value: 45, label: 'Lundi : 45 minutes d\'apprentissage' },
-  { day: 'Mar', value: 40, label: 'Mardi : 40 minutes d\'apprentissage' },
-  { day: 'Mer', value: 60, label: 'Mercredi : 60 minutes d\'apprentissage' },
-  { day: 'Jeu', value: 35, label: 'Jeudi : 35 minutes d\'apprentissage' },
-  { day: 'Ven', value: 50, label: 'Vendredi : 50 minutes d\'apprentissage' },
-  { day: 'Sam', value: 45, label: 'Samedi : 45 minutes d\'apprentissage' },
-  { day: 'Dim', value: 30, label: 'Dimanche : 30 minutes d\'apprentissage' },
+  { day: 'Lun', value: 45, label: 'Lundi : 45 minutes' },
+  { day: 'Mar', value: 40, label: 'Mardi : 40 minutes' },
+  { day: 'Mer', value: 60, label: 'Mercredi : 60 minutes' },
+  { day: 'Jeu', value: 35, label: 'Jeudi : 35 minutes' },
+  { day: 'Ven', value: 50, label: 'Vendredi : 50 minutes' },
+  { day: 'Sam', value: 45, label: 'Samedi : 45 minutes' },
+  { day: 'Dim', value: 30, label: 'Dimanche : 30 minutes' },
 ];
 
 const ProgressPage: FC = () => {
   const { progress } = useProgress();
-  const currentLevel = levels.find(l => l.level === progress.currentLevel);
-  const nextLevel = levels.find(l => l.level === progress.currentLevel + 1);
+
+  const stats = [
+    {
+      label: 'Niveau actuel',
+      value: '12',
+      icon: Target,
+      color: 'blue'
+    },
+    {
+      label: 'Points XP',
+      value: '2,450',
+      icon: Star,
+      color: 'yellow'
+    },
+    {
+      label: 'Temps total',
+      value: '24h',
+      icon: Clock,
+      color: 'green'
+    },
+    {
+      label: 'Leçons complétées',
+      value: '45',
+      icon: Book,
+      color: 'purple'
+    }
+  ];
+
+  const achievements = [
+    {
+      title: 'Premier pas',
+      description: 'Commence ton voyage d\'apprentissage',
+      icon: '/badges/first-steps.png',
+      progress: 100,
+    },
+    {
+      title: 'Explorateur',
+      description: 'Découvre 5 nouveaux sujets',
+      icon: '/badges/explorer.png',
+      progress: 80,
+    },
+    {
+      title: 'Champion',
+      description: 'Obtiens 3 notes parfaites',
+      icon: '/badges/champion.png',
+      progress: 60,
+    }
+  ];
 
   return (
-    <main className="min-h-screen py-24">
-      {/* Effets d'arrière-plan */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-[radial-gradient(circle_at_center,rgba(0,242,195,0.03),transparent_70%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(108,99,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(108,99,255,0.05)_1px,transparent_1px)] bg-[size:14px_14px]" />
-      </div>
-
-      <div className="max-w-5xl mx-auto px-6 relative">
-        <Link
-          href="/"
-          className="inline-flex items-center text-white/70 hover:text-white mb-8 transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Retour à l'accueil
-        </Link>
-
-        <div className="grid gap-8">
-          {/* Graphique de progression hebdomadaire */}
-          <div className="glass-card p-8">
-            <h2 className="text-3xl font-bold mb-6">Progression</h2>
-            <WeeklyProgressChart data={weeklyData} />
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Niveau et XP */}
-            <div className="glass-card p-8">
-              <h2 className="text-3xl font-bold mb-6">
-                Niveau {currentLevel?.level}: {currentLevel?.name}
-              </h2>
-
-              {nextLevel && (
-                <div className="mb-8">
-                  <div className="flex justify-between text-sm text-white/50 mb-2">
-                    <span>{progress.currentXP} XP</span>
-                    <span>{nextLevel.requiredXP} XP</span>
-                  </div>
-                  <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full bg-gradient-to-r ${currentLevel?.gradient}`}
-                      style={{
-                        width: `${Math.min(
-                          ((progress.currentXP - currentLevel.requiredXP) /
-                            (nextLevel.requiredXP - currentLevel.requiredXP)) *
-                            100,
-                          100
-                        )}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white/5 rounded-lg p-4">
-                  <div className="text-3xl mb-2">📚</div>
-                  <div className="text-sm text-white/70">Histoires terminées</div>
-                  <div className="text-2xl font-bold">{progress.storiesCompleted}</div>
-                </div>
-                <div className="bg-white/5 rounded-lg p-4">
-                  <div className="text-3xl mb-2">🎯</div>
-                  <div className="text-sm text-white/70">Quiz complétés</div>
-                  <div className="text-2xl font-bold">
-                    {progress.quizResults.length}
-                  </div>
-                </div>
-                <div className="bg-white/5 rounded-lg p-4">
-                  <div className="text-3xl mb-2">⭐</div>
-                  <div className="text-sm text-white/70">Badges gagnés</div>
-                  <div className="text-2xl font-bold">
-                    {progress.earnedBadges.length}
-                  </div>
-                </div>
-                <div className="bg-white/5 rounded-lg p-4">
-                  <div className="text-3xl mb-2">⏱️</div>
-                  <div className="text-sm text-white/70">Temps d'écoute</div>
-                  <div className="text-2xl font-bold">
-                    {Math.floor(progress.totalListeningTime / 60)}min
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Badges */}
-            <div className="glass-card p-8">
-              <h2 className="text-3xl font-bold mb-6">Mes Badges</h2>
-              <div className="grid grid-cols-2 gap-4">
-                {badges.map(badge => {
-                  const isEarned = progress.earnedBadges.includes(badge.id);
-                  return (
-                    <div
-                      key={badge.id}
-                      className={`rounded-lg p-4 transition-all ${
-                        isEarned
-                          ? `bg-gradient-to-r ${badge.gradient}`
-                          : 'bg-white/5 opacity-50'
-                      }`}
-                    >
-                      <div className="text-3xl mb-2">{badge.icon}</div>
-                      <div className="font-bold mb-1">{badge.name}</div>
-                      <div className="text-sm text-white/70">
-                        {badge.description}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          {/* Progression par personnage */}
-          <div className="glass-card p-8">
-            <h2 className="text-3xl font-bold mb-6">Progression par personnage</h2>
-            <div className="grid gap-4 md:grid-cols-3">
-              {Object.values(characters).map(character => {
-                const charProgress = progress.characterProgress[character.id];
-                const completionPercentage = charProgress
-                  ? (charProgress.storiesCompleted / charProgress.totalStories) * 100
-                  : 0;
-
-                return (
-                  <div key={character.id} className="bg-white/5 rounded-lg p-4">
-                    <div className="flex items-center gap-3 mb-3">
-                      <div
-                        className={`w-12 h-12 rounded-full bg-gradient-to-r ${character.gradient} flex items-center justify-center`}
-                      >
-                        <span className={character.textColor}>
-                          {character.image ? (
-                            <img
-                              src={character.image}
-                              alt={character.name}
-                              className="w-8 h-8 object-cover rounded-full"
-                            />
-                          ) : (
-                            '👤'
-                          )}
-                        </span>
-                      </div>
-                      <div>
-                        <div className="font-bold">{character.name}</div>
-                        <div className="text-sm text-white/70">
-                          {charProgress?.storiesCompleted || 0}/{character.stories.length} histoires
-                        </div>
-                      </div>
-                    </div>
-                    <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full bg-gradient-to-r ${character.gradient}`}
-                        style={{ width: `${completionPercentage}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+    <div className="min-h-screen bg-background safe-area-inset">
+      <header className="bg-surface-dark border-b border-white/10 pt-safe-top">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex items-center justify-between">
+            <Link 
+              href="/"
+              className="flex items-center space-x-2 text-white hover:text-white/80 transition tap-target touch-manipulation"
+              aria-label="Retour à l'accueil"
+            >
+              <ArrowLeft className="w-6 h-6" />
+              <span className="text-lg font-medium">Retour</span>
+            </Link>
+            <h1 className="text-xl font-bold">Progression</h1>
           </div>
         </div>
-      </div>
-    </main>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+        {/* Statistiques générales */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {stats.map((stat, index) => {
+            const IconComponent = stat.icon;
+            return (
+              <div key={index} className="glass-card p-4 text-center">
+                <div className={`w-12 h-12 mx-auto mb-3 rounded-full bg-${stat.color}-500/20 flex items-center justify-center`}>
+                  <IconComponent className={`w-6 h-6 text-${stat.color}-400`} />
+                </div>
+                <div className="text-2xl font-bold mb-1">{stat.value}</div>
+                <div className="text-sm text-white/70">{stat.label}</div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Graphique de progression hebdomadaire */}
+        <div className="glass-card p-6 space-y-4">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-medium">Activité de la semaine</h2>
+            <div className="flex items-center space-x-2 text-sm text-white/60">
+              <Clock className="w-4 h-4" />
+              <span>305 minutes au total</span>
+            </div>
+          </div>
+          <div className="h-64">
+            <WeeklyProgressChart data={weeklyData} />
+          </div>
+        </div>
+
+        {/* Succès et badges */}
+        <div className="glass-card p-6">
+          <h2 className="text-lg font-medium mb-6">Succès débloqués</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            {achievements.map((achievement, index) => (
+              <div key={index} className="space-y-4">
+                <div className="relative w-20 h-20 mx-auto">
+                  <Image
+                    src={achievement.icon}
+                    alt={achievement.title}
+                    fill
+                    className="object-contain"
+                  />
+                </div>
+                <div className="text-center">
+                  <h3 className="font-medium mb-1">{achievement.title}</h3>
+                  <p className="text-sm text-white/70 mb-3">{achievement.description}</p>
+                  <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-primary"
+                      style={{ width: `${achievement.progress}%` }}
+                    />
+                  </div>
+                  <p className="text-sm text-white/60 mt-1">{achievement.progress}%</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Niveau et progression */}
+        <div className="glass-card p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-lg font-medium mb-1">Niveau 12</h2>
+              <p className="text-sm text-white/70">2,450 XP / 3,000 XP pour le niveau 13</p>
+            </div>
+            <div className="w-12 h-12 rounded-full bg-yellow-500/20 flex items-center justify-center">
+              <TrendingUp className="w-6 h-6 text-yellow-400" />
+            </div>
+          </div>
+          <div className="h-2 bg-white/10 rounded-full overflow-hidden mb-4">
+            <div
+              className="h-full bg-yellow-400"
+              style={{ width: '82%' }}
+            />
+          </div>
+          <p className="text-sm text-white/60 text-center">
+            Plus que 550 XP pour atteindre le niveau 13
+          </p>
+        </div>
+      </main>
+    </div>
   );
 };
 
