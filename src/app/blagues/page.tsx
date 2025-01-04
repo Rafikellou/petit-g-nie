@@ -99,7 +99,7 @@ export default function JokesPage() {
             </select>
             <select 
               value={filters.difficulty}
-              onChange={(e) => setFilters(prev => ({ ...prev, difficulty: e.target.value }))}
+              onChange={(e) => setFilters(prev => ({ ...prev, difficulty: e.target.value as JokeFilters['difficulty'] }))}
               className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white min-h-[44px]"
             >
               <option value="all">Toutes les difficultés</option>
