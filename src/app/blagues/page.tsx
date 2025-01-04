@@ -35,10 +35,11 @@ export default function JokesPage() {
         id: String(jokes.length + 1),
         question: newJoke.question,
         answer: newJoke.answer,
-        category: 'custom',
+        category: 'general',
         difficulty: 'medium',
-        ageRange: '7-12',
-        likes: 0
+        ageRange: { min: 7, max: 12 },
+        likes: 0,
+        isApproved: false
       };
 
       setJokes(prev => [joke, ...prev]);
