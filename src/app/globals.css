@@ -6,6 +6,7 @@
   --primary: 139, 92, 246; /* RGB values for #8B5CF6 */
   --primary-dark: 124, 58, 237; /* RGB values for #7C3AED */
   --background: #0F172A;
+  --surface-dark: #1A2234;
   --card-bg: rgba(255, 255, 255, 0.05);
   --card-border: rgba(255, 255, 255, 0.1);
   --sat: env(safe-area-inset-top);
@@ -103,15 +104,20 @@
     rounded-lg transition-all duration-200;
   }
 
-  /* Cartes avec effet glassmorphism */
   .glass-card {
-    @apply relative overflow-hidden rounded-xl sm:rounded-2xl
-    bg-[var(--card-bg)] backdrop-blur-xl
-    border border-[var(--card-border)]
-    transition-all duration-200
-    p-4 sm:p-8;
+    @apply bg-[var(--card-bg)] backdrop-blur-xl 
+    border border-[var(--card-border)] rounded-xl
+    shadow-lg;
   }
 
+  .safe-area-inset {
+    padding-top: var(--sat);
+    padding-bottom: var(--sab);
+    padding-left: var(--sal);
+    padding-right: var(--sar);
+  }
+
+  /* Cartes avec effet glassmorphism */
   .glass-card {
     background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
     backdrop-filter: blur(10px);
