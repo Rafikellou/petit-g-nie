@@ -112,7 +112,7 @@ export default function Listen() {
             </div>
 
             <AudioPlayer
-              src={selectedBook.audioUrl}
+              src={selectedBook.audio_url}
               onProgress={handleProgress}
               onPlayPause={togglePlayPause}
             />
