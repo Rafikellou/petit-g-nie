@@ -109,13 +109,13 @@ export default function JokesPage() {
             </select>
             <select 
               value={filters.ageRange}
-              onChange={(e) => setFilters(prev => ({ ...prev, ageRange: e.target.value }))}
+              onChange={(e) => setFilters(prev => ({ ...prev, ageRange: e.target.value as JokeFilters['ageRange'] }))}
               className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white min-h-[44px]"
             >
               <option value="all">Tous les âges</option>
-              <option value="5-7">5-7 ans</option>
-              <option value="7-12">7-12 ans</option>
-              <option value="12+">12+ ans</option>
+              <option value="6-8">6-8 ans</option>
+              <option value="9-11">9-11 ans</option>
+              <option value="12-14">12-14 ans</option>
             </select>
           </div>
         </div>
