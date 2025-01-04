@@ -67,7 +67,7 @@ const QuizSession: React.FC<QuizSessionProps> = ({ quiz, onComplete, onClose }) 
   const checkAnswer = () => {
     if (!selectedAnswer) return;
 
-    const isCorrect = selectedAnswer === currentQuestion.correctAnswer;
+    const isCorrect = parseInt(selectedAnswer, 10) === currentQuestion.correctAnswer;
     setIsAnswerChecked(true);
     setAnswers([...answers, isCorrect]);
 
