@@ -1,4 +1,4 @@
-export type StoryTheme = 
+export type StoryThemeType = 
   | 'adventure'
   | 'magic'
   | 'science'
@@ -7,8 +7,15 @@ export type StoryTheme =
   | 'fantasy'
   | 'animals';
 
+export interface StoryTheme {
+  id: StoryThemeType;
+  name: string;
+  description: string;
+  icon: string;
+}
+
 export interface StoryPrompt {
-  theme: StoryTheme;
+  theme: StoryThemeType;
   idea: string;
   mainCharacter: {
     name: string;
@@ -25,7 +32,7 @@ export interface StoryChallenge {
   id: string;
   title: string;
   description: string;
-  theme: StoryTheme;
+  theme: StoryThemeType;
   startDate: string;
   endDate: string;
   participants: number;
@@ -64,7 +71,7 @@ export interface Story {
   createdAt?: string;
   isPublic?: boolean;
   likes?: number;
-  theme?: StoryTheme;
+  theme?: StoryThemeType;
   character?: {
     id: string;
     name: string;
@@ -79,7 +86,7 @@ export interface GeneratedStory {
   id: string;
   title: string;
   content: string;
-  theme: StoryTheme;
+  theme: StoryThemeType;
   mainCharacter: string;
   readingTime: string;
   createdAt: string;
@@ -103,45 +110,45 @@ export interface StoryProgress {
   score?: number;
 }
 
-export const STORY_THEMES = [
+export const STORY_THEMES: StoryTheme[] = [
   {
-    id: 'adventure' as StoryTheme,
+    id: 'adventure' as StoryThemeType,
     name: 'Aventure',
     description: 'Des histoires palpitantes remplies d\'action',
     icon: '🗺️'
   },
   {
-    id: 'magic' as StoryTheme,
+    id: 'magic' as StoryThemeType,
     name: 'Magie',
     description: 'Un monde de sortilèges et de merveilles',
     icon: '✨'
   },
   {
-    id: 'science' as StoryTheme,
+    id: 'science' as StoryThemeType,
     name: 'Science',
     description: 'Découvre les mystères de la science',
     icon: '🔬'
   },
   {
-    id: 'nature' as StoryTheme,
+    id: 'nature' as StoryThemeType,
     name: 'Nature',
     description: 'Explore le monde naturel',
     icon: '🌿'
   },
   {
-    id: 'space' as StoryTheme,
+    id: 'space' as StoryThemeType,
     name: 'Espace',
     description: 'Voyage à travers les étoiles',
     icon: '🚀'
   },
   {
-    id: 'fantasy' as StoryTheme,
+    id: 'fantasy' as StoryThemeType,
     name: 'Fantaisie',
     description: 'Des mondes imaginaires extraordinaires',
     icon: '🐉'
   },
   {
-    id: 'animals' as StoryTheme,
+    id: 'animals' as StoryThemeType,
     name: 'Animaux',
     description: 'Des histoires avec nos amis les bêtes',
     icon: '🦁'

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Wand2, BookOpen, Save, Volume2, Share2, Sparkles, Trophy, ArrowLeft, Loader2 } from 'lucide-react';
-import { StoryTheme, StoryPrompt, GeneratedStory, STORY_THEMES, StoryChallenge, StoryIllustration, StoryCollaborator } from '@/types/story';
+import { StoryTheme, StoryThemeType, StoryPrompt, GeneratedStory, STORY_THEMES, StoryChallenge, StoryIllustration, StoryCollaborator } from '@/types/story';
 import confetti from 'canvas-confetti';
 import { StoryIllustrator } from '@/components/stories/StoryIllustrator';
 import { WeeklyChallenges } from '@/components/stories/WeeklyChallenges';
@@ -34,7 +34,7 @@ export default function CreateStoryPage() {
         id: Date.now().toString(),
         title: "L'aventure magique",
         content: "Il était une fois...",
-        theme: selectedTheme || 'adventure',
+        theme: selectedTheme?.id || 'adventure',
         mainCharacter: characterName,
         readingTime: formatDuration(5),
         createdAt: new Date().toISOString(),
