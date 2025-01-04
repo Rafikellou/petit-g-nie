@@ -18,6 +18,7 @@ export interface Audiobook {
   duration: number
   age_range: string[]
   coverImage: string
+  chapters: number
 }
 
 export const quizService = {
