@@ -17,6 +17,7 @@ export interface Audiobook {
   audio_url: string
   duration: number
   age_range: string[]
+  coverImage: string
 }
 
 export const quizService = {
