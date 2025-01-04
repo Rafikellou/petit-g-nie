@@ -33,7 +33,7 @@ const CharactersPage: FC = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {characters.map((character) => (
+          {Object.values(characters).map((character) => (
             <Link
               key={character.id}
               href={`/stories/${character.id}`}
