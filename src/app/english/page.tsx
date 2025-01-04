@@ -25,25 +25,72 @@ export default function EnglishLearning() {
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [synth, setSynth] = useState<SpeechSynthesis | null>(null);
   const [favorites, setFavorites] = useState<FavoriteWord[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const currentWord = commonEnglishWords[currentWordIndex] as EnglishWord;
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setSynth(window.speechSynthesis);
-      const savedFavorites = localStorage.getItem('englishFavorites');
-      if (savedFavorites) {
-        setFavorites(JSON.parse(savedFavorites));
+    try {
+      if (typeof window !== 'undefined') {
+        // Vérifier si la synthèse vocale est disponible
+        if ('speechSynthesis' in window) {
+          setSynth(window.speechSynthesis);
+        } else {
+          setError('La synthèse vocale n\'est pas disponible sur votre navigateur');
+        }
+
+        // Vérifier si localStorage est disponible
+        if (typeof localStorage !== 'undefined') {
+          try {
+            const savedFavorites = localStorage.getItem('englishFavorites');
+            if (savedFavorites) {
+              setFavorites(JSON.parse(savedFavorites));
+            }
+          } catch (e) {
+            console.error('Erreur lors de la lecture des favoris:', e);
+            setError('Impossible de charger vos favoris');
+          }
+        }
       }
+    } catch (e) {
+      console.error('Erreur lors de l\'initialisation:', e);
+      setError('Une erreur est survenue lors de l\'initialisation');
     }
   }, []);
 
+  const saveFavorites = (newFavorites: FavoriteWord[]) => {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('englishFavorites', JSON.stringify(newFavorites));
+      }
+    } catch (e) {
+      console.error('Erreur lors de la sauvegarde des favoris:', e);
+      setError('Impossible de sauvegarder vos favoris');
+    }
+  };
+
   const playPronunciation = (text: string) => {
-    if (synth) {
-      synth.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'en-US';
-      utterance.rate = 0.8;
-      synth.speak(utterance);
+    try {
+      if (synth) {
+        // Arrêter toute prononciation en cours
+        synth.cancel();
+
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.8;
+
+        // Gérer les erreurs de prononciation
+        utterance.onerror = (event) => {
+          console.error('Erreur de prononciation:', event);
+          setError('Impossible de prononcer ce mot');
+        };
+
+        synth.speak(utterance);
+      } else {
+        setError('La synthèse vocale n\'est pas disponible');
+      }
+    } catch (e) {
+      console.error('Erreur lors de la prononciation:', e);
+      setError('Une erreur est survenue lors de la prononciation');
     }
   };
 
@@ -70,7 +117,7 @@ export default function EnglishLearning() {
         }];
     
     setFavorites(newFavorites);
-    localStorage.setItem('englishFavorites', JSON.stringify(newFavorites));
+    saveFavorites(newFavorites);
   };
 
   return (
@@ -176,6 +223,12 @@ export default function EnglishLearning() {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+        {error && (
+          <div className="glass-card p-6">
+            <h3 className="text-lg font-medium mb-4">Erreur</h3>
+            <p className="text-white/70">{error}</p>
           </div>
         )}
       </main>

@@ -73,21 +73,22 @@ export const AchievementsProvider: FC<AchievementsProviderProps> = ({
           ...achievement,
           unlockedAt: new Date().toISOString(),
         };
-        showBadgeUnlock(updatedAchievement);
+        showBadgeUnlock(achievementId);
         return updatedAchievement;
       }
       return achievement;
     }));
   };
 
-  const showBadgeUnlock = useCallback((badgeId: string) => {
-    const badge = badges.find((b) => b.id === badgeId);
+  const showBadgeUnlock = useCallback((achievementId: string) => {
+    const achievement = achievements.find(a => a.id === achievementId);
+    if (!achievement) return;
+
+    const badge = badges.find((b) => b.id === achievementId);
     if (badge) {
       setUnlockedBadge(badge);
     }
-  }, []);
 
-  const showBadgeUnlockToast = (achievement: Achievement) => {
     toast.custom((t) => (
       <div className={`${
         t.visible ? 'animate-enter' : 'animate-leave'
@@ -117,7 +118,7 @@ export const AchievementsProvider: FC<AchievementsProviderProps> = ({
         </div>
       </div>
     ));
-  };
+  }, [achievements]);
 
   return (
     <AchievementsContext.Provider value={{ achievements, unlockAchievement, showBadgeUnlock }}>

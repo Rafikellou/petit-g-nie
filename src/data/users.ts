@@ -17,11 +17,19 @@ export interface Parent {
 
 export interface Teacher {
   id: string;
-  name: string;
-  email: string;
-  school: string;
-  class: string;
-  studentIds: string[];
+  class: {
+    name: string;
+    students: {
+      id: string;
+      name: string;
+      class: string;
+      avatar?: string;
+      progress: StudentProgress;
+    }[];
+  };
+  stats: {
+    averageClassProgress: number;
+  };
 }
 
 export interface StudentProgress {
@@ -50,9 +58,9 @@ export interface StudentProgress {
       completed: boolean;
     };
   };
-  level: number;
-  xp: number;
-  badges: string[];
+  level?: number;
+  xp?: number;
+  badges?: string[];
 }
 
 // Données de test
@@ -412,16 +420,66 @@ export const mockParents: Record<string, Parent> = {
   }
 };
 
-export const mockTeachers: Record<string, Teacher> = {
-  'teacher1': {
+export const mockTeachers: Teacher[] = [
+  {
     id: 'teacher1',
-    name: 'Mme Dubois',
-    email: 'dubois@ecole.fr',
-    school: 'École La Salle',
-    class: 'CE2-CM1',
-    studentIds: ['student1', 'student2', 'student3', 'student4', 'student5', 'student6', 'student7', 'student8', 'student9', 'student10', 'student11', 'student12', 'student13', 'student14', 'student15', 'student16', 'student17', 'student18', 'student19', 'student20', 'student21', 'student22', 'student23', 'student24', 'student25']
+    class: {
+      name: 'CE1',
+      students: [
+        {
+          id: 'student1',
+          name: 'Alice Dupont',
+          class: 'CE1',
+          avatar: '/avatars/student1.png',
+          progress: {
+            studentId: 'student1',
+            storiesProgress: {
+              character1: {
+                story1: {
+                  completed: true,
+                  lastAccessed: '2024-01-01',
+                  score: 85
+                }
+              }
+            },
+            quizResults: {
+              quiz1: {
+                completed: true,
+                score: 90,
+                date: '2024-01-01'
+              }
+            },
+            trainingSessions: {
+              session1: {
+                date: '2024-01-01',
+                duration: 30,
+                type: 'pronunciation',
+                completed: true
+              }
+            },
+            level: 2,
+            badges: ['first_story', 'quiz_genius']
+          }
+        },
+        {
+          id: 'student2',
+          name: 'Lucas Martin',
+          class: 'CE1',
+          progress: {
+            studentId: 'student2',
+            storiesProgress: {},
+            quizResults: {},
+            trainingSessions: {},
+            level: 1
+          }
+        }
+      ]
+    },
+    stats: {
+      averageClassProgress: 45
+    }
   }
-};
+];
 
 export const mockProgress: Record<string, StudentProgress> = {
   'student1': {

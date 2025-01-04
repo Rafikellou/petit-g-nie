@@ -31,6 +31,8 @@ export default function Listen() {
   const [selectedBook, setSelectedBook] = useState<Audiobook | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [progress, setProgress] = useState<ListeningProgress | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [stats, setStats] = useState<ListeningStats>({
     totalTime: 0,
     booksCompleted: 0,
@@ -39,21 +41,71 @@ export default function Listen() {
   })
 
   useEffect(() => {
-    audiobookService.getAudiobooks().then(setAudiobooks)
-  }, [])
+    const fetchAudiobooks = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const books = await audiobookService.getAudiobooks();
+        setAudiobooks(books);
+      } catch (e) {
+        console.error('Erreur lors du chargement des livres audio:', e);
+        setError('Impossible de charger les livres audio');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleProgress = (currentProgress: number) => {
+    fetchAudiobooks();
+  }, []);
+
+  const handleProgress = async (currentProgress: number) => {
     if (selectedBook && progress) {
-      const updatedProgress: ListeningProgress = {
-        ...progress,
-        progress: currentProgress,
-        timestamp: new Date().toISOString(),
-        completed: currentProgress >= 0.99
-      };
-      setProgress(updatedProgress);
-      // Sauvegarder la progression
-      // audiobookService.saveProgress(updatedProgress)
+      try {
+        const updatedProgress: ListeningProgress = {
+          ...progress,
+          progress: currentProgress,
+          timestamp: new Date().toISOString(),
+          completed: currentProgress >= 0.99
+        };
+
+        setProgress(updatedProgress);
+
+        // Sauvegarder la progression
+        await audiobookService.saveProgress(
+          progress.userId,
+          selectedBook.id,
+          currentProgress,
+          0 // lastPosition, à implémenter si nécessaire
+        );
+      } catch (e) {
+        console.error('Erreur lors de la sauvegarde de la progression:', e);
+        setError('Impossible de sauvegarder votre progression');
+      }
     }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-blue-900 to-blue-950 text-white p-8">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-white"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-blue-900 to-blue-950 text-white p-8">
+        <div className="glass-card p-6">
+          <h3 className="text-lg font-medium mb-4">Erreur</h3>
+          <p className="text-white/70">{error}</p>
+          <Button onClick={() => window.location.reload()} className="mt-4">
+            Réessayer
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   const togglePlayPause = () => {

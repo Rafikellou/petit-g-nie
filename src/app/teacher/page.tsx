@@ -5,13 +5,29 @@ import Link from 'next/link';
 import { ArrowLeft, Users, BookOpen, Award, TrendingUp, Search, Loader2 } from 'lucide-react';
 import { mockTeachers, mockStudents, mockProgress } from '@/data/users';
 import type { StudentProgress as StudentProgressType } from '@/data/users';
-import type { Teacher } from '@/types/teacher';
 import { StudentProgressComponent } from '@/components/teacher/StudentProgress';
 import { Toaster } from 'react-hot-toast';
 import { Button } from '@/components/ui/ios-button';
 
 // Simuler un enseignant connecté
 const LOGGED_IN_TEACHER_ID = 'teacher1';
+
+interface TeacherType {
+  id: string;
+  class: {
+    name: string;
+    students: {
+      id: string;
+      name: string;
+      class: string;
+      avatar?: string;
+      progress: StudentProgressType;
+    }[];
+  };
+  stats: {
+    averageClassProgress: number;
+  };
+}
 
 // Fonction pour calculer le pourcentage global de progression
 const calculateOverallProgress = (progress: StudentProgressType) => {
@@ -31,24 +47,8 @@ const calculateOverallProgress = (progress: StudentProgressType) => {
   return totalStories > 0 ? (storiesCompleted / totalStories) * 100 : 0;
 };
 
-interface Teacher {
-  id: string;
-  class: {
-    name: string;
-    students: {
-      id: string;
-      name: string;
-      class: string;
-      progress: StudentProgressType;
-    }[];
-  };
-  stats: {
-    averageClassProgress: number;
-  };
-}
-
 const TeacherDashboard: FC = () => {
-  const [teacher, setTeacher] = useState<Teacher | null>(null);
+  const [teacher, setTeacher] = useState<TeacherType | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
@@ -61,7 +61,7 @@ const TeacherDashboard: FC = () => {
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         // Trouver l'enseignant connecté
-        const foundTeacher = mockTeachers.find(t => t.id === LOGGED_IN_TEACHER_ID);
+        const foundTeacher = mockTeachers.find((t: TeacherType) => t.id === LOGGED_IN_TEACHER_ID);
         if (foundTeacher) {
           setTeacher(foundTeacher);
         }
