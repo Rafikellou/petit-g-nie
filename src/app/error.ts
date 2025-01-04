@@ -1,6 +1,7 @@
 export interface AppError extends Error {
   digest?: string;
   message: string;
+  code?: string;
 }
 
 export interface ErrorLog {
