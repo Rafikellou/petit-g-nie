@@ -24,6 +24,14 @@ interface Progress {
     date: string;
     minutes: number;
   }[];
+  trainingSessions: {
+    [sessionId: string]: {
+      completed: boolean;
+      score: number;
+      date: string;
+      duration: number;
+    };
+  };
 }
 
 const DEFAULT_PROGRESS: Progress = {
@@ -37,6 +45,7 @@ const DEFAULT_PROGRESS: Progress = {
   currentLevel: 1,
   currentXP: 0,
   dailyLearningTime: [],
+  trainingSessions: {},
 };
 
 export const useProgress = () => {

@@ -82,29 +82,22 @@ const TeacherDashboard: FC = () => {
 
   return (
     <div className="min-h-screen bg-background safe-area-inset">
-      <header className="bg-surface-dark border-b border-white/10 pt-safe-top">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Link 
-              href="/"
-              className="flex items-center space-x-2 text-white hover:text-white/80 transition tap-target touch-manipulation"
-              aria-label="Retour à l'accueil"
-            >
-              <ArrowLeft className="w-6 h-6" />
-              <span className="text-lg font-medium">Retour</span>
-            </Link>
-            <h1 className="text-xl font-bold">Espace Enseignant</h1>
-          </div>
+      <Toaster />
+      {/* En-tête */}
+      <header className="bg-gradient-to-b from-primary to-primary/80 text-white p-6">
+        <div className="flex items-center justify-between mb-8">
+          <Link href="/" className="flex items-center space-x-2">
+            <ArrowLeft className="w-6 h-6" />
+            <span>Retour</span>
+          </Link>
         </div>
-      </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        {/* Statistiques générales */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="glass-card p-6">
-            <div className="flex items-center space-x-4">
-              <div className="rounded-full bg-primary/20 p-3">
-                <Users className="w-6 h-6 text-primary" />
+        {/* Statistiques rapides */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="glass-card p-4">
+            <div className="flex items-start justify-between">
+              <div className="p-2 bg-white/10 rounded-lg">
+                <Users className="w-6 h-6" />
               </div>
               <div>
                 <p className="text-sm text-white/70">Élèves</p>
@@ -112,86 +105,72 @@ const TeacherDashboard: FC = () => {
               </div>
             </div>
           </div>
-          
-          <div className="glass-card p-6">
-            <div className="flex items-center space-x-4">
-              <div className="rounded-full bg-green-500/20 p-3">
-                <BookOpen className="w-6 h-6 text-green-400" />
+
+          {/* Autres statistiques */}
+          <div className="glass-card p-4">
+            <div className="flex items-start justify-between">
+              <div className="p-2 bg-white/10 rounded-lg">
+                <TrendingUp className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-sm text-white/70">Histoires lues</p>
-                <p className="text-2xl font-bold">24</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="glass-card p-6">
-            <div className="flex items-center space-x-4">
-              <div className="rounded-full bg-yellow-500/20 p-3">
-                <Award className="w-6 h-6 text-yellow-400" />
-              </div>
-              <div>
-                <p className="text-sm text-white/70">Points moyens</p>
-                <p className="text-2xl font-bold">850</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="glass-card p-6">
-            <div className="flex items-center space-x-4">
-              <div className="rounded-full bg-purple-500/20 p-3">
-                <TrendingUp className="w-6 h-6 text-purple-400" />
-              </div>
-              <div>
-                <p className="text-sm text-white/70">Progression</p>
-                <p className="text-2xl font-bold">+12%</p>
+                <p className="text-sm text-white/70">Progression moyenne</p>
+                <p className="text-2xl font-bold">{teacher.stats.averageClassProgress}%</p>
               </div>
             </div>
           </div>
         </div>
+      </header>
 
+      {/* Contenu principal */}
+      <main className="p-6">
         {/* Barre de recherche */}
-        <div className="relative mb-8">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-white/40" />
-          </div>
+        <div className="relative mb-6">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
             type="text"
             placeholder="Rechercher un élève..."
-            className="block w-full pl-10 pr-3 py-3 bg-surface-dark border border-white/10 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent min-h-[44px]"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary"
           />
         </div>
 
         {/* Liste des élèves */}
         <div className="space-y-4">
-          {filteredStudents.map((studentId: string) => {
-            const student = mockStudents[studentId];
-            const progress = mockProgress[studentId];
-            if (!student) return null;
-
+          {filteredStudents.map((student) => {
+            const progress = student.progress;
             const overallProgress = calculateOverallProgress(progress);
 
             return (
-              <div 
-                key={studentId}
-                className="glass-card p-6 hover:bg-white/5 transition cursor-pointer tap-target touch-manipulation"
-                onClick={() => setSelectedStudentId(studentId)}
+              <div
+                key={student.id}
+                className="glass-card p-4 hover:bg-white/10 transition cursor-pointer"
+                onClick={() => setSelectedStudentId(student.id)}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
-                      <span className="text-lg font-bold">{student.name[0]}</span>
-                    </div>
+                    {student.avatar ? (
+                      <img
+                        src={student.avatar}
+                        alt={student.name}
+                        className="w-12 h-12 rounded-full"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+                        <span className="text-xl font-bold text-primary">
+                          {student.name.charAt(0)}
+                        </span>
+                      </div>
+                    )}
                     <div>
-                      <h3 className="text-lg font-medium">{student.name}</h3>
-                      <p className="text-sm text-white/70">{student.class}</p>
+                      <h3 className="font-medium">{student.name}</h3>
+                      <p className="text-sm text-gray-400">
+                        Progression: {Math.round(overallProgress)}%
+                      </p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm text-white/70">Progression</p>
-                    <p className="text-lg font-bold">{overallProgress}%</p>
+                  <div className="flex items-center space-x-2">
+                    {/* Badges et autres indicateurs */}
                   </div>
                 </div>
               </div>
@@ -203,13 +182,11 @@ const TeacherDashboard: FC = () => {
       {/* Modal de progression détaillée */}
       {selectedStudentId && (
         <StudentProgressComponent
-          student={mockStudents[selectedStudentId]}
-          progress={mockProgress[selectedStudentId]}
+          student={teacher.class.students.find(s => s.id === selectedStudentId)!}
+          progress={teacher.class.students.find(s => s.id === selectedStudentId)!.progress}
           onClose={() => setSelectedStudentId(null)}
         />
       )}
-
-      <Toaster />
     </div>
   );
 };

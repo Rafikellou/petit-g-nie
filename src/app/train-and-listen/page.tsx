@@ -31,46 +31,38 @@ export default function TrainAndListen() {
   const handleQuizComplete = (score: number) => {
     setQuizCompleted(true)
     setShowQuiz(false)
-    
-    if (score >= 5) {
-      // L'enfant peut continuer l'histoire
-      alert('Bravo ! Tu peux continuer l\'histoire !')
-    } else {
-      // L'enfant doit refaire un quiz
-      alert('Continue à t\'entraîner ! Essaie un nouveau quiz.')
-      quizService.getQuizQuestions('CP').then(setQuestions)
-      setShowQuiz(true)
-      setQuizCompleted(false)
-    }
+    // Ici, on pourrait sauvegarder le score
+    console.log('Quiz completed with score:', score)
   }
 
   if (!audiobook) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-4">Chargement...</h1>
-      </div>
-    )
+    return <div>Loading...</div>
   }
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-8">S'entraîner et Écouter</h1>
-
-      {showQuiz ? (
-        <div className="max-w-2xl mx-auto">
-          <h2 className="text-xl font-semibold mb-4">
-            C'est l'heure du quiz ! Montre-nous ce que tu as appris.
-          </h2>
-          <Quiz questions={questions} onComplete={handleQuizComplete} />
-        </div>
-      ) : (
-        <div className="max-w-2xl mx-auto">
+      <h1 className="text-3xl font-bold mb-6">{audiobook.title}</h1>
+      
+      <div className="mb-8">
+        <p className="text-gray-600 mb-4">{audiobook.description}</p>
+        
+        {/* Audio Player */}
+        <div className="bg-white rounded-lg shadow-lg p-6">
           <AudioPlayer
             src={audiobook.audio_url}
-            onTimeUpdate={handleProgress}
-            onComplete={() => {}}
+            onProgress={handleProgress}
+            onPlayPause={() => {}}
           />
-          <p className="mt-4 text-gray-600">{audiobook.description}</p>
+        </div>
+      </div>
+
+      {/* Quiz Section */}
+      {showQuiz && !quizCompleted && (
+        <div className="mt-8">
+          <Quiz
+            questions={questions}
+            onComplete={handleQuizComplete}
+          />
         </div>
       )}
     </div>

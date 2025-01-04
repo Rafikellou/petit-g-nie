@@ -34,246 +34,231 @@ interface TrainingResult {
     actual: string;
     timestamp: number;
   }[];
-  feedback?: string;
-  completed: boolean;
 }
 
 const trainingSessions: TrainingSession[] = [
   {
     id: '1',
     title: 'Les sons de base',
-    description: 'Apprenez à reconnaître et à prononcer les sons de base du français.',
-    audioUrl: '/audio/sons-base.mp3',
-    duration: '5 min',
+    description: 'Apprenez les sons fondamentaux du français',
+    audioUrl: '/audio/training/basic-sounds.mp3',
+    duration: '5:00',
     level: 'débutant',
-    transcription: 'A comme dans "papa", E comme dans "bébé"...',
+    transcription: 'Bonjour, aujourd\'hui nous allons apprendre...',
     category: 'prononciation',
     objectives: [
-      'Reconnaître les voyelles de base',
-      'Prononcer correctement les sons simples'
+      'Maîtriser les voyelles de base',
+      'Pratiquer les consonnes simples',
     ],
-    difficulty: 1
+    difficulty: 1,
   },
-  {
-    id: '2',
-    title: 'Les liaisons',
-    description: 'Découvrez comment lier les mots en français pour une prononciation plus naturelle.',
-    audioUrl: '/audio/liaisons.mp3',
-    duration: '8 min',
-    level: 'intermédiaire',
-    transcription: 'Les liaisons sont importantes en français...',
-    category: 'prononciation',
-    prerequisites: ['Les sons de base'],
-    objectives: [
-      'Comprendre les règles de liaison',
-      'Pratiquer les liaisons courantes'
-    ],
-    difficulty: 3
-  },
-  {
-    id: '3',
-    title: 'Les expressions courantes',
-    description: 'Pratiquez les expressions les plus utilisées en français.',
-    audioUrl: '/audio/expressions.mp3',
-    duration: '10 min',
-    level: 'avancé',
-    transcription: 'Bonjour ! Comment allez-vous ?...',
-    category: 'conversation',
-    prerequisites: ['Les liaisons'],
-    objectives: [
-      'Mémoriser les expressions courantes',
-      'Utiliser les expressions dans un contexte'
-    ],
-    difficulty: 4,
-    nextSessions: ['4', '5']
-  }
+  // ... autres sessions
 ];
 
 export default function TrainPage() {
-  const [selectedSession, setSelectedSession] = useState<TrainingSession | null>(null);
-  const [currentResult, setCurrentResult] = useState<TrainingResult | null>(null);
+  const { progress, updateProgress } = useProgress();
+  const [currentSession, setCurrentSession] = useState<TrainingSession | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isMuted, setIsMuted] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
+  const [isMuted, setIsMuted] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const { progress, updateProgress } = useProgress();
-  const { showBadgeUnlock } = useAchievements();
+  const { unlockAchievement } = useAchievements();
 
-  const handlePlayPause = () => {
-    setIsPlaying(!isPlaying);
-  };
-
-  const handleMute = () => {
-    setIsMuted(!isMuted);
-  };
-
-  const handleSeek = (value: number) => {
-    setCurrentTime(value);
-  };
-
-  const handleRecord = () => {
-    setIsRecording(!isRecording);
-  };
+  useEffect(() => {
+    if (currentSession) {
+      const audio = new Audio(currentSession.audioUrl);
+      setAudioElement(audio);
+      
+      audio.addEventListener('loadedmetadata', () => {
+        setDuration(audio.duration);
+      });
+      
+      audio.addEventListener('timeupdate', () => {
+        setCurrentTime(audio.currentTime);
+      });
+      
+      audio.addEventListener('ended', () => {
+        setIsPlaying(false);
+        handleSessionComplete();
+      });
+      
+      return () => {
+        audio.pause();
+        audio.remove();
+      };
+    }
+  }, [currentSession]);
 
   const handleSessionComplete = () => {
-    if (selectedSession) {
+    if (currentSession) {
+      const sessionResult = {
+        completed: true,
+        score: 85, // À remplacer par le vrai score
+        date: new Date().toISOString(),
+        duration: Math.floor(duration),
+      };
+
       updateProgress({
-        trainingSessions: [
+        trainingSessions: {
           ...progress.trainingSessions,
-          {
-            sessionId: selectedSession.id,
-            completedAt: new Date().toISOString()
-          }
-        ]
+          [currentSession.id]: sessionResult,
+        },
       });
 
-      const completedSessions = progress.trainingSessions.length + 1;
-      if (completedSessions >= 5) {
-        showBadgeUnlock('training_master');
+      // Débloquer des succès si nécessaire
+      if (Object.keys(progress.trainingSessions).length === 1) {
+        unlockAchievement('first_training');
       }
     }
   };
 
+  const togglePlay = () => {
+    if (!audioElement) return;
+    
+    if (isPlaying) {
+      audioElement.pause();
+    } else {
+      audioElement.play();
+    }
+    setIsPlaying(!isPlaying);
+  };
+
+  const toggleMute = () => {
+    if (!audioElement) return;
+    audioElement.muted = !isMuted;
+    setIsMuted(!isMuted);
+  };
+
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!audioElement) return;
+    const time = parseFloat(e.target.value);
+    audioElement.currentTime = time;
+    setCurrentTime(time);
+  };
+
+  const skipBackward = () => {
+    if (!audioElement) return;
+    audioElement.currentTime = Math.max(0, currentTime - 10);
+  };
+
+  const skipForward = () => {
+    if (!audioElement) return;
+    audioElement.currentTime = Math.min(duration, currentTime + 10);
+  };
+
+  const toggleRecording = () => {
+    setIsRecording(!isRecording);
+    // Implémenter la logique d'enregistrement
+  };
+
   return (
-    <div className="min-h-screen bg-background safe-area-inset">
-      <header className="bg-surface-dark border-b border-white/10 pt-safe-top">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Link 
-              href="/"
-              className="flex items-center space-x-2 text-white hover:text-white/80 transition tap-target touch-manipulation"
-              aria-label="Retour à l'accueil"
-            >
-              <ArrowLeft className="w-6 h-6" />
-              <span className="text-lg font-medium">Retour</span>
-            </Link>
-            <h1 className="text-xl font-bold">Entraînement</h1>
-          </div>
-        </div>
+    <div className="min-h-screen bg-background">
+      <header className="bg-surface-dark border-b border-white/10 p-4">
+        <Link href="/" className="flex items-center space-x-2 text-white">
+          <ArrowLeft className="w-6 h-6" />
+          <span>Retour</span>
+        </Link>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
-        {selectedSession ? (
-          <div className="space-y-6">
-            {/* Session en cours */}
-            <div className="glass-card p-6 space-y-6">
-              <div>
-                <h2 className="text-2xl font-bold mb-2">{selectedSession.title}</h2>
-                <p className="text-white/70">{selectedSession.description}</p>
-              </div>
+      <main className="container mx-auto px-4 py-8">
+        <h1 className="text-2xl font-bold mb-8">Entraînement à la prononciation</h1>
 
-              {/* Contrôles audio */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-center space-x-6">
+        {/* Liste des sessions */}
+        <div className="grid gap-6">
+          {trainingSessions.map((session) => {
+            const isCompleted = progress.trainingSessions[session.id]?.completed;
+            
+            return (
+              <div
+                key={session.id}
+                className={`p-6 rounded-lg ${
+                  currentSession?.id === session.id
+                    ? 'bg-primary/20 border-primary'
+                    : 'bg-surface-dark'
+                } border border-white/10 cursor-pointer transition hover:bg-white/5`}
+                onClick={() => setCurrentSession(session)}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold">{session.title}</h3>
+                    <p className="text-sm text-white/70">{session.description}</p>
+                    <div className="flex items-center gap-4 mt-2">
+                      <span className="text-sm text-white/50">{session.duration}</span>
+                      <span className={`text-sm ${
+                        session.level === 'débutant' ? 'text-green-400' :
+                        session.level === 'intermédiaire' ? 'text-yellow-400' :
+                        'text-red-400'
+                      }`}>
+                        {session.level}
+                      </span>
+                    </div>
+                  </div>
+                  {isCompleted && (
+                    <div className="text-green-400">
+                      ✓ Complété
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Lecteur audio */}
+        {currentSession && (
+          <div className="fixed bottom-0 left-0 right-0 bg-surface-dark border-t border-white/10 p-4">
+            <div className="container mx-auto">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="font-medium">{currentSession.title}</h3>
+                  <p className="text-sm text-white/70">{formatTime(currentTime)} / {formatTime(duration)}</p>
+                </div>
+                <div className="flex items-center space-x-4">
                   <button
-                    onClick={() => handleSeek(Math.max(0, currentTime - 10))}
-                    className="p-2 hover:bg-white/5 rounded-full transition tap-target touch-manipulation"
+                    onClick={toggleMute}
+                    className="p-2 hover:bg-white/10 rounded-full transition"
+                  >
+                    {isMuted ? <VolumeX className="w-6 h-6" /> : <Volume2 className="w-6 h-6" />}
+                  </button>
+                  <button
+                    onClick={skipBackward}
+                    className="p-2 hover:bg-white/10 rounded-full transition"
                   >
                     <SkipBack className="w-6 h-6" />
                   </button>
                   <button
-                    onClick={handlePlayPause}
-                    className="w-16 h-16 rounded-full bg-primary flex items-center justify-center hover:bg-primary/90 transition tap-target touch-manipulation"
+                    onClick={togglePlay}
+                    className="p-3 bg-primary rounded-full hover:bg-primary/80 transition"
                   >
-                    {isPlaying ? (
-                      <Pause className="w-8 h-8 text-white" />
-                    ) : (
-                      <Play className="w-8 h-8 text-white" />
-                    )}
+                    {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
                   </button>
                   <button
-                    onClick={() => handleSeek(Math.min(duration, currentTime + 10))}
-                    className="p-2 hover:bg-white/5 rounded-full transition tap-target touch-manipulation"
+                    onClick={skipForward}
+                    className="p-2 hover:bg-white/10 rounded-full transition"
                   >
                     <SkipForward className="w-6 h-6" />
                   </button>
-                </div>
-
-                {/* Barre de progression */}
-                <div className="space-y-2">
-                  <input
-                    type="range"
-                    min={0}
-                    max={duration}
-                    value={currentTime}
-                    onChange={(e) => handleSeek(Number(e.target.value))}
-                    className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer"
-                  />
-                  <div className="flex justify-between text-sm text-white/60">
-                    <span>{formatTime(currentTime)}</span>
-                    <span>{formatTime(duration)}</span>
-                  </div>
-                </div>
-
-                {/* Volume et enregistrement */}
-                <div className="flex items-center justify-between">
                   <button
-                    onClick={handleMute}
-                    className="p-2 hover:bg-white/5 rounded-full transition tap-target touch-manipulation"
-                  >
-                    {isMuted ? (
-                      <VolumeX className="w-6 h-6" />
-                    ) : (
-                      <Volume2 className="w-6 h-6" />
-                    )}
-                  </button>
-                  <button
-                    onClick={handleRecord}
-                    className={`p-3 rounded-full transition tap-target touch-manipulation ${
-                      isRecording ? 'bg-red-500' : 'bg-white/10 hover:bg-white/20'
+                    onClick={toggleRecording}
+                    className={`p-2 rounded-full transition ${
+                      isRecording ? 'bg-red-500 hover:bg-red-600' : 'hover:bg-white/10'
                     }`}
                   >
                     <Mic className="w-6 h-6" />
                   </button>
                 </div>
               </div>
-
-              {/* Transcription */}
-              <div className="p-4 bg-white/5 rounded-lg">
-                <h3 className="text-sm font-medium text-white/60 mb-2">Transcription</h3>
-                <p className="text-white/90">{selectedSession.transcription}</p>
-              </div>
-
-              <Button
-                onClick={() => setSelectedSession(null)}
+              <input
+                type="range"
+                min="0"
+                max={duration}
+                value={currentTime}
+                onChange={handleSeek}
                 className="w-full"
-              >
-                Terminer la session
-              </Button>
+              />
             </div>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {/* Liste des sessions */}
-            {trainingSessions.map((session) => (
-              <div
-                key={session.id}
-                className="glass-card p-4 hover:bg-white/5 transition tap-target touch-manipulation"
-                onClick={() => setSelectedSession(session)}
-              >
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                    <Play className="w-6 h-6 text-primary" />
-                  </div>
-                  <div className="flex-grow">
-                    <h2 className="text-lg font-medium mb-1">{session.title}</h2>
-                    <p className="text-white/70 text-sm mb-2">{session.description}</p>
-                    <div className="flex items-center gap-4 text-sm text-white/60">
-                      <span>{session.duration}</span>
-                      <span className={`
-                        px-2 py-1 rounded-full text-xs
-                        ${session.level === 'débutant' ? 'bg-green-500/20 text-green-400' : ''}
-                        ${session.level === 'intermédiaire' ? 'bg-yellow-500/20 text-yellow-400' : ''}
-                        ${session.level === 'avancé' ? 'bg-red-500/20 text-red-400' : ''}
-                      `}>
-                        {session.level}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
           </div>
         )}
       </main>
