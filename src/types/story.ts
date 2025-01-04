@@ -12,6 +12,7 @@ export interface StoryTheme {
   name: string;
   description: string;
   icon: string;
+  emoji: string;
 }
 
 export interface StoryPrompt {
@@ -115,43 +116,50 @@ export const STORY_THEMES: StoryTheme[] = [
     id: 'adventure' as StoryThemeType,
     name: 'Aventure',
     description: 'Des histoires palpitantes remplies d\'action',
-    icon: '🗺️'
+    icon: '🗺️',
+    emoji: '🏞️'
   },
   {
     id: 'magic' as StoryThemeType,
     name: 'Magie',
     description: 'Un monde de sortilèges et de merveilles',
-    icon: '✨'
+    icon: '✨',
+    emoji: '⚡️'
   },
   {
     id: 'science' as StoryThemeType,
     name: 'Science',
     description: 'Découvre les mystères de la science',
-    icon: '🔬'
+    icon: '🔬',
+    emoji: '🔭'
   },
   {
     id: 'nature' as StoryThemeType,
     name: 'Nature',
     description: 'Explore le monde naturel',
-    icon: '🌿'
+    icon: '🌿',
+    emoji: '🌸'
   },
   {
     id: 'space' as StoryThemeType,
     name: 'Espace',
     description: 'Voyage à travers les étoiles',
-    icon: '🚀'
+    icon: '🚀',
+    emoji: '👽'
   },
   {
     id: 'fantasy' as StoryThemeType,
     name: 'Fantaisie',
     description: 'Des mondes imaginaires extraordinaires',
-    icon: '🐉'
+    icon: '🐉',
+    emoji: '🧚‍♀️'
   },
   {
     id: 'animals' as StoryThemeType,
     name: 'Animaux',
     description: 'Des histoires avec nos amis les bêtes',
-    icon: '🦁'
+    icon: '🦁',
+    emoji: '🐶'
   }
 ];
 
