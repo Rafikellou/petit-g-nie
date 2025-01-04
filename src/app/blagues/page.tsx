@@ -88,13 +88,14 @@ export default function JokesPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <select 
               value={filters.category}
-              onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
+              onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value as JokeFilters['category'] }))}
               className="bg-white/5 border border-white/10 rounded-lg px-4 py-2 text-white min-h-[44px]"
             >
               <option value="all">Toutes les catégories</option>
-              <option value="animaux">Animaux</option>
-              <option value="ecole">École</option>
-              <option value="sport">Sport</option>
+              <option value="general">Général</option>
+              <option value="devinette">Devinettes</option>
+              <option value="toc-toc">Toc-toc</option>
+              <option value="custom">Personnalisé</option>
             </select>
             <select 
               value={filters.difficulty}
