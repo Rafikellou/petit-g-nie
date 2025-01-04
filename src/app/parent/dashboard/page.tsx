@@ -25,6 +25,10 @@ const ParentDashboard: FC = () => {
 
   const weeklyData = getLearningTimeData();
 
+  const handleSubjectChange = (value: string) => {
+    setSelectedSubject(value as SubjectFilter);
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -34,7 +38,7 @@ const ParentDashboard: FC = () => {
             <h3 className="text-lg font-semibold">Quiz - Taux de réussite</h3>
             <Select
               value={selectedSubject}
-              onValueChange={setSelectedSubject}
+              onValueChange={handleSubjectChange}
             >
               <SelectTrigger className="w-32">
                 <SelectValue placeholder="Matière" />
