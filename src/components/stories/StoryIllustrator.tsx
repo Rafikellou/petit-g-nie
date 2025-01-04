@@ -2,15 +2,15 @@
 
 import { FC, useState } from 'react';
 import { Image as ImageIcon, RefreshCw, Download, Palette } from 'lucide-react';
-import { StoryIllustration, ILLUSTRATION_STYLES } from '@/types/story';
+import { StoryIllustration, ILLUSTRATION_STYLES, GeneratedStory } from '@/types/story';
 
 interface StoryIllustratorProps {
-  storyContent: string;
+  story: GeneratedStory;
   onIllustrationGenerated: (illustration: StoryIllustration) => void;
 }
 
 export const StoryIllustrator: FC<StoryIllustratorProps> = ({
-  storyContent,
+  story,
   onIllustrationGenerated
 }) => {
   const [selectedStyle, setSelectedStyle] = useState(ILLUSTRATION_STYLES[0].id);
@@ -26,7 +26,7 @@ export const StoryIllustrator: FC<StoryIllustratorProps> = ({
     const illustration: StoryIllustration = {
       id: Math.random().toString(36).substr(2, 9),
       url: 'https://picsum.photos/400/300', // Placeholder
-      prompt: `Generate a ${selectedStyle} style illustration for: ${storyContent.substring(0, 100)}...`,
+      prompt: `Generate a ${selectedStyle} style illustration for: ${story.content.substring(0, 100)}...`,
       position,
       style: selectedStyle as 'cartoon' | 'watercolor' | 'pixel' | 'comic'
     };

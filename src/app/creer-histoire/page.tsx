@@ -205,7 +205,10 @@ export default function CreateStoryPage() {
               </div>
             </div>
 
-            <StoryIllustrator story={generatedStory} onIllustrationGenerated={setIllustrations} />
+            <StoryIllustrator 
+              story={generatedStory} 
+              onIllustrationGenerated={(illustration) => setIllustrations(prev => [...prev, illustration])} 
+            />
           </div>
         )}
       </main>
