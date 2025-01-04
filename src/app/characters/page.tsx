@@ -50,9 +50,6 @@ const CharactersPage: FC = () => {
                 <div className="px-3 py-1 rounded-full bg-white/10 text-sm">
                   {character.stories?.length || 0} histoires
                 </div>
-                <div className="px-3 py-1 rounded-full bg-white/10 text-sm">
-                  Niveau {character.level}
-                </div>
               </div>
             </Link>
           ))}
