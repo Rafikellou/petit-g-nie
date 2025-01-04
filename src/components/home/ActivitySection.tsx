@@ -41,15 +41,15 @@ const item = {
 
 export function ActivitySection({ title, description, activities }: ActivitySectionProps) {
   return (
-    <section className="mb-12">
+    <section className="mb-16">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-6"
+        className="mb-8"
       >
-        <h2 className="text-2xl font-bold mb-2">{title}</h2>
+        <h2 className="text-3xl font-bold mb-3">{title}</h2>
         {description && (
-          <p className="text-white/70">{description}</p>
+          <p className="text-lg text-white/70">{description}</p>
         )}
       </motion.div>
       
@@ -57,58 +57,63 @@ export function ActivitySection({ title, description, activities }: ActivitySect
         variants={container}
         initial="hidden"
         animate="show"
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
       >
         {activities.map((activity) => (
           <motion.div key={activity.href} variants={item}>
             <Link
               href={activity.href}
-              className={`glass-card p-4 hover:scale-[1.02] transition-all hover:shadow-lg tap-target touch-manipulation relative overflow-hidden ${
-                activity.isComingSoon ? 'opacity-50 pointer-events-none' : ''
-              }`}
+              className="block glass-card hover:scale-[1.02] transition-all hover:shadow-lg relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm"
             >
-              {activity.isNew && (
-                <span className="absolute top-2 right-2 bg-gradient-to-r from-green-400 to-emerald-400 text-white text-xs px-2 py-1 rounded-full">
-                  Nouveau
-                </span>
-              )}
-              {activity.isComingSoon && (
-                <span className="absolute top-2 right-2 bg-gradient-to-r from-yellow-400 to-amber-400 text-white text-xs px-2 py-1 rounded-full">
-                  Bientôt
-                </span>
-              )}
-              {activity.recommendedDaysAgo !== undefined && (
-                <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
-                  <span className="bg-gradient-to-r from-blue-400 to-indigo-400 text-white text-xs px-2 py-1 rounded-full">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/[0.075] to-white/[0.025]" />
+              
+              {/* Badges */}
+              <div className="absolute top-3 right-3 flex flex-col items-end gap-2">
+                {activity.isNew && (
+                  <span className="bg-gradient-to-r from-green-400 to-emerald-400 text-white text-sm px-3 py-1 rounded-full font-medium">
+                    Nouveau
+                  </span>
+                )}
+                {activity.isComingSoon && (
+                  <span className="bg-gradient-to-r from-yellow-400 to-amber-400 text-white text-sm px-3 py-1 rounded-full font-medium">
+                    Bientôt
+                  </span>
+                )}
+                {activity.recommendedDaysAgo !== undefined && (
+                  <span className="bg-gradient-to-r from-blue-400 to-indigo-400 text-white text-sm px-3 py-1 rounded-full font-medium">
                     Recommandé il y a {activity.recommendedDaysAgo} jour{activity.recommendedDaysAgo > 1 ? 's' : ''}
                   </span>
-                  {activity.teacherMessage && (
-                    <span className="bg-gradient-to-r from-purple-400 to-pink-400 text-white text-xs px-2 py-1 rounded-full max-w-[200px] truncate">
-                      "{activity.teacherMessage}"
-                    </span>
-                  )}
-                </div>
-              )}
-              <div className="flex items-center space-x-4">
-                <div className={`rounded-full bg-gradient-to-r ${activity.bgGradient} p-3 flex-shrink-0`}>
-                  <activity.icon className={`w-6 h-6 ${activity.color}`} />
-                </div>
-                <div className="flex-grow">
-                  <h3 className="font-semibold mb-1">{activity.title}</h3>
-                  <p className="text-sm text-white/70">{activity.description}</p>
-                  {activity.progress !== undefined && (
-                    <div className="mt-2">
-                      <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-gradient-to-r from-green-400 to-emerald-400 rounded-full transition-all duration-500"
-                          style={{ width: `${activity.progress}%` }}
-                        />
+                )}
+                {activity.teacherMessage && (
+                  <span className="bg-gradient-to-r from-purple-400 to-pink-400 text-white text-sm px-3 py-1 rounded-full font-medium max-w-[200px] truncate">
+                    "{activity.teacherMessage}"
+                  </span>
+                )}
+              </div>
+
+              {/* Content */}
+              <div className="relative p-6">
+                <div className="flex items-start gap-4">
+                  <div className={`rounded-xl bg-gradient-to-br ${activity.bgGradient} p-3 flex-shrink-0`}>
+                    <activity.icon className={`w-6 h-6 ${activity.color}`} />
+                  </div>
+                  <div className="flex-grow min-w-0">
+                    <h3 className="text-xl font-semibold mb-2 text-white">{activity.title}</h3>
+                    <p className="text-base text-white/70 mb-4">{activity.description}</p>
+                    {activity.progress !== undefined && (
+                      <div className="mt-4">
+                        <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-gradient-to-r from-green-400 to-emerald-400 rounded-full transition-all duration-500"
+                            style={{ width: `${activity.progress}%` }}
+                          />
+                        </div>
+                        <p className="text-sm text-white/50 mt-2">
+                          Progression : {activity.progress}%
+                        </p>
                       </div>
-                      <p className="text-xs text-white/50 mt-1">
-                        Progression : {activity.progress}%
-                      </p>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
             </Link>
