@@ -76,7 +76,7 @@ const TeacherDashboard: FC = () => {
   }
 
   // Filtrer les élèves en fonction de la recherche
-  const filteredStudents = teacher.students.filter(student =>
+  const filteredStudents = teacher.class.students.filter(student =>
     student.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -108,7 +108,7 @@ const TeacherDashboard: FC = () => {
               </div>
               <div>
                 <p className="text-sm text-white/70">Élèves</p>
-                <p className="text-2xl font-bold">{teacher.students.length}</p>
+                <p className="text-2xl font-bold">{teacher.class.students.length}</p>
               </div>
             </div>
           </div>

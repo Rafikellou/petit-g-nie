@@ -30,20 +30,26 @@ export interface StudentProgress {
     [characterId: string]: {
       [storyId: string]: {
         completed: boolean;
-        timeSpent: number;
         lastAccessed: string;
+        score?: number;
       };
     };
   };
   quizResults: {
     [quizId: string]: {
+      completed: boolean;
       score: number;
-      completedAt: string;
-      attempts: number;
+      date: string;
     };
   };
-  totalTimeSpent: number;
-  lastActive: string;
+  trainingSessions: {
+    [sessionId: string]: {
+      date: string;
+      duration: number;
+      type: string;
+      completed: boolean;
+    };
+  };
   level: number;
   xp: number;
   badges: string[];
@@ -424,20 +430,19 @@ export const mockProgress: Record<string, StudentProgress> = {
       'anna': {
         'tresor-foret': {
           completed: true,
-          timeSpent: 450,
-          lastAccessed: '2024-12-07T14:30:00Z'
+          lastAccessed: '2024-12-07T14:30:00Z',
+          score: 90
         }
       }
     },
     quizResults: {
       'anna-tresor-foret': {
+        completed: true,
         score: 85,
-        completedAt: '2024-12-07T14:45:00Z',
-        attempts: 1
+        date: '2024-12-07T14:45:00Z'
       }
     },
-    totalTimeSpent: 450,
-    lastActive: '2024-12-07T14:45:00Z',
+    trainingSessions: {},
     level: 2,
     xp: 150,
     badges: ['first_story', 'quiz_genius']

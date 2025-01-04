@@ -67,7 +67,6 @@ export default function TrainAndListen() {
         <div className="max-w-2xl mx-auto">
           <AudioPlayer
             src={audiobook.audio_url}
-            gradient="from-purple-500 to-blue-500"
             onTimeUpdate={handleProgress}
             onComplete={() => {}}
           />

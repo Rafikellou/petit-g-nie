@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "import-questions": "node scripts/importQuestions.js",
-    "generate-pwa": "node scripts/generate-pwa-assets.js"
+    "generate-pwa": "node scripts/generate-pwa-assets.js",
+    "type-check": "tsc --noEmit",
+    "verify": "npm run type-check && npm run lint && npm run build"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",
