@@ -19,11 +19,11 @@ interface StudentProgressProps {
     level?: number;
     quizResults?: Record<string, any>;
     storiesProgress?: Record<string, any>;
-    badges?: string[];
   };
+  onClose: () => void;
 }
 
-export default function StudentProgress({ student, progress }: StudentProgressProps) {
+export const StudentProgressComponent: React.FC<StudentProgressProps> = ({ student, progress, onClose }) => {
   const [activeTab, setActiveTab] = React.useState<'progress' | 'notes'>('progress');
 
   // Préparer les données pour les graphiques

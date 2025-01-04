@@ -4,9 +4,9 @@ import { FC, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Users, BookOpen, Award, TrendingUp, Search, Loader2 } from 'lucide-react';
 import { mockTeachers, mockStudents, mockProgress } from '@/data/users';
-import type { StudentProgress } from '@/data/users';
+import type { StudentProgress as StudentProgressType } from '@/data/users';
 import type { Teacher } from '@/types/teacher';
-import StudentProgress from '@/components/teacher/StudentProgress';
+import { StudentProgressComponent } from '@/components/teacher/StudentProgress';
 import { Toaster } from 'react-hot-toast';
 import { Button } from '@/components/ui/ios-button';
 
@@ -14,76 +14,71 @@ import { Button } from '@/components/ui/ios-button';
 const LOGGED_IN_TEACHER_ID = 'teacher1';
 
 // Fonction pour calculer le pourcentage global de progression
-const calculateOverallProgress = (progress: StudentProgress) => {
+const calculateOverallProgress = (progress: StudentProgressType) => {
   if (!progress) return 0;
   
   // Calculer le pourcentage d'histoires complétées
   const storiesCompleted = Object.values(progress.storiesProgress || {}).reduce((total, characterStories) => {
     return total + Object.values(characterStories).filter(story => story.completed).length;
   }, 0);
-  
+
+  // Calculer le total d'histoires
   const totalStories = Object.values(progress.storiesProgress || {}).reduce((total, characterStories) => {
-    return total + Object.keys(characterStories).length;
+    return total + Object.values(characterStories).length;
   }, 0);
 
-  // Calculer la moyenne des scores des quiz
-  const quizScores = Object.values(progress.quizResults || {}).map(quiz => quiz.score);
-  const averageQuizScore = quizScores.length > 0 
-    ? quizScores.reduce((a, b) => a + b, 0) / quizScores.length 
-    : 0;
-
-  // Combiner les métriques (50% histoires, 50% quiz)
-  const storiesWeight = totalStories > 0 ? (storiesCompleted / totalStories) * 50 : 0;
-  const quizWeight = quizScores.length > 0 ? (averageQuizScore / 100) * 50 : 0;
-
-  return Math.round(storiesWeight + quizWeight);
+  // Calculer le pourcentage
+  return totalStories > 0 ? (storiesCompleted / totalStories) * 100 : 0;
 };
 
-const TeacherDashboard = () => {
-  const [isLoading, setIsLoading] = useState(true);
+const TeacherDashboard: FC = () => {
   const [teacher, setTeacher] = useState<Teacher | null>(null);
+  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadData = async () => {
+    // Simuler le chargement des données
+    const loadTeacherData = async () => {
       try {
-        setIsLoading(true);
-        // Simuler un appel API
+        // Simuler un délai réseau
         await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Trouver l'enseignant connecté
         const foundTeacher = mockTeachers.find(t => t.id === LOGGED_IN_TEACHER_ID);
-        if (!foundTeacher) {
-          throw new Error('Enseignant non trouvé');
+        if (foundTeacher) {
+          setTeacher(foundTeacher);
         }
-        setTeacher(foundTeacher as Teacher);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Une erreur est survenue');
+      } catch (error) {
+        console.error('Erreur lors du chargement des données:', error);
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
-    loadData();
+
+    loadTeacherData();
   }, []);
 
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center safe-area-inset">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin" />
       </div>
     );
   }
 
-  if (error) {
+  if (!teacher) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-6 safe-area-inset">
-        <p className="text-red-500 text-lg mb-4">{error}</p>
-        <Button onClick={() => window.location.reload()}>
-          Réessayer
-        </Button>
+      <div className="p-4">
+        <p>Erreur: Impossible de charger les données de l'enseignant.</p>
       </div>
     );
   }
+
+  // Filtrer les élèves en fonction de la recherche
+  const filteredStudents = teacher.students.filter(student =>
+    student.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen bg-background safe-area-inset">
@@ -113,7 +108,7 @@ const TeacherDashboard = () => {
               </div>
               <div>
                 <p className="text-sm text-white/70">Élèves</p>
-                <p className="text-2xl font-bold">{teacher?.students?.length || 0}</p>
+                <p className="text-2xl font-bold">{teacher.students.length}</p>
               </div>
             </div>
           </div>
@@ -171,7 +166,7 @@ const TeacherDashboard = () => {
 
         {/* Liste des élèves */}
         <div className="space-y-4">
-          {teacher?.students?.map((studentId: string) => {
+          {filteredStudents.map((studentId: string) => {
             const student = mockStudents[studentId];
             const progress = mockProgress[studentId];
             if (!student) return null;
@@ -207,7 +202,7 @@ const TeacherDashboard = () => {
 
       {/* Modal de progression détaillée */}
       {selectedStudentId && (
-        <StudentProgress
+        <StudentProgressComponent
           student={mockStudents[selectedStudentId]}
           progress={mockProgress[selectedStudentId]}
           onClose={() => setSelectedStudentId(null)}
