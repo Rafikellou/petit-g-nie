@@ -7,11 +7,17 @@ import confetti from 'canvas-confetti';
 import Link from 'next/link';
 import { Button } from '@/components/ui/ios-button';
 
+interface JokeFilters {
+  category: 'all' | 'general' | 'devinette' | 'toc-toc' | 'custom';
+  difficulty: 'all' | 'easy' | 'medium' | 'hard';
+  ageRange: 'all' | '6-8' | '9-11' | '12-14';
+}
+
 export default function JokesPage() {
   const [jokes, setJokes] = useState<Joke[]>(MOCK_JOKES);
   const [selectedJoke, setSelectedJoke] = useState<Joke | null>(null);
   const [showAnswer, setShowAnswer] = useState(false);
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<JokeFilters>({
     category: 'all',
     difficulty: 'all',
     ageRange: 'all'

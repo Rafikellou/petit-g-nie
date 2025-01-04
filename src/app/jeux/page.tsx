@@ -2,10 +2,30 @@
 
 import { FC } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Brain, Gamepad2, Grid, Trophy, Star, Clock } from 'lucide-react';
+import { ArrowLeft, Brain, Gamepad2, Grid, Trophy, Star, Clock, LucideIcon } from 'lucide-react';
+
+interface GameStats {
+  highScore: number;
+  stars: number;
+  timeSpent: string;
+  lastPlayed?: string;
+  achievements?: string[];
+}
+
+interface Game {
+  id: string;
+  title: string;
+  description: string;
+  icon: LucideIcon;
+  color: 'purple' | 'green' | 'blue' | 'orange' | 'pink';
+  stats: GameStats;
+  minAge?: number;
+  maxPlayers?: number;
+  difficulty?: 'easy' | 'medium' | 'hard';
+}
 
 const JeuxPage: FC = () => {
-  const jeux = [
+  const jeux: Game[] = [
     {
       id: 'memory',
       title: 'Memory Match',
@@ -15,8 +35,11 @@ const JeuxPage: FC = () => {
       stats: {
         highScore: 1200,
         stars: 4,
-        timeSpent: '45 min'
-      }
+        timeSpent: '45 min',
+        lastPlayed: new Date().toISOString()
+      },
+      minAge: 6,
+      difficulty: 'easy'
     },
     {
       id: 'simon',
@@ -27,8 +50,11 @@ const JeuxPage: FC = () => {
       stats: {
         highScore: 850,
         stars: 3,
-        timeSpent: '30 min'
-      }
+        timeSpent: '30 min',
+        lastPlayed: new Date().toISOString()
+      },
+      minAge: 7,
+      difficulty: 'medium'
     },
     {
       id: 'puzzle',
@@ -39,8 +65,12 @@ const JeuxPage: FC = () => {
       stats: {
         highScore: 950,
         stars: 5,
-        timeSpent: '1h 15min'
-      }
+        timeSpent: '1h 15min',
+        lastPlayed: new Date().toISOString()
+      },
+      minAge: 5,
+      difficulty: 'easy',
+      maxPlayers: 2
     }
   ];
 

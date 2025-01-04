@@ -1,4 +1,4 @@
-export type StoryTheme =
+export type StoryTheme = 
   | 'adventure'
   | 'magic'
   | 'science'
@@ -49,7 +49,7 @@ export interface StoryCollaborator {
   name: string;
   avatar?: string;
   role: 'author' | 'illustrator' | 'editor';
-  contributions: number;
+  contributions?: number;
 }
 
 export interface Story {
@@ -58,12 +58,13 @@ export interface Story {
   description: string;
   content?: string;
   image: string;
-  duration: string; // Format "XX min", use formatDuration() from utils/format
+  duration: string;
   difficulty: 'facile' | 'moyen' | 'avancé';
   audioUrl: string;
   createdAt?: string;
   isPublic?: boolean;
   likes?: number;
+  theme?: StoryTheme;
   character?: {
     id: string;
     name: string;
@@ -74,63 +75,76 @@ export interface Story {
   };
 }
 
-export interface GeneratedStory extends Story {
-  content: string; // Required in GeneratedStory
-  prompt: StoryPrompt;
-  createdAt: string; // Required in GeneratedStory
-  isPublic: boolean; // Required in GeneratedStory
-  likes: number; // Required in GeneratedStory
+export interface GeneratedStory {
+  id: string;
+  title: string;
+  content: string;
+  theme: StoryTheme;
+  mainCharacter: string;
+  readingTime: string;
+  createdAt: string;
+  isPublic?: boolean;
+  likes?: number;
   illustrations: StoryIllustration[];
-  collaborators: StoryCollaborator[];
+  collaborators?: StoryCollaborator[];
   challengeId?: string;
-  ageRecommendation: {
+  ageRecommendation?: {
     min: number;
     max: number;
   };
 }
 
-export const STORY_THEMES: { id: StoryTheme; name: string; description: string; icon: string }[] = [
+export interface StoryProgress {
+  hasStarted: boolean;
+  isCompleted: boolean;
+  currentTime: number;
+  quizUnlocked: boolean;
+  lastUpdated?: string;
+  score?: number;
+}
+
+export const STORY_THEMES = [
   {
-    id: 'adventure',
+    id: 'adventure' as StoryTheme,
     name: 'Aventure',
-    description: 'Des histoires pleines d\'action et de découvertes',
+    description: 'Des histoires palpitantes remplies d\'action',
     icon: '🗺️'
   },
   {
-    id: 'magic',
+    id: 'magic' as StoryTheme,
     name: 'Magie',
-    description: 'Des histoires enchantées et mystérieuses',
+    description: 'Un monde de sortilèges et de merveilles',
     icon: '✨'
   },
   {
-    id: 'science',
+    id: 'science' as StoryTheme,
     name: 'Science',
-    description: 'Des histoires pour explorer et comprendre le monde',
+    description: 'Découvre les mystères de la science',
     icon: '🔬'
   },
   {
-    id: 'nature',
+    id: 'nature' as StoryTheme,
     name: 'Nature',
-    description: 'Des histoires sur les animaux et la nature',
+    description: 'Explore le monde naturel',
     icon: '🌿'
   },
   {
-    id: 'space',
+    id: 'space' as StoryTheme,
     name: 'Espace',
-    description: 'Des histoires intergalactiques',
+    description: 'Voyage à travers les étoiles',
     icon: '🚀'
   },
   {
-    id: 'fantasy',
+    id: 'fantasy' as StoryTheme,
     name: 'Fantaisie',
-    description: 'Des histoires dans des mondes imaginaires',
+    description: 'Des mondes imaginaires extraordinaires',
     icon: '🐉'
   },
   {
-    id: 'animals',
+    id: 'animals' as StoryTheme,
     name: 'Animaux',
-    description: 'Des histoires avec des amis à quatre pattes',
-    icon: '🐾'
+    description: 'Des histoires avec nos amis les bêtes',
+    icon: '🦁'
   }
 ];
 

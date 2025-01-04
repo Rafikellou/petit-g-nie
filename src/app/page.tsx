@@ -6,8 +6,90 @@ import {
   LightbulbIcon,
   Wand2,
   GamepadIcon,
-  Languages
+  Languages,
+  LucideIcon
 } from 'lucide-react'
+
+interface NavLink {
+  href: string;
+  title: string;
+  description: string;
+  icon: LucideIcon;
+  color: string;
+  bgGradient: string;
+  isNew?: boolean;
+  isComingSoon?: boolean;
+  requiresAuth?: boolean;
+}
+
+const navigationLinks: NavLink[] = [
+  {
+    href: '/stories',
+    title: 'Lire une Histoire',
+    description: 'Découvre des histoires passionnantes et améliore ta lecture',
+    icon: BookOpen,
+    color: 'text-purple-400',
+    bgGradient: 'from-purple-500/20 to-blue-500/20'
+  },
+  {
+    href: '/listen',
+    title: 'Écouter',
+    description: 'Améliore ta compréhension orale avec des histoires audio',
+    icon: Headphones,
+    color: 'text-green-400',
+    bgGradient: 'from-green-500/20 to-teal-500/20'
+  },
+  {
+    href: '/creer-histoire',
+    title: 'Créer une Histoire',
+    description: 'Laisse libre cours à ton imagination et crée tes propres histoires',
+    icon: Wand2,
+    color: 'text-blue-400',
+    bgGradient: 'from-blue-500/20 to-indigo-500/20',
+    isNew: true
+  },
+  {
+    href: '/jeux',
+    title: 'Jouer',
+    description: 'Apprends en t'amusant avec nos jeux éducatifs',
+    icon: GamepadIcon,
+    color: 'text-pink-400',
+    bgGradient: 'from-pink-500/20 to-rose-500/20'
+  },
+  {
+    href: '/english',
+    title: 'English Corner',
+    description: 'Pratique ton anglais avec des exercices interactifs',
+    icon: Languages,
+    color: 'text-orange-400',
+    bgGradient: 'from-orange-500/20 to-amber-500/20',
+    isComingSoon: true
+  },
+  {
+    href: '/blagues',
+    title: 'Blagues',
+    description: 'Découvre notre collection de blagues et devinettes amusantes',
+    icon: LightbulbIcon,
+    color: 'text-pink-400',
+    bgGradient: 'from-pink-500/20 to-red-500/20'
+  },
+  {
+    href: '/dictee',
+    title: 'Dictée',
+    description: 'Entraîne-toi à la dictée avec notre assistant intelligent',
+    icon: LightbulbIcon,
+    color: 'text-orange-400',
+    bgGradient: 'from-orange-500/20 to-yellow-500/20'
+  },
+  {
+    href: '/quiz',
+    title: 'Quiz',
+    description: 'Teste tes connaissances avec des quiz amusants et éducatifs',
+    icon: GraduationCap,
+    color: 'text-yellow-400',
+    bgGradient: 'from-yellow-500/20 to-orange-500/20'
+  }
+];
 
 export default function Home() {
   return (
@@ -29,168 +111,39 @@ export default function Home() {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          {/* Lire une histoire */}
-          <Link 
-            href="/stories" 
-            className="glass-card p-6 md:p-8 hover:scale-[1.02] transition-transform tap-target min-h-[180px] touch-manipulation"
-            role="button"
-            aria-label="Lire une histoire"
-          >
-            <div className="h-full flex flex-col">
-              <div className="flex items-center justify-center mb-6">
-                <div className="rounded-full bg-gradient-to-r from-purple-500/20 to-blue-500/20 p-4">
-                  <BookOpen className="w-8 h-8 text-purple-400" />
+          {navigationLinks.map((link) => (
+            <Link 
+              key={link.href}
+              href={link.href} 
+              className={`glass-card p-6 md:p-8 hover:scale-[1.02] transition-transform tap-target min-h-[180px] touch-manipulation relative ${
+                link.isComingSoon ? 'opacity-50 pointer-events-none' : ''
+              }`}
+              role="button"
+              aria-label={link.title}
+            >
+              {link.isNew && (
+                <span className="absolute top-2 right-2 bg-gradient-to-r from-green-400 to-emerald-400 text-white text-xs px-2 py-1 rounded-full">
+                  Nouveau
+                </span>
+              )}
+              {link.isComingSoon && (
+                <span className="absolute top-2 right-2 bg-gradient-to-r from-yellow-400 to-amber-400 text-white text-xs px-2 py-1 rounded-full">
+                  Bientôt
+                </span>
+              )}
+              <div className="h-full flex flex-col">
+                <div className="flex items-center justify-center mb-6">
+                  <div className={`rounded-full bg-gradient-to-r ${link.bgGradient} p-4`}>
+                    <link.icon className={`w-8 h-8 ${link.color}`} />
+                  </div>
                 </div>
+                <h2 className="text-xl md:text-2xl font-bold mb-3 text-center">{link.title}</h2>
+                <p className="text-base md:text-lg text-white/70 text-center flex-grow leading-relaxed">
+                  {link.description}
+                </p>
               </div>
-              <h2 className="text-xl md:text-2xl font-bold mb-3 text-center">Lire une Histoire</h2>
-              <p className="text-base md:text-lg text-white/70 text-center flex-grow leading-relaxed">
-                Découvre des histoires passionnantes et améliore ta lecture
-              </p>
-            </div>
-          </Link>
-
-          {/* Écouter une histoire */}
-          <Link 
-            href="/stories" 
-            className="glass-card p-6 md:p-8 hover:scale-[1.02] transition-transform tap-target min-h-[180px] touch-manipulation"
-            role="button"
-            aria-label="Écouter une histoire"
-          >
-            <div className="h-full flex flex-col">
-              <div className="flex items-center justify-center mb-6">
-                <div className="rounded-full bg-gradient-to-r from-green-500/20 to-teal-500/20 p-4">
-                  <Headphones className="w-8 h-8 text-green-400" />
-                </div>
-              </div>
-              <h2 className="text-xl md:text-2xl font-bold mb-3 text-center">Écouter une Histoire</h2>
-              <p className="text-base md:text-lg text-white/70 text-center flex-grow leading-relaxed">
-                Plonge dans un monde d'histoires captivantes racontées par nos personnages
-              </p>
-            </div>
-          </Link>
-
-          {/* Quiz */}
-          <Link 
-            href="/quiz" 
-            className="glass-card p-6 md:p-8 hover:scale-[1.02] transition-transform tap-target min-h-[180px] touch-manipulation"
-            role="button"
-            aria-label="Quiz"
-          >
-            <div className="h-full flex flex-col">
-              <div className="flex items-center justify-center mb-6">
-                <div className="rounded-full bg-gradient-to-r from-yellow-500/20 to-orange-500/20 p-4">
-                  <GraduationCap className="w-8 h-8 text-yellow-400" />
-                </div>
-              </div>
-              <h2 className="text-xl md:text-2xl font-bold mb-3 text-center">Quiz</h2>
-              <p className="text-base md:text-lg text-white/70 text-center flex-grow leading-relaxed">
-                Teste tes connaissances avec des quiz amusants et éducatifs
-              </p>
-            </div>
-          </Link>
-
-          {/* Blagues */}
-          <Link 
-            href="/blagues" 
-            className="glass-card p-6 md:p-8 hover:scale-[1.02] transition-transform tap-target min-h-[180px] touch-manipulation"
-            role="button"
-            aria-label="Blagues"
-          >
-            <div className="h-full flex flex-col">
-              <div className="flex items-center justify-center mb-6">
-                <div className="rounded-full bg-gradient-to-r from-pink-500/20 to-red-500/20 p-4">
-                  <LightbulbIcon className="w-8 h-8 text-pink-400" />
-                </div>
-              </div>
-              <h2 className="text-xl md:text-2xl font-bold mb-3 text-center">Blagues</h2>
-              <p className="text-base md:text-lg text-white/70 text-center flex-grow leading-relaxed">
-                Découvre notre collection de blagues et devinettes amusantes
-              </p>
-            </div>
-          </Link>
-
-          {/* Créer une histoire */}
-          <Link 
-            href="/creer-histoire" 
-            className="glass-card p-6 md:p-8 hover:scale-[1.02] transition-transform tap-target min-h-[180px] touch-manipulation"
-            role="button"
-            aria-label="Créer une histoire"
-          >
-            <div className="h-full flex flex-col">
-              <div className="flex items-center justify-center mb-6">
-                <div className="rounded-full bg-gradient-to-r from-blue-500/20 to-indigo-500/20 p-4">
-                  <Wand2 className="w-8 h-8 text-blue-400" />
-                </div>
-              </div>
-              <h2 className="text-xl md:text-2xl font-bold mb-3 text-center">Créer une Histoire</h2>
-              <p className="text-base md:text-lg text-white/70 text-center flex-grow leading-relaxed">
-                Crée tes propres histoires avec notre assistant IA
-              </p>
-            </div>
-          </Link>
-
-          {/* Apprendre l'anglais */}
-          <Link 
-            href="/english" 
-            className="glass-card p-6 md:p-8 hover:scale-[1.02] transition-transform tap-target min-h-[180px] touch-manipulation"
-            role="button"
-            aria-label="Apprendre l'anglais"
-          >
-            <div className="h-full flex flex-col">
-              <div className="flex items-center justify-center mb-6">
-                <div className="rounded-full bg-gradient-to-r from-pink-500/20 to-red-500/20 p-4">
-                  <Languages className="w-8 h-8 text-pink-400" />
-                </div>
-              </div>
-              <h2 className="text-xl md:text-2xl font-bold mb-3 text-center">Apprendre l'Anglais</h2>
-              <p className="text-base md:text-lg text-white/70 text-center flex-grow leading-relaxed">
-                Découvre et apprends les mots essentiels en anglais de façon interactive
-              </p>
-            </div>
-          </Link>
-
-          {/* Dictée */}
-          <Link 
-            href="/dictee" 
-            className="glass-card p-6 md:p-8 hover:scale-[1.02] transition-transform tap-target min-h-[180px] touch-manipulation"
-            role="button"
-            aria-label="Dictée"
-          >
-            <div className="h-full flex flex-col">
-              <div className="flex items-center justify-center mb-6">
-                <div className="rounded-full bg-gradient-to-r from-orange-500/20 to-yellow-500/20 p-4">
-                  <svg className="w-8 h-8 text-orange-400" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M8 4H6C4.89543 4 4 4.89543 4 6V18C4 19.1046 4.89543 20 6 20H18C19.1046 20 20 19.1046 20 18V6C20 4.89543 19.1046 4 18 4H16M8 4V6C8 7.10457 8.89543 8 10 8H14C15.1046 8 16 7.10457 16 6V4M8 4H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M12 12V16M12 16L14 14M12 16L10 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                </div>
-              </div>
-              <h2 className="text-xl md:text-2xl font-bold mb-3 text-center">Dictée</h2>
-              <p className="text-base md:text-lg text-white/70 text-center flex-grow leading-relaxed">
-                Entraîne-toi à la dictée avec notre assistant intelligent
-              </p>
-            </div>
-          </Link>
-
-          {/* Jeux éducatifs */}
-          <Link 
-            href="/jeux" 
-            className="glass-card p-6 md:p-8 hover:scale-[1.02] transition-transform tap-target min-h-[180px] touch-manipulation"
-            role="button"
-            aria-label="Jeux éducatifs"
-          >
-            <div className="h-full flex flex-col">
-              <div className="flex items-center justify-center mb-6">
-                <div className="rounded-full bg-gradient-to-r from-violet-500/20 to-fuchsia-500/20 p-4">
-                  <GamepadIcon className="w-8 h-8 text-violet-400" />
-                </div>
-              </div>
-              <h2 className="text-xl md:text-2xl font-bold mb-3 text-center">Jeux Éducatifs</h2>
-              <p className="text-base md:text-lg text-white/70 text-center flex-grow leading-relaxed">
-                Apprends en t'amusant avec nos jeux de mémoire, de logique et de séquence
-              </p>
-            </div>
-          </Link>
+            </Link>
+          ))}
         </div>
       </div>
     </main>

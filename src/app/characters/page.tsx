@@ -36,7 +36,7 @@ const CharactersPage: FC = () => {
           {Object.values(characters).map((character) => (
             <Link
               key={character.id}
-              href={`/stories/${character.id}`}
+              href={`/histoires/${character.id}`}
               className="glass-card p-6 hover:bg-white/5 transition tap-target touch-manipulation"
             >
               <div className="aspect-square rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-4">
@@ -48,7 +48,7 @@ const CharactersPage: FC = () => {
               <p className="text-white/70">{character.description}</p>
               <div className="mt-4 flex items-center space-x-2">
                 <div className="px-3 py-1 rounded-full bg-white/10 text-sm">
-                  {character.stories?.length || 0} histoires
+                  {Array.isArray(character.stories) ? character.stories.length : 0} histoires
                 </div>
               </div>
             </Link>

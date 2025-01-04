@@ -12,6 +12,7 @@ import { useAchievements } from '@/contexts/AchievementsContext';
 import { CharacterStory } from '@/types/story-types';
 import { Button } from '@/components/ui/ios-button';
 import confetti from 'canvas-confetti';
+import { Quiz, QuizProgress } from '@/types/quiz';
 
 interface Props {
   params: {
@@ -23,14 +24,27 @@ interface Props {
 const QuizPage: FC<Props> = ({ params }) => {
   const router = useRouter();
   const character = characters[params.characterId];
-  const story = character?.stories.find((s: CharacterStory) => s.id === params.storyId);
-  const quiz = quizzes[`${params.characterId}-${params.storyId}`];
+  
+  if (!character) {
+    console.error(`Character ${params.characterId} not found`);
+    return notFound();
+  }
+
+  const story = character.stories.find((s: CharacterStory) => s.id === params.storyId);
+  if (!story) {
+    console.error(`Story ${params.storyId} not found for character ${params.characterId}`);
+    return notFound();
+  }
+
+  const quizKey = `${params.characterId}-${params.storyId}`;
+  const quiz = quizzes[quizKey];
+  if (!quiz) {
+    console.error(`Quiz not found for story ${params.storyId}`);
+    return notFound();
+  }
+
   const { progress, updateProgress } = useProgress();
   const { showBadgeUnlock } = useAchievements();
-
-  if (!character || !story || !quiz) {
-    notFound();
-  }
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<(number | null)[]>(
@@ -38,6 +52,11 @@ const QuizPage: FC<Props> = ({ params }) => {
   );
   const [isQuestionRevealed, setIsQuestionRevealed] = useState(false);
   const [score, setScore] = useState<number | null>(null);
+  const [quizProgress, setQuizProgress] = useState<QuizProgress>({
+    quizId: quiz.id,
+    startedAt: new Date().toISOString(),
+    answers: []
+  });
 
   const currentQuestion = quiz.questions[currentQuestionIndex];
 
@@ -66,7 +85,7 @@ const QuizPage: FC<Props> = ({ params }) => {
 
       // Sauvegarder le score
       const scores = JSON.parse(localStorage.getItem('quiz-scores') || '{}');
-      scores[`${params.characterId}-${params.storyId}`] = correctAnswers;
+      scores[quizKey] = correctAnswers;
       localStorage.setItem('quiz-scores', JSON.stringify(scores));
     }
   };

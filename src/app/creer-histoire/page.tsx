@@ -34,11 +34,17 @@ export default function CreateStoryPage() {
         id: Date.now().toString(),
         title: "L'aventure magique",
         content: "Il était une fois...",
-        theme: selectedTheme,
+        theme: selectedTheme || 'adventure',
         mainCharacter: characterName,
+        readingTime: formatDuration(5),
         createdAt: new Date().toISOString(),
-        readingTime: "5 min",
-        illustrations: []
+        illustrations: [],
+        isPublic: false,
+        likes: 0,
+        ageRecommendation: {
+          min: 6,
+          max: 12
+        }
       };
       
       setGeneratedStory(story);

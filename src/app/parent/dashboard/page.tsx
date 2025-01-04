@@ -7,13 +7,21 @@ import { characters } from '@/data/characters';
 import WeeklyProgressChart from '@/components/charts/WeeklyProgressChart';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
+type Subject = 'français' | 'mathématiques' | 'histoire-géo' | 'sciences';
+
+const SUBJECTS: { id: Subject; name: string }[] = [
+  { id: 'français', name: 'Français' },
+  { id: 'mathématiques', name: 'Mathématiques' },
+  { id: 'histoire-géo', name: 'Histoire-Géo' },
+  { id: 'sciences', name: 'Sciences' }
+];
+
 const ParentDashboard: FC = () => {
   const { progress, getQuizScoresBySubject, getLearningTimeData } = useProgress();
-  const [selectedSubject, setSelectedSubject] = useState<string>('all');
+  const [selectedSubject, setSelectedSubject] = useState<'all' | Subject>('all');
   const currentLevel = levels.find(l => l.level === progress.currentLevel);
   const nextLevel = levels.find(l => l.level === progress.currentLevel + 1);
 
-  const subjects = ['Français', 'Mathématiques', 'Histoire-Géo', 'Sciences'];
   const weeklyData = getLearningTimeData();
 
   return (
@@ -32,9 +40,9 @@ const ParentDashboard: FC = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Toutes</SelectItem>
-                {subjects.map(subject => (
-                  <SelectItem key={subject} value={subject.toLowerCase()}>
-                    {subject}
+                {SUBJECTS.map(subject => (
+                  <SelectItem key={subject.id} value={subject.id}>
+                    {subject.name}
                   </SelectItem>
                 ))}
               </SelectContent>

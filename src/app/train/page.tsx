@@ -15,6 +15,27 @@ interface TrainingSession {
   duration: string;
   level: 'débutant' | 'intermédiaire' | 'avancé';
   transcription: string;
+  category: 'prononciation' | 'vocabulaire' | 'grammaire' | 'conversation';
+  prerequisites?: string[];
+  objectives: string[];
+  nextSessions?: string[];
+  difficulty: 1 | 2 | 3 | 4 | 5;
+}
+
+interface TrainingResult {
+  sessionId: string;
+  userId: string;
+  timestamp: string;
+  accuracy: number;
+  duration: number;
+  mistakes: {
+    word: string;
+    expected: string;
+    actual: string;
+    timestamp: number;
+  }[];
+  feedback?: string;
+  completed: boolean;
 }
 
 const trainingSessions: TrainingSession[] = [
@@ -25,7 +46,13 @@ const trainingSessions: TrainingSession[] = [
     audioUrl: '/audio/sons-base.mp3',
     duration: '5 min',
     level: 'débutant',
-    transcription: 'A comme dans "papa", E comme dans "bébé"...'
+    transcription: 'A comme dans "papa", E comme dans "bébé"...',
+    category: 'prononciation',
+    objectives: [
+      'Reconnaître les voyelles de base',
+      'Prononcer correctement les sons simples'
+    ],
+    difficulty: 1
   },
   {
     id: '2',
@@ -34,7 +61,14 @@ const trainingSessions: TrainingSession[] = [
     audioUrl: '/audio/liaisons.mp3',
     duration: '8 min',
     level: 'intermédiaire',
-    transcription: 'Les liaisons sont importantes en français...'
+    transcription: 'Les liaisons sont importantes en français...',
+    category: 'prononciation',
+    prerequisites: ['Les sons de base'],
+    objectives: [
+      'Comprendre les règles de liaison',
+      'Pratiquer les liaisons courantes'
+    ],
+    difficulty: 3
   },
   {
     id: '3',
@@ -43,12 +77,21 @@ const trainingSessions: TrainingSession[] = [
     audioUrl: '/audio/expressions.mp3',
     duration: '10 min',
     level: 'avancé',
-    transcription: 'Bonjour ! Comment allez-vous ?...'
+    transcription: 'Bonjour ! Comment allez-vous ?...',
+    category: 'conversation',
+    prerequisites: ['Les liaisons'],
+    objectives: [
+      'Mémoriser les expressions courantes',
+      'Utiliser les expressions dans un contexte'
+    ],
+    difficulty: 4,
+    nextSessions: ['4', '5']
   }
 ];
 
 export default function TrainPage() {
   const [selectedSession, setSelectedSession] = useState<TrainingSession | null>(null);
+  const [currentResult, setCurrentResult] = useState<TrainingResult | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);

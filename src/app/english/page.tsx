@@ -7,11 +7,26 @@ import { Play, ArrowLeft, Volume2, ChevronLeft, ChevronRight, Star } from 'lucid
 import { commonEnglishWords } from '@/data/english-words';
 import { Button } from '@/components/ui/ios-button';
 
+interface EnglishWord {
+  english: string;
+  french: string;
+  phonetic: string;
+  examples: string[];
+  difficulty: 'easy' | 'medium' | 'hard';
+  category: 'noun' | 'verb' | 'adjective' | 'adverb' | 'other';
+}
+
+interface FavoriteWord extends EnglishWord {
+  addedAt: string;
+  lastReviewed?: string;
+  mastery: number; // 0-100
+}
+
 export default function EnglishLearning() {
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [synth, setSynth] = useState<SpeechSynthesis | null>(null);
-  const [favorites, setFavorites] = useState<string[]>([]);
-  const currentWord = commonEnglishWords[currentWordIndex];
+  const [favorites, setFavorites] = useState<FavoriteWord[]>([]);
+  const currentWord = commonEnglishWords[currentWordIndex] as EnglishWord;
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -46,9 +61,14 @@ export default function EnglishLearning() {
   };
 
   const toggleFavorite = () => {
-    const newFavorites = favorites.includes(currentWord.english)
-      ? favorites.filter(word => word !== currentWord.english)
-      : [...favorites, currentWord.english];
+    const isFavorite = favorites.some(f => f.english === currentWord.english);
+    const newFavorites = isFavorite
+      ? favorites.filter(f => f.english !== currentWord.english)
+      : [...favorites, {
+          ...currentWord,
+          addedAt: new Date().toISOString(),
+          mastery: 0
+        }];
     
     setFavorites(newFavorites);
     localStorage.setItem('englishFavorites', JSON.stringify(newFavorites));
@@ -117,11 +137,11 @@ export default function EnglishLearning() {
               <button
                 onClick={toggleFavorite}
                 className={`p-3 rounded-full transition tap-target touch-manipulation ${
-                  favorites.includes(currentWord.english)
+                  favorites.some(f => f.english === currentWord.english)
                     ? 'text-yellow-400 hover:text-yellow-500'
                     : 'text-white/70 hover:text-white'
                 }`}
-                aria-label={favorites.includes(currentWord.english) ? "Retirer des favoris" : "Ajouter aux favoris"}
+                aria-label={favorites.some(f => f.english === currentWord.english) ? "Retirer des favoris" : "Ajouter aux favoris"}
               >
                 <Star className="w-6 h-6" />
               </button>
@@ -150,10 +170,10 @@ export default function EnglishLearning() {
             <div className="flex flex-wrap gap-2">
               {favorites.map(word => (
                 <div
-                  key={word}
+                  key={word.english}
                   className="px-3 py-1 bg-white/10 rounded-full text-sm"
                 >
-                  {word}
+                  {word.english}
                 </div>
               ))}
             </div>

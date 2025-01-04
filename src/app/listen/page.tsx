@@ -8,19 +8,51 @@ import { AudioPlayer } from '@/components/audio/AudioPlayer'
 import { audiobookService, type Audiobook } from '@/lib/services'
 import { Button } from '@/components/ui/ios-button'
 
+interface ListeningProgress {
+  bookId: string;
+  userId: string;
+  progress: number;
+  timestamp: string;
+  speed: number;
+  completed: boolean;
+  notes?: string[];
+  bookmarks?: number[];
+}
+
+interface ListeningStats {
+  totalTime: number;
+  booksCompleted: number;
+  averageSpeed: number;
+  favoriteGenres: string[];
+}
+
 export default function Listen() {
   const [audiobooks, setAudiobooks] = useState<Audiobook[]>([])
   const [selectedBook, setSelectedBook] = useState<Audiobook | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
+  const [progress, setProgress] = useState<ListeningProgress | null>(null)
+  const [stats, setStats] = useState<ListeningStats>({
+    totalTime: 0,
+    booksCompleted: 0,
+    averageSpeed: 1,
+    favoriteGenres: []
+  })
 
   useEffect(() => {
     audiobookService.getAudiobooks().then(setAudiobooks)
   }, [])
 
-  const handleProgress = (progress: number) => {
-    if (selectedBook) {
-      // Sauvegarder la progression (à implémenter avec l'authentification)
-      // audiobookService.saveProgress(userId, selectedBook.id, progress, 0)
+  const handleProgress = (currentProgress: number) => {
+    if (selectedBook && progress) {
+      const updatedProgress: ListeningProgress = {
+        ...progress,
+        progress: currentProgress,
+        timestamp: new Date().toISOString(),
+        completed: currentProgress >= 0.99
+      };
+      setProgress(updatedProgress);
+      // Sauvegarder la progression
+      // audiobookService.saveProgress(updatedProgress)
     }
   }
 

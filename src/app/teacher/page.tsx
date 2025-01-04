@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, Users, BookOpen, Award, TrendingUp, Search, Loader2 } from 'lucide-react';
 import { mockTeachers, mockStudents, mockProgress } from '@/data/users';
 import type { StudentProgress } from '@/data/users';
+import type { Teacher } from '@/types/teacher';
 import StudentProgress from '@/components/teacher/StudentProgress';
 import { Toaster } from 'react-hot-toast';
 import { Button } from '@/components/ui/ios-button';
@@ -40,7 +41,7 @@ const calculateOverallProgress = (progress: StudentProgress) => {
 
 const TeacherDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const [teacher, setTeacher] = useState<any>(null);
+  const [teacher, setTeacher] = useState<Teacher | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -49,12 +50,15 @@ const TeacherDashboard = () => {
     const loadData = async () => {
       try {
         setIsLoading(true);
+        // Simuler un appel API
         await new Promise(resolve => setTimeout(resolve, 1000));
-        const teacherData = mockTeachers[LOGGED_IN_TEACHER_ID];
-        if (!teacherData) throw new Error("Enseignant non trouvé");
-        setTeacher(teacherData);
+        const foundTeacher = mockTeachers.find(t => t.id === LOGGED_IN_TEACHER_ID);
+        if (!foundTeacher) {
+          throw new Error('Enseignant non trouvé');
+        }
+        setTeacher(foundTeacher as Teacher);
       } catch (err) {
-        setError("Une erreur est survenue lors du chargement des données");
+        setError(err instanceof Error ? err.message : 'Une erreur est survenue');
       } finally {
         setIsLoading(false);
       }

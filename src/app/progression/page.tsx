@@ -9,7 +9,24 @@ import { badges, levels } from '@/data/achievements';
 import { characters } from '@/data/characters';
 import WeeklyProgressChart from '@/components/charts/WeeklyProgressChart';
 
-const weeklyData = [
+interface WeeklyData {
+  day: 'Lun' | 'Mar' | 'Mer' | 'Jeu' | 'Ven' | 'Sam' | 'Dim';
+  value: number;
+  label: string;
+}
+
+interface ProgressStat {
+  label: string;
+  value: string;
+  icon: any;
+  color: 'blue' | 'yellow' | 'green' | 'purple' | 'red' | 'orange';
+  trend?: {
+    direction: 'up' | 'down';
+    percentage: number;
+  };
+}
+
+const weeklyData: WeeklyData[] = [
   { day: 'Lun', value: 45, label: 'Lundi : 45 minutes' },
   { day: 'Mar', value: 40, label: 'Mardi : 40 minutes' },
   { day: 'Mer', value: 60, label: 'Mercredi : 60 minutes' },
@@ -22,18 +39,26 @@ const weeklyData = [
 const ProgressPage: FC = () => {
   const { progress } = useProgress();
 
-  const stats = [
+  const stats: ProgressStat[] = [
     {
       label: 'Niveau actuel',
       value: '12',
       icon: Target,
-      color: 'blue'
+      color: 'blue',
+      trend: {
+        direction: 'up',
+        percentage: 15
+      }
     },
     {
       label: 'Points XP',
       value: '2,450',
       icon: Star,
-      color: 'yellow'
+      color: 'yellow',
+      trend: {
+        direction: 'up',
+        percentage: 8
+      }
     },
     {
       label: 'Temps total',
@@ -45,7 +70,11 @@ const ProgressPage: FC = () => {
       label: 'Leçons complétées',
       value: '45',
       icon: Book,
-      color: 'purple'
+      color: 'purple',
+      trend: {
+        direction: 'up',
+        percentage: 12
+      }
     }
   ];
 

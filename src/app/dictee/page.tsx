@@ -5,14 +5,39 @@ import Link from 'next/link';
 import { ArrowLeft, Volume2, RefreshCcw, CheckCircle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/ios-button';
 
+interface DictationResult {
+  score: number;
+  correctWords: string[];
+  mistakes: {
+    word: string;
+    expected: string;
+    position: number;
+  }[];
+  timeSpent: number;
+}
+
+interface Dictation {
+  id: string;
+  text: string;
+  level: 'CE1' | 'CE2' | 'CM1' | 'CM2';
+  category: 'grammaire' | 'conjugaison' | 'orthographe';
+  duration: number; // en secondes
+}
+
 // Texte de démonstration (à remplacer par une vraie base de données)
-const demoText = "L'été dernier, nous sommes allés en vacances à la mer. Le soleil brillait tous les jours, et nous avons passé beaucoup de temps à nager et à construire des châteaux de sable.";
+const demoDictation: Dictation = {
+  id: '1',
+  text: "L'été dernier, nous sommes allés en vacances à la mer. Le soleil brillait tous les jours, et nous avons passé beaucoup de temps à nager et à construire des châteaux de sable.",
+  level: 'CE2',
+  category: 'orthographe',
+  duration: 120
+};
 
 const DicteePage: FC = () => {
   const [userInput, setUserInput] = useState('');
   const [isPlaying, setIsPlaying] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
-  const [score, setScore] = useState<number | null>(null);
+  const [result, setResult] = useState<DictationResult | null>(null);
 
   const playDictation = async () => {
     setIsPlaying(true);
@@ -32,13 +57,29 @@ const DicteePage: FC = () => {
       // Simuler la vérification
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Calculer le score (exemple simple)
-      const words = demoText.toLowerCase().split(' ');
+      // Calculer le score
+      const words = demoDictation.text.toLowerCase().split(' ');
       const userWords = userInput.toLowerCase().split(' ');
       const correctWords = words.filter((word, index) => word === userWords[index]);
-      const percentage = Math.round((correctWords.length / words.length) * 100);
+      const mistakes = words.map((word, index) => {
+        if (word !== userWords[index]) {
+          return {
+            word: userWords[index] || '',
+            expected: word,
+            position: index
+          };
+        }
+        return null;
+      }).filter((mistake): mistake is NonNullable<typeof mistake> => mistake !== null);
+
+      const result: DictationResult = {
+        score: Math.round((correctWords.length / words.length) * 100),
+        correctWords,
+        mistakes,
+        timeSpent: 0 // À implémenter avec un vrai chronomètre
+      };
       
-      setScore(percentage);
+      setResult(result);
     } finally {
       setIsChecking(false);
     }
@@ -103,7 +144,7 @@ const DicteePage: FC = () => {
             <Button
               onClick={() => {
                 setUserInput('');
-                setScore(null);
+                setResult(null);
               }}
               className="min-h-[44px] flex items-center space-x-2"
               disabled={!userInput}
@@ -128,18 +169,27 @@ const DicteePage: FC = () => {
             </Button>
           </div>
 
-          {score !== null && (
+          {result !== null && (
             <div className={`p-4 rounded-lg ${
-              score >= 80 ? 'bg-green-500/10 border border-green-500/20' :
-              score >= 50 ? 'bg-yellow-500/10 border border-yellow-500/20' :
+              result.score >= 80 ? 'bg-green-500/10 border border-green-500/20' :
+              result.score >= 50 ? 'bg-yellow-500/10 border border-yellow-500/20' :
               'bg-red-500/10 border border-red-500/20'
             }`}>
               <p className="text-center font-medium">
-                Score : {score}%
-                {score >= 80 && ' - Excellent !'}
-                {score >= 50 && score < 80 && ' - Continue comme ça !'}
-                {score < 50 && ' - Essaie encore !'}
+                Score : {result.score}%
+                {result.score >= 80 && ' - Excellent !'}
+                {result.score >= 50 && result.score < 80 && ' - Continue comme ça !'}
+                {result.score < 50 && ' - Essaie encore !'}
               </p>
+              <ul>
+                {result.mistakes.map((mistake, index) => (
+                  <li key={index}>
+                    <p>
+                      Mot {index + 1} : {mistake.word} (attendu : {mistake.expected})
+                    </p>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
         </div>

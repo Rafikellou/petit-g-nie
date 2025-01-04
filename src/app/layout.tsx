@@ -4,13 +4,31 @@ import { Inter } from 'next/font/google'
 import Link from 'next/link'
 import { AchievementsProvider } from '@/contexts/AchievementsContext';
 import { Users, GraduationCap } from 'lucide-react';
+import { Metadata, Viewport } from 'next';
 
 const inter = Inter({ subsets: ['latin'] })
 
-export const metadata = {
+interface AppleWebAppMetadata {
+  capable: boolean;
+  statusBarStyle: 'default' | 'black' | 'black-translucent';
+  title: string;
+}
+
+interface AppMetadata extends Metadata {
+  viewport: Viewport;
+  themeColor: string;
+  appleWebApp: AppleWebAppMetadata;
+  manifest: string;
+}
+
+export const metadata: AppMetadata = {
   title: 'Petit Génie',
   description: 'Une application éducative interactive',
-  viewport: 'width=device-width, initial-scale=1, viewport-fit=cover',
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    viewportFit: 'cover',
+  },
   themeColor: '#6C5DD3',
   appleWebApp: {
     capable: true,
@@ -20,11 +38,11 @@ export const metadata = {
   manifest: '/manifest.json',
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+interface RootLayoutProps {
+  children: React.ReactNode;
+}
+
+export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="fr" className="h-full">
       <head>
