@@ -31,6 +31,22 @@ const calculateOverallProgress = (progress: StudentProgressType) => {
   return totalStories > 0 ? (storiesCompleted / totalStories) * 100 : 0;
 };
 
+interface Teacher {
+  id: string;
+  class: {
+    name: string;
+    students: {
+      id: string;
+      name: string;
+      class: string;
+      progress: StudentProgressType;
+    }[];
+  };
+  stats: {
+    averageClassProgress: number;
+  };
+}
+
 const TeacherDashboard: FC = () => {
   const [teacher, setTeacher] = useState<Teacher | null>(null);
   const [loading, setLoading] = useState(true);
@@ -182,8 +198,12 @@ const TeacherDashboard: FC = () => {
       {/* Modal de progression détaillée */}
       {selectedStudentId && (
         <StudentProgressComponent
-          student={teacher.class.students.find(s => s.id === selectedStudentId)!}
-          progress={teacher.class.students.find(s => s.id === selectedStudentId)!.progress}
+          student={{
+            id: selectedStudentId,
+            name: teacher.class.students.find(s => s.id === selectedStudentId)?.name || '',
+            class: teacher.class.name
+          }}
+          progress={teacher.class.students.find(s => s.id === selectedStudentId)?.progress || {}}
           onClose={() => setSelectedStudentId(null)}
         />
       )}

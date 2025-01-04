@@ -19,6 +19,7 @@ interface StudentProgressProps {
     level?: number;
     quizResults?: Record<string, any>;
     storiesProgress?: Record<string, any>;
+    badges?: string[];
   };
   onClose: () => void;
 }
@@ -27,176 +28,156 @@ export const StudentProgressComponent: React.FC<StudentProgressProps> = ({ stude
   const [activeTab, setActiveTab] = React.useState<'progress' | 'notes'>('progress');
 
   // Préparer les données pour les graphiques
-  const progressData = Object.entries(progress.quizResults || {}).map(([quizId, result]: [string, any]) => ({
-    date: new Date(result.completedAt).toLocaleDateString(),
+  const quizData = Object.entries(progress.quizResults || {}).map(([quizId, result]) => ({
+    name: `Quiz ${quizId}`,
     score: result.score,
-    quiz: quizId
   }));
 
-  const readingData = Object.entries(progress.storiesProgress || {}).map(([storyId, story]: [string, any]) => ({
-    story: story.title,
-    time: story.readingTime || 0
+  const storiesData = Object.entries(progress.storiesProgress || {}).map(([storyId, data]) => ({
+    name: `Histoire ${storyId}`,
+    completed: data.completed ? 100 : 0,
   }));
 
-  // Exporter les données
-  const exportData = () => {
-    const data = {
-      'Informations élève': {
-        Nom: student.name,
-        Classe: student.class,
-        Niveau: progress.level || 1
-      },
-      'Résultats des quiz': progressData,
-      'Histoires lues': readingData,
-      Badges: progress.badges || []
-    };
-
-    const wb = XLSX.utils.book_new();
-    
-    Object.entries(data).forEach(([sheetName, sheetData]) => {
-      const ws = XLSX.utils.json_to_sheet(
-        Array.isArray(sheetData) ? sheetData : [sheetData]
-      );
-      XLSX.utils.book_append_sheet(wb, ws, sheetName);
-    });
-
-    XLSX.writeFile(wb, `progression_${student.name.replace(' ', '_')}.xlsx`);
-    toast.success('Données exportées avec succès');
+  const handleExportData = () => {
+    try {
+      const workbook = XLSX.utils.book_new();
+      
+      // Créer la feuille de données de quiz
+      const quizWorksheet = XLSX.utils.json_to_sheet(quizData);
+      XLSX.utils.book_append_sheet(workbook, quizWorksheet, "Quiz Results");
+      
+      // Créer la feuille de données d'histoires
+      const storiesWorksheet = XLSX.utils.json_to_sheet(storiesData);
+      XLSX.utils.book_append_sheet(workbook, storiesWorksheet, "Stories Progress");
+      
+      // Sauvegarder le fichier
+      XLSX.writeFile(workbook, `${student.name}_progress_${new Date().toISOString().split('T')[0]}.xlsx`);
+      
+      toast.success('Données exportées avec succès !');
+    } catch (error) {
+      console.error('Erreur lors de l\'export:', error);
+      toast.error('Erreur lors de l\'export des données');
+    }
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">
-          Progrès de {student.name}
-        </h2>
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => toast('Aucune nouvelle notification')}
-            className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
-          >
-            <BellIcon className="w-5 h-5" />
-          </button>
-          <button
-            onClick={exportData}
-            className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
-          >
-            <ArrowDownTrayIcon className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+      <div className="bg-surface-dark rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-auto">
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold">Progression de {student.name}</h2>
+            <button
+              onClick={onClose}
+              className="text-white/60 hover:text-white transition"
+            >
+              ✕
+            </button>
+          </div>
 
-      <div className="flex gap-2">
-        <button
-          onClick={() => setActiveTab('progress')}
-          className={`px-4 py-2 rounded-lg transition-colors ${
-            activeTab === 'progress' ? 'bg-white/20' : 'bg-white/5 hover:bg-white/10'
-          }`}
-        >
-          Progression
-        </button>
-        <button
-          onClick={() => setActiveTab('notes')}
-          className={`px-4 py-2 rounded-lg transition-colors ${
-            activeTab === 'notes' ? 'bg-white/20' : 'bg-white/5 hover:bg-white/10'
-          }`}
-        >
-          Notes
-        </button>
-      </div>
+          {/* Tabs */}
+          <div className="flex space-x-4 mb-6">
+            <button
+              className={`px-4 py-2 rounded-lg transition ${
+                activeTab === 'progress'
+                  ? 'bg-primary text-white'
+                  : 'bg-white/5 hover:bg-white/10'
+              }`}
+              onClick={() => setActiveTab('progress')}
+            >
+              Progression
+            </button>
+            <button
+              className={`px-4 py-2 rounded-lg transition ${
+                activeTab === 'notes'
+                  ? 'bg-primary text-white'
+                  : 'bg-white/5 hover:bg-white/10'
+              }`}
+              onClick={() => setActiveTab('notes')}
+            >
+              Notes
+            </button>
+          </div>
 
-      {activeTab === 'progress' && (
-        <div className="grid md:grid-cols-2 gap-8">
-          <div className="bg-white/5 rounded-lg p-6">
-            <h3 className="text-lg font-bold mb-4">Progression des scores</h3>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={progressData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                  <XAxis 
-                    dataKey="date" 
-                    stroke="rgba(255,255,255,0.5)"
-                    tick={{ fill: 'rgba(255,255,255,0.5)' }}
-                  />
-                  <YAxis 
-                    stroke="rgba(255,255,255,0.5)"
-                    tick={{ fill: 'rgba(255,255,255,0.5)' }}
-                  />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'rgba(0,0,0,0.8)',
-                      border: 'none',
-                      borderRadius: '8px',
-                      color: 'white'
-                    }}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="score" 
-                    stroke="#6366f1" 
-                    strokeWidth={2}
-                    dot={{ fill: '#6366f1' }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+          {/* Contenu */}
+          {activeTab === 'progress' ? (
+            <div className="space-y-6">
+              {/* Statistiques générales */}
+              <div className="grid grid-cols-3 gap-4">
+                <div className="glass-card p-4">
+                  <div className="text-sm text-white/60 mb-1">Niveau</div>
+                  <div className="text-2xl font-bold">{progress.level || 1}</div>
+                </div>
+                <div className="glass-card p-4">
+                  <div className="text-sm text-white/60 mb-1">Quiz complétés</div>
+                  <div className="text-2xl font-bold">
+                    {Object.keys(progress.quizResults || {}).length}
+                  </div>
+                </div>
+                <div className="glass-card p-4">
+                  <div className="text-sm text-white/60 mb-1">Badges</div>
+                  <div className="text-2xl font-bold">
+                    {progress.badges?.length || 0}
+                  </div>
+                </div>
+              </div>
+
+              {/* Graphiques */}
+              <div className="space-y-6">
+                <div className="glass-card p-4">
+                  <h3 className="text-lg font-semibold mb-4">Progression des quiz</h3>
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={quizData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip />
+                        <Line type="monotone" dataKey="score" stroke="#8884d8" />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+
+                <div className="glass-card p-4">
+                  <h3 className="text-lg font-semibold mb-4">Histoires complétées</h3>
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={storiesData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip />
+                        <Bar dataKey="completed" fill="#82ca9d" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex justify-end space-x-4">
+                <button
+                  onClick={handleExportData}
+                  className="flex items-center space-x-2 px-4 py-2 bg-primary rounded-lg hover:bg-primary/80 transition"
+                >
+                  <ArrowDownTrayIcon className="w-5 h-5" />
+                  <span>Exporter les données</span>
+                </button>
+              </div>
             </div>
-          </div>
-
-          <div className="bg-white/5 rounded-lg p-6">
-            <h3 className="text-lg font-bold mb-4">Temps de lecture par histoire</h3>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={readingData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                  <XAxis 
-                    dataKey="story" 
-                    stroke="rgba(255,255,255,0.5)"
-                    tick={{ fill: 'rgba(255,255,255,0.5)' }}
-                  />
-                  <YAxis 
-                    stroke="rgba(255,255,255,0.5)"
-                    tick={{ fill: 'rgba(255,255,255,0.5)' }}
-                  />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: 'rgba(0,0,0,0.8)',
-                      border: 'none',
-                      borderRadius: '8px',
-                      color: 'white'
-                    }}
-                  />
-                  <Bar dataKey="time" fill="#22c55e" />
-                </BarChart>
-              </ResponsiveContainer>
+          ) : (
+            <div className="space-y-4">
+              <div className="glass-card p-4">
+                <h3 className="text-lg font-semibold mb-4">Notes de l'enseignant</h3>
+                <textarea
+                  className="w-full h-32 bg-white/5 rounded-lg p-3 text-white placeholder-white/40"
+                  placeholder="Ajouter une note..."
+                />
+              </div>
             </div>
-          </div>
-        </div>
-      )}
-
-      {activeTab === 'notes' && (
-        <div className="bg-white/5 rounded-lg p-6">
-          <h3 className="text-lg font-bold mb-4">Notes et objectifs</h3>
-          <p className="text-white/70">Fonctionnalité en cours de développement...</p>
-        </div>
-      )}
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-white/5 rounded-lg p-4">
-          <div className="text-sm text-white/70 mb-1">Score moyen</div>
-          <div className="text-2xl font-bold">
-            {Math.round(
-              progressData.reduce((sum, data) => sum + data.score, 0) / 
-              (progressData.length || 1)
-            )}%
-          </div>
-        </div>
-        <div className="bg-white/5 rounded-lg p-4">
-          <div className="text-sm text-white/70 mb-1">Temps total de lecture</div>
-          <div className="text-2xl font-bold">
-            {readingData.reduce((sum, data) => sum + data.time, 0)} min
-          </div>
+          )}
         </div>
       </div>
     </div>
   );
-}
+};
