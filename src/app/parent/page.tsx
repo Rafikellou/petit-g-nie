@@ -1,6 +1,6 @@
 'use client';
 
-import { Card } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Clock, Lock, LockKeyhole } from 'lucide-react';
 
@@ -33,13 +33,13 @@ export default function ParentPage() {
       <div className="grid gap-8">
         {/* Temps d'utilisation */}
         <Card>
-          <Card.Header>
+          <CardHeader>
             <div className="flex items-center gap-3">
               <Clock className="w-5 h-5 text-turquoise-500" />
-              <Card.Title>Temps d'utilisation</Card.Title>
+              <CardTitle>Temps d'utilisation</CardTitle>
             </div>
-          </Card.Header>
-          <Card.Content>
+          </CardHeader>
+          <CardContent>
             <Tabs defaultValue="day" className="w-full">
               <TabsList>
                 {timeFrames.map(frame => (
@@ -48,49 +48,45 @@ export default function ParentPage() {
                   </TabsTrigger>
                 ))}
               </TabsList>
-
               {timeFrames.map(frame => (
                 <TabsContent key={frame.value} value={frame.value}>
-                  <div className="h-64 flex items-center justify-center text-gray-500">
-                    Graphique du temps d'utilisation - {frame.label}
+                  <div className="mt-4">
+                    <p>Statistiques pour {frame.label.toLowerCase()}</p>
                   </div>
                 </TabsContent>
               ))}
             </Tabs>
-          </Card.Content>
+          </CardContent>
         </Card>
 
-        {/* Restrictions des catégories */}
+        {/* Restrictions par catégorie */}
         <Card>
-          <Card.Header>
+          <CardHeader>
             <div className="flex items-center gap-3">
               <Lock className="w-5 h-5 text-turquoise-500" />
-              <Card.Title>Restrictions des catégories</Card.Title>
+              <CardTitle>Restrictions par catégorie</CardTitle>
             </div>
-            <Card.Description>
+            <CardDescription>
               Définissez les restrictions pour chaque catégorie de contenu
-            </Card.Description>
-          </Card.Header>
-          <Card.Content>
-            <div className="space-y-4">
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4">
               {categories.map(category => (
-                <div
-                  key={category.id}
-                  className="flex items-center justify-between p-4 bg-gray-900 rounded-lg"
-                >
-                  <span className="font-medium">{category.name}</span>
-                  <div className="flex items-center gap-4">
-                    <button className="px-3 py-1.5 text-sm rounded-lg bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20">
-                      Restreindre
+                <div key={category.id} className="flex items-center justify-between p-4 rounded-lg bg-gray-900/50">
+                  <span>{category.name}</span>
+                  <div className="flex gap-2">
+                    <button className="px-3 py-1.5 rounded bg-gray-800 hover:bg-gray-700 transition-colors">
+                      <Lock className="w-4 h-4" />
                     </button>
-                    <button className="px-3 py-1.5 text-sm rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20">
-                      Interdire
+                    <button className="px-3 py-1.5 rounded bg-gray-800 hover:bg-gray-700 transition-colors">
+                      <LockKeyhole className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
               ))}
             </div>
-          </Card.Content>
+          </CardContent>
         </Card>
       </div>
     </div>

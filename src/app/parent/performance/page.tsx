@@ -1,6 +1,6 @@
 'use client';
 
-import { Card } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Brain, Book, Gamepad, Laugh } from 'lucide-react';
 
 const performanceAreas = [
@@ -51,26 +51,24 @@ export default function PerformancePage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        {performanceAreas.map((area) => (
+        {performanceAreas.map(area => (
           <Card key={area.name}>
-            <Card.Header>
+            <CardHeader>
               <div className="flex items-center gap-3">
                 <area.icon className="w-5 h-5 text-turquoise-500" />
-                <Card.Title>{area.name}</Card.Title>
+                <CardTitle>{area.name}</CardTitle>
               </div>
-            </Card.Header>
-            <Card.Content>
-              <div className="grid grid-cols-2 gap-4">
-                {area.stats.map((stat) => (
-                  <div key={stat.label} className="space-y-1">
-                    <p className="text-sm text-gray-400">{stat.label}</p>
-                    <p className="text-2xl font-semibold text-white">
-                      {stat.value}
-                    </p>
+            </CardHeader>
+            <CardContent>
+              <dl className="grid grid-cols-2 gap-4">
+                {area.stats.map(stat => (
+                  <div key={stat.label}>
+                    <dt className="text-sm text-gray-400">{stat.label}</dt>
+                    <dd className="text-2xl font-semibold text-white">{stat.value}</dd>
                   </div>
                 ))}
-              </div>
-            </Card.Content>
+              </dl>
+            </CardContent>
           </Card>
         ))}
       </div>

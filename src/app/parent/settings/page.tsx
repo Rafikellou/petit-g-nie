@@ -1,6 +1,6 @@
 'use client';
 
-import { Card } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { UserPlus, School, UserX, User } from 'lucide-react';
@@ -42,114 +42,101 @@ export default function SettingsPage() {
         {/* Profils des enfants */}
         {children.map(child => (
           <Card key={child.id}>
-            <Card.Header>
+            <CardHeader>
               <div className="flex items-center gap-3">
                 <User className="w-5 h-5 text-turquoise-500" />
-                <Card.Title>Profil de {child.firstName}</Card.Title>
+                <CardTitle>Profil de {child.firstName}</CardTitle>
               </div>
-            </Card.Header>
-            <Card.Content>
-              <div className="grid gap-6">
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="text-sm font-medium mb-1.5 block">
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
                       Prénom
                     </label>
                     <Input
-                      defaultValue={child.firstName}
-                      className="bg-gray-900"
+                      type="text"
+                      value={child.firstName}
+                      className="w-full"
                     />
                   </div>
                   <div>
-                    <label className="text-sm font-medium mb-1.5 block">
+                    <label className="block text-sm font-medium text-gray-400 mb-1">
                       Nom
                     </label>
                     <Input
-                      defaultValue={child.lastName}
-                      className="bg-gray-900"
+                      type="text"
+                      value={child.lastName}
+                      className="w-full"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-sm font-medium mb-1.5 block">
+                  <label className="block text-sm font-medium text-gray-400 mb-1">
                     Classe
                   </label>
-                  <select
-                    value={child.class}
-                    onChange={(e) => handleClassChange(child.id, e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-900 border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-turquoise-500"
-                  >
-                    <option value="CP">CP</option>
-                    <option value="CE1">CE1</option>
-                    <option value="CE2">CE2</option>
-                    <option value="CM1">CM1</option>
-                    <option value="CM2">CM2</option>
-                  </select>
+                  <div className="flex gap-2">
+                    <select
+                      value={child.class}
+                      onChange={(e) => handleClassChange(child.id, e.target.value)}
+                      className="flex-1 rounded-md bg-gray-900 border border-gray-800 px-3 py-2 text-sm"
+                    >
+                      <option value="CP">CP</option>
+                      <option value="CE1">CE1</option>
+                      <option value="CE2">CE2</option>
+                      <option value="CM1">CM1</option>
+                      <option value="CM2">CM2</option>
+                    </select>
+                    <Button variant="outline" size="icon">
+                      <School className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="flex justify-end">
-                  <Button
-                    variant="destructive"
-                    onClick={() => setShowConfirmation(true)}
-                    className="flex items-center gap-2"
-                  >
-                    <UserX className="w-4 h-4" />
+                  <Button variant="destructive" size="sm">
+                    <UserX className="w-4 h-4 mr-2" />
                     Fermer le profil
                   </Button>
                 </div>
               </div>
-            </Card.Content>
+            </CardContent>
           </Card>
         ))}
 
-        {/* Ajouter un enfant */}
-        <Card>
-          <Card.Header>
-            <div className="flex items-center gap-3">
-              <UserPlus className="w-5 h-5 text-turquoise-500" />
-              <Card.Title>Ajouter un enfant</Card.Title>
-            </div>
-          </Card.Header>
-          <Card.Content>
-            <Button className="w-full flex items-center justify-center gap-2">
-              <UserPlus className="w-4 h-4" />
-              Ajouter un nouveau profil
-            </Button>
-          </Card.Content>
-        </Card>
+        {/* Ajouter un profil */}
+        <Button className="w-full">
+          <UserPlus className="w-4 h-4 mr-2" />
+          Ajouter un profil
+        </Button>
       </div>
 
       {/* Modal de confirmation */}
-      {showConfirmation && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-gray-900 p-6 rounded-xl w-full max-w-sm mx-4">
-            <h3 className="text-xl font-semibold mb-4">
-              Confirmer le changement
-            </h3>
-            <p className="text-gray-400 mb-6">
-              {selectedChild 
-                ? `Êtes-vous sûr de vouloir changer la classe de ${selectedChild.firstName} ? Cela modifiera son affectation et son niveau académique.`
-                : 'Êtes-vous sûr de vouloir fermer ce profil ? Cette action est irréversible.'}
-            </p>
-            <div className="flex justify-end gap-4">
-              <Button
-                variant="ghost"
-                onClick={() => setShowConfirmation(false)}
-              >
-                Annuler
-              </Button>
-              <Button
-                variant="destructive"
-                onClick={() => {
-                  // Logique de confirmation
-                  setShowConfirmation(false);
-                }}
-              >
-                Confirmer
-              </Button>
-            </div>
-          </div>
+      {showConfirmation && selectedChild && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+          <Card className="w-full max-w-md mx-4">
+            <CardHeader>
+              <CardTitle>Confirmer le changement de classe</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-400">
+                Êtes-vous sûr de vouloir changer la classe de {selectedChild.firstName} ?
+              </p>
+              <div className="flex justify-end gap-2 mt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowConfirmation(false)}
+                >
+                  Annuler
+                </Button>
+                <Button onClick={() => setShowConfirmation(false)}>
+                  Confirmer
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
     </div>
