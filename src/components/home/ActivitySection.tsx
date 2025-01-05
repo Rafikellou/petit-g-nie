@@ -64,7 +64,13 @@ export function ActivitySection({ title, description, activities, isMainTitle }:
           <motion.div key={activity.href} variants={item}>
             <Link
               href={activity.href}
-              className="block glass-card hover:scale-[1.02] transition-all hover:shadow-lg relative overflow-hidden rounded-2xl bg-[#1a1f2e]/60 backdrop-blur-sm h-[180px]"
+              className={`block glass-card hover:scale-[1.02] transition-all hover:shadow-lg relative overflow-hidden rounded-2xl backdrop-blur-sm h-[180px] ${
+                activity.isCompleted !== undefined
+                  ? activity.isCompleted
+                    ? 'bg-[#1a1f2e]/60'
+                    : 'bg-[#1a1f2e]/90'
+                  : 'bg-[#1a1f2e]/60'
+              }`}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent" />
               
@@ -80,12 +86,12 @@ export function ActivitySection({ title, description, activities, isMainTitle }:
                       <div className={`absolute top-4 right-4 rounded-full p-1 ${
                         activity.isCompleted 
                           ? 'bg-green-500/20 text-green-400' 
-                          : 'bg-red-500/20 text-red-400'
+                          : 'bg-red-500/30 text-red-500'
                       }`}>
                         <div className={`w-2 h-2 rounded-full ${
                           activity.isCompleted 
                             ? 'bg-green-400' 
-                            : 'bg-red-400'
+                            : 'bg-red-500'
                         }`} />
                       </div>
                     )}

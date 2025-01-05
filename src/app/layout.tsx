@@ -56,7 +56,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
                         priority
                       />
                     </div>
-                    <span className="text-lg sm:text-xl font-semibold text-gradient">Futur Génie</span>
+                    <span className="text-lg sm:text-xl font-semibold text-gradient">La Salle Rouen</span>
                   </Link>
                   <div className="flex items-center gap-2 sm:gap-4">
                     <Link 
