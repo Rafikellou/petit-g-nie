@@ -37,32 +37,57 @@ export default function TeacherLayout({
 
   return (
     <div className="min-h-screen bg-gray-950">
-      <div className="border-b border-gray-800">
-        <nav className="container mx-auto px-4 sm:px-6">
-          <ul className="flex space-x-8 overflow-x-auto">
+      {/* Navigation fixe en haut */}
+      <nav className="fixed top-[64px] left-0 right-0 z-10 bg-gray-900 border-b border-gray-800">
+        <div className="container mx-auto px-4">
+          {/* Version desktop */}
+          <div className="hidden md:flex space-x-8">
             {tabs.map((tab) => {
               const isActive = pathname === tab.href;
               return (
-                <li key={tab.href}>
-                  <Link
-                    href={tab.href}
-                    className={cn(
-                      'flex items-center gap-2 border-b-2 px-1 py-4 text-sm font-medium',
-                      isActive
-                        ? 'border-turquoise-500 text-turquoise-500'
-                        : 'border-transparent text-gray-400 hover:border-gray-300 hover:text-gray-300'
-                    )}
-                  >
-                    <tab.icon className="h-5 w-5" />
-                    {tab.name}
-                  </Link>
-                </li>
+                <Link
+                  key={tab.href}
+                  href={tab.href}
+                  className={cn(
+                    'flex items-center gap-2 border-b-2 px-1 py-4 text-sm font-medium transition-colors',
+                    isActive
+                      ? 'border-turquoise-500 text-turquoise-500'
+                      : 'border-transparent text-gray-400 hover:border-gray-300 hover:text-gray-300'
+                  )}
+                >
+                  <tab.icon className="h-5 w-5" />
+                  {tab.name}
+                </Link>
               );
             })}
-          </ul>
-        </nav>
-      </div>
-      <main className="container mx-auto px-4 sm:px-6 py-8">
+          </div>
+
+          {/* Version mobile */}
+          <div className="flex md:hidden overflow-x-auto py-2 gap-4">
+            {tabs.map((tab) => {
+              const isActive = pathname === tab.href;
+              return (
+                <Link
+                  key={tab.href}
+                  href={tab.href}
+                  className={cn(
+                    'flex flex-col items-center gap-1 px-3 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap',
+                    isActive
+                      ? 'bg-turquoise-500/10 text-turquoise-500'
+                      : 'text-gray-400 hover:bg-gray-800 hover:text-gray-300'
+                  )}
+                >
+                  <tab.icon className="h-5 w-5" />
+                  {tab.name}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      </nav>
+
+      {/* Contenu principal avec padding-top pour éviter le chevauchement */}
+      <main className="container mx-auto px-4 pt-[144px] pb-8">
         {children}
       </main>
     </div>
