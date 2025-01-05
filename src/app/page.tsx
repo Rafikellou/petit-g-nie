@@ -35,22 +35,6 @@ const recommendedActivities = [
 
 const trainingActivities = [
   {
-    href: '/stories',
-    title: 'Lire une Histoire',
-    description: 'Découvre des histoires passionnantes et améliore ta lecture',
-    icon: BookOpen,
-    color: 'text-purple-400',
-    bgGradient: 'from-purple-900/40 to-purple-800/40'
-  },
-  {
-    href: '/listen',
-    title: 'Écouter une Histoire',
-    description: 'Plonge dans un monde d\'histoires captivantes racontées par nos personnages',
-    icon: Headphones,
-    color: 'text-emerald-400',
-    bgGradient: 'from-emerald-900/40 to-emerald-800/40'
-  },
-  {
     href: '/quiz',
     title: 'Quiz',
     description: 'Teste tes connaissances avec des quiz amusants et éducatifs',
@@ -59,20 +43,12 @@ const trainingActivities = [
     bgGradient: 'from-yellow-900/40 to-yellow-800/40'
   },
   {
-    href: '/blagues',
-    title: 'Blagues',
-    description: 'Amuse-toi avec des blagues et des devinettes',
-    icon: LightbulbIcon,
-    color: 'text-rose-400',
-    bgGradient: 'from-rose-900/40 to-rose-800/40'
-  },
-  {
-    href: '/creer-histoire',
-    title: 'Créer une Histoire',
-    description: 'Laisse libre cours à ton imagination',
-    icon: Wand2,
-    color: 'text-blue-400',
-    bgGradient: 'from-blue-900/40 to-blue-800/40'
+    href: '/dictee',
+    title: 'Dictée',
+    description: 'Améliore ton orthographe et ta grammaire',
+    icon: PenTool,
+    color: 'text-emerald-400',
+    bgGradient: 'from-emerald-900/40 to-emerald-800/40'
   },
   {
     href: '/english',
@@ -161,8 +137,8 @@ export default function Home() {
         />
 
         <ActivitySection
-          title="S'entraîner"
-          description="Améliore tes compétences avec ces exercices"
+          title="Amélioration continue"
+          description="Exercices pour renforcer tes compétences"
           activities={trainingActivities}
         />
 
