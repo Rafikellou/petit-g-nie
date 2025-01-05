@@ -13,7 +13,6 @@ import {
   BookOpenCheck
 } from 'lucide-react';
 import { ActivitySection } from '@/components/home/ActivitySection';
-import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 
 const recommendedActivities = [
@@ -116,7 +115,6 @@ const funActivities = [
 export default function Home() {
   return (
     <>
-      <Header />
       <main className="min-h-screen safe-area-inset pt-24">
         {/* Effets d'arrière-plan */}
         <div className="fixed inset-0 pointer-events-none">
