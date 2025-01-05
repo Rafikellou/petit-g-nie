@@ -13,6 +13,8 @@ import {
   BookOpenCheck
 } from 'lucide-react';
 import { ActivitySection } from '@/components/home/ActivitySection';
+import { Header } from '@/components/layout/Header';
+import { Footer } from '@/components/layout/Footer';
 
 const recommendedActivities = [
   {
@@ -113,47 +115,51 @@ const funActivities = [
 
 export default function Home() {
   return (
-    <main className="min-h-screen safe-area-inset">
-      {/* Effets d'arrière-plan */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-[radial-gradient(circle_at_center,rgba(0,242,195,0.03),transparent_70%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(108,99,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(108,99,255,0.05)_1px,transparent_1px)] bg-[size:14px_14px]" />
-      </div>
-
-      <div className="max-w-6xl mx-auto px-6 pt-safe-top pb-safe-bottom relative">
-        <div className="text-center mb-8 md:mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold gradient-text mb-4">
-            Espace Enfant
-          </h1>
-          <p className="text-lg text-white/70">
-            Ton espace personnel pour apprendre et t'amuser
-          </p>
+    <>
+      <Header />
+      <main className="min-h-screen safe-area-inset pt-24">
+        {/* Effets d'arrière-plan */}
+        <div className="fixed inset-0 pointer-events-none">
+          <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-[radial-gradient(circle_at_center,rgba(0,242,195,0.03),transparent_70%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(108,99,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(108,99,255,0.05)_1px,transparent_1px)] bg-[size:14px_14px]" />
         </div>
 
-        <ActivitySection
-          title="Activités recommandées par ton enseignant"
-          description="Ces activités ont été spécialement choisies pour toi"
-          activities={recommendedActivities}
-        />
+        <div className="max-w-6xl mx-auto px-6 pb-safe-bottom relative">
+          <div className="text-center mb-8 md:mb-12">
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 text-transparent bg-clip-text mb-4">
+              Bienvenue sur Futur Génie !
+            </h1>
+            <p className="text-lg text-white/70">
+              Ton espace personnel pour apprendre et t'amuser
+            </p>
+          </div>
 
-        <ActivitySection
-          title="Amélioration continue"
-          description="Exercices pour renforcer tes compétences"
-          activities={trainingActivities}
-        />
+          <ActivitySection
+            title="Activités recommandées par ton enseignant"
+            description="Ces activités ont été spécialement choisies pour toi"
+            activities={recommendedActivities}
+          />
 
-        <ActivitySection
-          title="Histoires"
-          description="Découvre, lis et crée des histoires passionnantes"
-          activities={storyActivities}
-        />
+          <ActivitySection
+            title="Amélioration continue"
+            description="Exercices pour renforcer tes compétences"
+            activities={trainingActivities}
+          />
 
-        <ActivitySection
-          title="Apprendre en s'amusant"
-          description="Des activités ludiques pour apprendre différemment"
-          activities={funActivities}
-        />
-      </div>
-    </main>
+          <ActivitySection
+            title="Histoires"
+            description="Découvre, lis et crée des histoires passionnantes"
+            activities={storyActivities}
+          />
+
+          <ActivitySection
+            title="Apprendre en s'amusant"
+            description="Des activités ludiques pour apprendre différemment"
+            activities={funActivities}
+          />
+        </div>
+      </main>
+      <Footer />
+    </>
   );
 }
