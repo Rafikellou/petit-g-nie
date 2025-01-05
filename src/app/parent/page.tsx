@@ -1,226 +1,98 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { Lock, ArrowRight, RefreshCw, ArrowLeft, Mail, AlertCircle, CheckCircle } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/ios-button';
+import { Card } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Clock, Lock, LockKeyhole } from 'lucide-react';
 
-export default function ParentSpace() {
-  const router = useRouter();
-  const [pin, setPin] = useState(['', '', '', '']);
-  const [error, setError] = useState('');
-  const [showResetForm, setShowResetForm] = useState(false);
-  const [email, setEmail] = useState('');
-  const [resetSent, setResetSent] = useState(false);
+const categories = [
+  { id: 'stories-listen', name: 'Écouter une histoire' },
+  { id: 'stories-read', name: 'Lire une histoire' },
+  { id: 'stories-create', name: 'Créer une histoire' },
+  { id: 'games', name: 'Jeux éducatifs' },
+  { id: 'jokes', name: 'Blagues' }
+];
 
-  const handlePinChange = (index: number, value: string) => {
-    if (value.length > 1) return;
-    if (!/^\d*$/.test(value)) return;
+const timeFrames = [
+  { value: 'day', label: 'Aujourd\'hui' },
+  { value: 'week', label: 'Cette semaine' },
+  { value: 'month', label: 'Ce mois' }
+];
 
-    const newPin = [...pin];
-    newPin[index] = value;
-    setPin(newPin);
-
-    // Auto-focus next input
-    if (value && index < 3) {
-      const nextInput = document.getElementById(`pin-${index + 1}`);
-      nextInput?.focus();
-    }
-  };
-
-  const handlePinKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === 'Backspace' && !pin[index] && index > 0) {
-      const prevInput = document.getElementById(`pin-${index - 1}`);
-      prevInput?.focus();
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    const pinCode = pin.join('');
-    if (pinCode.length !== 4) {
-      setError('Veuillez entrer les 4 chiffres du code');
-      return;
-    }
-
-    try {
-      // Simuler une vérification du code PIN
-      if (pinCode === '1234') {
-        router.push('/parent/dashboard');
-      } else {
-        setError('Code PIN incorrect');
-      }
-    } catch (err) {
-      setError('Une erreur est survenue');
-    }
-  };
-
-  const handleResetSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    if (!email) {
-      setError('Veuillez entrer votre adresse email');
-      return;
-    }
-
-    try {
-      // Simuler l'envoi d'un email de réinitialisation
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setResetSent(true);
-    } catch (err) {
-      setError('Une erreur est survenue');
-    }
-  };
-
+export default function ParentPage() {
   return (
-    <div className="min-h-screen bg-background safe-area-inset">
-      <header className="bg-surface-dark border-b border-white/10 pt-safe-top">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Link 
-              href="/"
-              className="flex items-center space-x-2 text-white hover:text-white/80 transition tap-target touch-manipulation"
-              aria-label="Retour à l'accueil"
-            >
-              <ArrowLeft className="w-6 h-6" />
-              <span className="text-lg font-medium">Retour</span>
-            </Link>
-            <h1 className="text-xl font-bold">Espace Parents</h1>
-          </div>
-        </div>
-      </header>
+    <div>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-white mb-2">
+          Contrôle parental
+        </h1>
+        <p className="text-gray-400">
+          Gérez le temps d'utilisation et les restrictions d'accès
+        </p>
+      </div>
 
-      <main className="max-w-md mx-auto px-4 sm:px-6 py-8 space-y-8">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Lock className="w-8 h-8 text-primary" />
-          </div>
-          <h2 className="text-2xl md:text-3xl font-bold mb-2">
-            {showResetForm ? 'Réinitialiser le code' : 'Entrez votre code PIN'}
-          </h2>
-          <p className="text-white/70">
-            {showResetForm 
-              ? 'Entrez votre email pour recevoir un nouveau code'
-              : 'Accédez au suivi de votre enfant'}
-          </p>
-        </div>
+      <div className="grid gap-8">
+        {/* Temps d'utilisation */}
+        <Card>
+          <Card.Header>
+            <div className="flex items-center gap-3">
+              <Clock className="w-5 h-5 text-turquoise-500" />
+              <Card.Title>Temps d'utilisation</Card.Title>
+            </div>
+          </Card.Header>
+          <Card.Content>
+            <Tabs defaultValue="day" className="w-full">
+              <TabsList>
+                {timeFrames.map(frame => (
+                  <TabsTrigger key={frame.value} value={frame.value}>
+                    {frame.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
 
-        {!showResetForm ? (
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="flex justify-center gap-4">
-              {pin.map((digit, index) => (
-                <input
-                  key={index}
-                  id={`pin-${index}`}
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={1}
-                  value={digit}
-                  onChange={(e) => handlePinChange(index, e.target.value)}
-                  onKeyDown={(e) => handlePinKeyDown(index, e)}
-                  className="w-14 h-14 text-center text-2xl font-bold bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                />
+              {timeFrames.map(frame => (
+                <TabsContent key={frame.value} value={frame.value}>
+                  <div className="h-64 flex items-center justify-center text-gray-500">
+                    Graphique du temps d'utilisation - {frame.label}
+                  </div>
+                </TabsContent>
+              ))}
+            </Tabs>
+          </Card.Content>
+        </Card>
+
+        {/* Restrictions des catégories */}
+        <Card>
+          <Card.Header>
+            <div className="flex items-center gap-3">
+              <Lock className="w-5 h-5 text-turquoise-500" />
+              <Card.Title>Restrictions des catégories</Card.Title>
+            </div>
+            <Card.Description>
+              Définissez les restrictions pour chaque catégorie de contenu
+            </Card.Description>
+          </Card.Header>
+          <Card.Content>
+            <div className="space-y-4">
+              {categories.map(category => (
+                <div
+                  key={category.id}
+                  className="flex items-center justify-between p-4 bg-gray-900 rounded-lg"
+                >
+                  <span className="font-medium">{category.name}</span>
+                  <div className="flex items-center gap-4">
+                    <button className="px-3 py-1.5 text-sm rounded-lg bg-yellow-500/10 text-yellow-500 hover:bg-yellow-500/20">
+                      Restreindre
+                    </button>
+                    <button className="px-3 py-1.5 text-sm rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20">
+                      Interdire
+                    </button>
+                  </div>
+                </div>
               ))}
             </div>
-
-            {error && (
-              <div className="flex items-center space-x-2 text-red-400 text-sm">
-                <AlertCircle className="w-4 h-4" />
-                <span>{error}</span>
-              </div>
-            )}
-
-            <div className="space-y-4">
-              <Button
-                type="submit"
-                className="w-full min-h-[44px] flex items-center justify-center space-x-2"
-              >
-                <span>Continuer</span>
-                <ArrowRight className="w-5 h-5" />
-              </Button>
-
-              <button
-                type="button"
-                onClick={() => setShowResetForm(true)}
-                className="w-full text-sm text-white/60 hover:text-white transition tap-target touch-manipulation"
-              >
-                Code oublié ?
-              </button>
-            </div>
-          </form>
-        ) : (
-          <div className="space-y-6">
-            {resetSent ? (
-              <div className="text-center space-y-4">
-                <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto">
-                  <CheckCircle className="w-8 h-8 text-green-500" />
-                </div>
-                <p className="text-white/70">
-                  Un email de réinitialisation a été envoyé à {email}
-                </p>
-                <Button
-                  onClick={() => {
-                    setShowResetForm(false);
-                    setResetSent(false);
-                    setEmail('');
-                  }}
-                  className="w-full min-h-[44px]"
-                >
-                  Retour
-                </Button>
-              </div>
-            ) : (
-              <form onSubmit={handleResetSubmit} className="space-y-6">
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium mb-2">
-                    Adresse email
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                      placeholder="exemple@email.com"
-                    />
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
-                  </div>
-                </div>
-
-                {error && (
-                  <div className="flex items-center space-x-2 text-red-400 text-sm">
-                    <AlertCircle className="w-4 h-4" />
-                    <span>{error}</span>
-                  </div>
-                )}
-
-                <div className="space-y-4">
-                  <Button
-                    type="submit"
-                    className="w-full min-h-[44px] flex items-center justify-center space-x-2"
-                  >
-                    <RefreshCw className="w-5 h-5" />
-                    <span>Réinitialiser</span>
-                  </Button>
-
-                  <button
-                    type="button"
-                    onClick={() => setShowResetForm(false)}
-                    className="w-full text-sm text-white/60 hover:text-white transition tap-target touch-manipulation"
-                  >
-                    Retour
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-        )}
-      </main>
+          </Card.Content>
+        </Card>
+      </div>
     </div>
   );
 }
