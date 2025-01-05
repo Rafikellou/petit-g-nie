@@ -13,9 +13,6 @@ interface Activity {
   bgGradient: string;
   isNew?: boolean;
   isComingSoon?: boolean;
-  recommendedDaysAgo?: number;
-  teacherMessage?: string;
-  progress?: number;
 }
 
 interface ActivitySectionProps {
@@ -63,7 +60,7 @@ export function ActivitySection({ title, description, activities }: ActivitySect
           <motion.div key={activity.href} variants={item}>
             <Link
               href={activity.href}
-              className="block glass-card hover:scale-[1.02] transition-all hover:shadow-lg relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm"
+              className="block glass-card hover:scale-[1.02] transition-all hover:shadow-lg relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm h-[180px]"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-white/[0.075] to-white/[0.025]" />
               
@@ -79,16 +76,6 @@ export function ActivitySection({ title, description, activities }: ActivitySect
                     Bientôt
                   </span>
                 )}
-                {activity.recommendedDaysAgo !== undefined && (
-                  <span className="bg-gradient-to-r from-blue-400 to-indigo-400 text-white text-sm px-3 py-1 rounded-full font-medium">
-                    Recommandé il y a {activity.recommendedDaysAgo} jour{activity.recommendedDaysAgo > 1 ? 's' : ''}
-                  </span>
-                )}
-                {activity.teacherMessage && (
-                  <span className="bg-gradient-to-r from-purple-400 to-pink-400 text-white text-sm px-3 py-1 rounded-full font-medium max-w-[200px] truncate">
-                    "{activity.teacherMessage}"
-                  </span>
-                )}
               </div>
 
               {/* Content */}
@@ -99,20 +86,7 @@ export function ActivitySection({ title, description, activities }: ActivitySect
                   </div>
                   <div className="flex-grow min-w-0">
                     <h3 className="text-xl font-semibold mb-2 text-white">{activity.title}</h3>
-                    <p className="text-base text-white/70 mb-4">{activity.description}</p>
-                    {activity.progress !== undefined && (
-                      <div className="mt-4">
-                        <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-gradient-to-r from-green-400 to-emerald-400 rounded-full transition-all duration-500"
-                            style={{ width: `${activity.progress}%` }}
-                          />
-                        </div>
-                        <p className="text-sm text-white/50 mt-2">
-                          Progression : {activity.progress}%
-                        </p>
-                      </div>
-                    )}
+                    <p className="text-base text-white/70">{activity.description}</p>
                   </div>
                 </div>
               </div>

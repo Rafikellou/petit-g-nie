@@ -18,24 +18,18 @@ const recommendedActivities = [
   {
     href: '/quiz/recommended',
     title: 'Quiz : Les verbes du premier groupe',
-    description: 'Recommandé par Mme. Martin',
+    description: 'Révise les verbes du premier groupe',
     icon: GraduationCap,
     color: 'text-yellow-400',
-    bgGradient: 'from-yellow-500/20 to-orange-500/20',
-    recommendedDaysAgo: 2,
-    teacherMessage: "Tu as bien progressé sur les verbes, continue !",
-    progress: 60
+    bgGradient: 'from-yellow-500/20 to-orange-500/20'
   },
   {
     href: '/dictee/recommended',
     title: 'Dictée : Les homophones',
-    description: 'Recommandé par Mme. Martin',
+    description: 'Entraîne-toi sur les homophones',
     icon: PenTool,
     color: 'text-orange-400',
-    bgGradient: 'from-orange-500/20 to-yellow-500/20',
-    recommendedDaysAgo: 1,
-    teacherMessage: "Entraîne-toi sur ces homophones difficiles",
-    progress: 45
+    bgGradient: 'from-orange-500/20 to-yellow-500/20'
   }
 ];
 
