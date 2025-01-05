@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { PlusCircle, Brain, LineChart, Settings } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { MobileMenu } from '@/components/teacher/MobileMenu';
 
 // Simuler les données de l'enseignant
 const mockTeacher = {
@@ -47,20 +48,20 @@ export default function TeacherLayout({
     <div className="min-h-screen bg-gray-950">
       {/* Navigation fixe en haut avec message de bienvenue */}
       <div className="fixed top-16 left-0 right-0 z-10 bg-gray-900">
-        {/* Message de bienvenue */}
+        {/* Message de bienvenue et menu burger */}
         <div className="border-b border-gray-800">
-          <div className="container mx-auto px-4 py-4">
+          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
             <h2 className="text-xl font-medium text-gray-200">
               Bonjour {teacher.title} {teacher.lastName}
             </h2>
+            <MobileMenu tabs={tabs} />
           </div>
         </div>
 
-        {/* Navigation */}
-        <div className="border-b border-gray-800">
+        {/* Navigation desktop */}
+        <div className="hidden md:block border-b border-gray-800">
           <div className="container mx-auto px-4">
-            {/* Version desktop */}
-            <div className="hidden md:flex space-x-8">
+            <div className="flex space-x-8">
               {tabs.map((tab) => {
                 const isActive = pathname === tab.href;
                 return (
@@ -80,34 +81,12 @@ export default function TeacherLayout({
                 );
               })}
             </div>
-
-            {/* Version mobile */}
-            <div className="flex md:hidden overflow-x-auto py-2 gap-4">
-              {tabs.map((tab) => {
-                const isActive = pathname === tab.href;
-                return (
-                  <Link
-                    key={tab.href}
-                    href={tab.href}
-                    className={cn(
-                      'flex flex-col items-center gap-1 px-3 py-2 text-xs font-medium rounded-lg transition-colors whitespace-nowrap',
-                      isActive
-                        ? 'bg-turquoise-500/10 text-turquoise-500'
-                        : 'text-gray-400 hover:bg-gray-800 hover:text-gray-300'
-                    )}
-                  >
-                    <tab.icon className="h-5 w-5" />
-                    {tab.name}
-                  </Link>
-                );
-              })}
-            </div>
           </div>
         </div>
       </div>
 
       {/* Contenu principal avec padding-top ajusté */}
-      <main className="container mx-auto px-4 pt-[180px] pb-8">
+      <main className="container mx-auto px-4 pt-[120px] md:pt-[180px] pb-8">
         {children}
       </main>
     </div>
