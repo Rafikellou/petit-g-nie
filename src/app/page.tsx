@@ -35,31 +35,52 @@ const recommendedActivities = [
 
 const trainingActivities = [
   {
-    href: '/quiz',
-    title: 'Quiz',
-    description: 'Teste tes connaissances',
-    icon: GraduationCap,
-    color: 'text-yellow-400',
-    bgGradient: 'from-yellow-500/20 to-orange-500/20',
-    progress: 75
+    href: '/stories',
+    title: 'Lire une Histoire',
+    description: 'Découvre des histoires passionnantes et améliore ta lecture',
+    icon: BookOpen,
+    color: 'text-purple-400',
+    bgGradient: 'from-purple-900/40 to-purple-800/40'
   },
   {
-    href: '/dictee',
-    title: 'Dictée',
-    description: 'Améliore ton orthographe',
-    icon: PenTool,
-    color: 'text-orange-400',
-    bgGradient: 'from-orange-500/20 to-yellow-500/20',
-    progress: 40
+    href: '/listen',
+    title: 'Écouter une Histoire',
+    description: 'Plonge dans un monde d\'histoires captivantes racontées par nos personnages',
+    icon: Headphones,
+    color: 'text-emerald-400',
+    bgGradient: 'from-emerald-900/40 to-emerald-800/40'
+  },
+  {
+    href: '/quiz',
+    title: 'Quiz',
+    description: 'Teste tes connaissances avec des quiz amusants et éducatifs',
+    icon: GraduationCap,
+    color: 'text-yellow-400',
+    bgGradient: 'from-yellow-900/40 to-yellow-800/40'
+  },
+  {
+    href: '/blagues',
+    title: 'Blagues',
+    description: 'Amuse-toi avec des blagues et des devinettes',
+    icon: LightbulbIcon,
+    color: 'text-rose-400',
+    bgGradient: 'from-rose-900/40 to-rose-800/40'
+  },
+  {
+    href: '/creer-histoire',
+    title: 'Créer une Histoire',
+    description: 'Laisse libre cours à ton imagination',
+    icon: Wand2,
+    color: 'text-blue-400',
+    bgGradient: 'from-blue-900/40 to-blue-800/40'
   },
   {
     href: '/english',
-    title: 'Anglais',
-    description: 'Apprends de nouveaux mots',
+    title: 'Apprendre l\'Anglais',
+    description: 'Découvre et pratique l\'anglais de manière ludique',
     icon: Languages,
-    color: 'text-blue-400',
-    bgGradient: 'from-blue-500/20 to-indigo-500/20',
-    progress: 30
+    color: 'text-red-400',
+    bgGradient: 'from-red-900/40 to-red-800/40'
   }
 ];
 

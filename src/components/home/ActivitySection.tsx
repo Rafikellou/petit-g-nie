@@ -42,9 +42,9 @@ export function ActivitySection({ title, description, activities }: ActivitySect
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
+        className="mb-8 text-center"
       >
-        <h2 className="text-3xl font-bold mb-3">{title}</h2>
+        <h2 className="text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-purple-400 to-blue-400 text-transparent bg-clip-text">{title}</h2>
         {description && (
           <p className="text-lg text-white/70">{description}</p>
         )}
@@ -60,33 +60,19 @@ export function ActivitySection({ title, description, activities }: ActivitySect
           <motion.div key={activity.href} variants={item}>
             <Link
               href={activity.href}
-              className="block glass-card hover:scale-[1.02] transition-all hover:shadow-lg relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm h-[180px]"
+              className="block glass-card hover:scale-[1.02] transition-all hover:shadow-lg relative overflow-hidden rounded-2xl bg-[#1a1f2e]/60 backdrop-blur-sm h-[180px]"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-white/[0.075] to-white/[0.025]" />
+              <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent" />
               
-              {/* Badges */}
-              <div className="absolute top-3 right-3 flex flex-col items-end gap-2">
-                {activity.isNew && (
-                  <span className="bg-gradient-to-r from-green-400 to-emerald-400 text-white text-sm px-3 py-1 rounded-full font-medium">
-                    Nouveau
-                  </span>
-                )}
-                {activity.isComingSoon && (
-                  <span className="bg-gradient-to-r from-yellow-400 to-amber-400 text-white text-sm px-3 py-1 rounded-full font-medium">
-                    Bientôt
-                  </span>
-                )}
-              </div>
-
               {/* Content */}
               <div className="relative p-6">
-                <div className="flex items-start gap-4">
-                  <div className={`rounded-xl bg-gradient-to-br ${activity.bgGradient} p-3 flex-shrink-0`}>
-                    <activity.icon className={`w-6 h-6 ${activity.color}`} />
+                <div className="flex flex-col items-center text-center gap-4">
+                  <div className={`rounded-full ${activity.bgGradient} p-4`}>
+                    <activity.icon className={`w-8 h-8 ${activity.color}`} />
                   </div>
-                  <div className="flex-grow min-w-0">
+                  <div>
                     <h3 className="text-xl font-semibold mb-2 text-white">{activity.title}</h3>
-                    <p className="text-base text-white/70">{activity.description}</p>
+                    <p className="text-sm text-white/70">{activity.description}</p>
                   </div>
                 </div>
               </div>
