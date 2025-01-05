@@ -2,6 +2,7 @@ import './globals.css'
 import '../styles/ios.css'
 import { Inter } from 'next/font/google'
 import Link from 'next/link'
+import Image from 'next/image'
 import { AchievementsProvider } from '@/contexts/AchievementsContext';
 import { Users, GraduationCap, Bell } from 'lucide-react';
 import { Metadata, Viewport } from 'next';
@@ -22,18 +23,18 @@ interface AppMetadata extends Metadata {
 }
 
 export const metadata: AppMetadata = {
-  title: 'Petit Génie',
+  title: 'Futur Génie',
   description: 'Une application éducative interactive',
   viewport: {
     width: 'device-width',
     initialScale: 1,
     viewportFit: 'cover',
   },
-  themeColor: '#6C5DD3',
+  themeColor: '#0B1120',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Petit Génie',
+    title: 'Futur Génie',
   },
   manifest: '/manifest.json',
 }
@@ -48,9 +49,11 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <head>
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Petit Génie" />
-        <link rel="apple-touch-icon" href="/icon-192x192.png" />
-        <link rel="apple-touch-startup-image" href="/splash.png" />
+        <meta name="apple-mobile-web-app-title" content="Futur Génie" />
+        <meta name="theme-color" content="#0B1120" />
+        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png?v=2" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png?v=2" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png?v=2" />
         <link rel="manifest" href="/manifest.json" />
       </head>
       <body className={`${inter.className} min-h-full bg-background text-text-primary antialiased`}>
@@ -60,10 +63,16 @@ export default function RootLayout({ children }: RootLayoutProps) {
               <div className="container mx-auto px-4 sm:px-6 py-4">
                 <div className="flex items-center justify-between">
                   <Link href="/" className="flex items-center gap-3">
-                    <div className="icon-container w-10 h-10 sm:w-12 sm:h-12">
-                      <span className="text-lg sm:text-xl font-bold text-[var(--primary)]">JB</span>
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 relative">
+                      <Image 
+                        src="/logo-original.png"
+                        alt="Futur Génie"
+                        fill
+                        className="object-contain"
+                        priority
+                      />
                     </div>
-                    <span className="text-lg sm:text-xl font-semibold text-gradient">La Salle Rouen</span>
+                    <span className="text-lg sm:text-xl font-semibold text-gradient">Futur Génie</span>
                   </Link>
                   <div className="flex items-center gap-2 sm:gap-4">
                     <Link 

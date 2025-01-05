@@ -1,24 +1,29 @@
 {
   "name": "Futur Génie",
   "short_name": "Futur Génie",
-  "description": "Votre assistant personnel pour apprendre le français",
+  "description": "Ton espace personnel pour apprendre et t'amuser",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0F172A",
-  "theme_color": "#0F172A",
+  "background_color": "#0B1120",
+  "theme_color": "#0B1120",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/icon-192x192.png",
+      "src": "/icons/icon-192x192.png?v=2",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icon-512x512.png",
+      "src": "/icons/icon-512x512.png?v=2",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/apple-touch-icon.png?v=2",
+      "sizes": "180x180",
+      "type": "image/png"
     }
   ],
   "splash_pages": null,
