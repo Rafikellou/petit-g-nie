@@ -7,18 +7,18 @@ import { motion } from 'framer-motion';
 interface Activity {
   href: string;
   title: string;
-  description: string;
+  description?: string;
   icon: LucideIcon;
   color: string;
   bgGradient: string;
-  isNew?: boolean;
-  isComingSoon?: boolean;
+  isCompleted?: boolean;
 }
 
 interface ActivitySectionProps {
   title: string;
   description?: string;
   activities: Activity[];
+  isMainTitle?: boolean;
 }
 
 const container = {
@@ -36,7 +36,7 @@ const item = {
   show: { opacity: 1, y: 0 }
 };
 
-export function ActivitySection({ title, description, activities }: ActivitySectionProps) {
+export function ActivitySection({ title, description, activities, isMainTitle }: ActivitySectionProps) {
   return (
     <section className="mb-16">
       <motion.div 
@@ -44,9 +44,13 @@ export function ActivitySection({ title, description, activities }: ActivitySect
         animate={{ opacity: 1, y: 0 }}
         className="mb-8 text-center"
       >
-        <h2 className="text-4xl md:text-5xl font-bold mb-3 bg-gradient-to-r from-purple-400 to-blue-400 text-transparent bg-clip-text">{title}</h2>
+        <h2 className={`font-bold mb-3 ${
+          isMainTitle 
+            ? 'text-4xl md:text-5xl bg-gradient-to-r from-purple-400 to-blue-400 text-transparent bg-clip-text' 
+            : 'text-2xl md:text-3xl text-white/90'
+        }`}>{title}</h2>
         {description && (
-          <p className="text-lg text-white/70">{description}</p>
+          <p className="text-base text-white/70">{description}</p>
         )}
       </motion.div>
       
@@ -72,7 +76,19 @@ export function ActivitySection({ title, description, activities }: ActivitySect
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold mb-2 text-white">{activity.title}</h3>
-                    <p className="text-sm text-white/70">{activity.description}</p>
+                    {activity.isCompleted !== undefined && (
+                      <div className={`absolute top-4 right-4 rounded-full p-1 ${
+                        activity.isCompleted 
+                          ? 'bg-green-500/20 text-green-400' 
+                          : 'bg-red-500/20 text-red-400'
+                      }`}>
+                        <div className={`w-2 h-2 rounded-full ${
+                          activity.isCompleted 
+                            ? 'bg-green-400' 
+                            : 'bg-red-400'
+                        }`} />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

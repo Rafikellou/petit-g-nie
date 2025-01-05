@@ -3,7 +3,7 @@ import '../styles/ios.css'
 import { Inter } from 'next/font/google'
 import Link from 'next/link'
 import { AchievementsProvider } from '@/contexts/AchievementsContext';
-import { Users, GraduationCap } from 'lucide-react';
+import { Users, GraduationCap, Bell } from 'lucide-react';
 import { Metadata, Viewport } from 'next';
 
 const inter = Inter({ subsets: ['latin'] })
@@ -73,13 +73,13 @@ export default function RootLayout({ children }: RootLayoutProps) {
                       <Users className="w-4 h-4 sm:w-5 sm:h-5" />
                       <span className="hidden sm:inline">Espace Parents</span>
                     </Link>
-                    <Link 
-                      href="/teacher" 
-                      className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 rounded-lg bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 transition-colors text-sm sm:text-base"
+                    <button 
+                      className="p-2 rounded-lg hover:bg-white/5 transition-colors relative"
+                      aria-label="Notifications"
                     >
-                      <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5" />
-                      <span className="hidden sm:inline">Espace Enseignant</span>
-                    </Link>
+                      <Bell className="w-5 h-5" />
+                      <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+                    </button>
                   </div>
                 </div>
               </div>

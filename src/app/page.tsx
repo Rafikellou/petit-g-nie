@@ -19,19 +19,19 @@ import { Footer } from '@/components/layout/Footer';
 const recommendedActivities = [
   {
     href: '/quiz/recommended',
-    title: 'Quiz : Les verbes du premier groupe',
-    description: 'Révise les verbes du premier groupe',
+    title: 'Quiz',
     icon: GraduationCap,
     color: 'text-yellow-400',
-    bgGradient: 'from-yellow-500/20 to-orange-500/20'
+    bgGradient: 'from-yellow-900/40 to-yellow-800/40',
+    isCompleted: false
   },
   {
     href: '/dictee/recommended',
-    title: 'Dictée : Les homophones',
-    description: 'Entraîne-toi sur les homophones',
+    title: 'Dictée',
     icon: PenTool,
-    color: 'text-orange-400',
-    bgGradient: 'from-orange-500/20 to-yellow-500/20'
+    color: 'text-emerald-400',
+    bgGradient: 'from-emerald-900/40 to-emerald-800/40',
+    isCompleted: true
   }
 ];
 
@@ -125,14 +125,12 @@ export default function Home() {
         </div>
 
         <div className="max-w-6xl mx-auto px-6 pb-safe-bottom relative">
-          <div className="text-center mb-8 md:mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 text-transparent bg-clip-text mb-4">
-              Bienvenue sur Futur Génie !
-            </h1>
-            <p className="text-lg text-white/70">
-              Ton espace personnel pour apprendre et t'amuser
-            </p>
-          </div>
+          <ActivitySection
+            title="Bienvenue sur Futur Génie !"
+            description="Ton espace personnel pour apprendre et t'amuser"
+            activities={[]}
+            isMainTitle
+          />
 
           <ActivitySection
             title="Activités recommandées par ton enseignant"
