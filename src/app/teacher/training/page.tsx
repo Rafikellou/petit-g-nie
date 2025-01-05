@@ -1,22 +1,22 @@
 'use client';
 
-import { GraduationCap, PenTool } from 'lucide-react';
+import { BookOpen, PenTool } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const activities = [
+const trainingTypes = [
   {
-    title: 'Quiz',
-    description: 'Créer un nouveau quiz pour vos élèves',
-    icon: GraduationCap,
-    href: '/teacher/quiz/create',
+    title: 'Questions des quizs',
+    description: 'Gérer et adapter les questions des quiz',
+    icon: BookOpen,
+    href: '/teacher/training/quiz',
     color: 'text-yellow-400',
     bgGradient: 'from-yellow-900/40 to-yellow-800/40'
   },
   {
-    title: 'Dictée',
-    description: 'Créer une nouvelle dictée',
+    title: 'Texte des dictées',
+    description: 'Gérer et adapter les textes des dictées',
     icon: PenTool,
-    href: '/teacher/dictee/create',
+    href: '/teacher/training/dictee',
     color: 'text-emerald-400',
     bgGradient: 'from-emerald-900/40 to-emerald-800/40'
   }
@@ -37,7 +37,7 @@ const item = {
   show: { opacity: 1, y: 0 }
 };
 
-export default function TeacherDashboard() {
+export default function TrainingPage() {
   return (
     <div>
       <motion.div 
@@ -46,10 +46,10 @@ export default function TeacherDashboard() {
         className="mb-8"
       >
         <h1 className="text-3xl font-bold text-white mb-2">
-          Ajouter une activité
+          Adapter l&apos;entrainement
         </h1>
         <p className="text-gray-400">
-          Créez de nouvelles activités pour vos élèves
+          Personnalisez le contenu des activités d&apos;entrainement
         </p>
       </motion.div>
 
@@ -59,23 +59,23 @@ export default function TeacherDashboard() {
         animate="show"
         className="grid grid-cols-1 md:grid-cols-2 gap-6"
       >
-        {activities.map((activity) => (
+        {trainingTypes.map((type) => (
           <motion.a
-            key={activity.href}
-            href={activity.href}
+            key={type.href}
+            href={type.href}
             variants={item}
             className="block p-6 rounded-xl bg-gray-900/50 hover:bg-gray-900/70 transition-all duration-200 border border-gray-800 hover:border-gray-700"
           >
             <div className="flex items-center gap-4">
-              <div className={`rounded-full ${activity.bgGradient} p-4`}>
-                <activity.icon className={`w-6 h-6 ${activity.color}`} />
+              <div className={`rounded-full ${type.bgGradient} p-4`}>
+                <type.icon className={`w-6 h-6 ${type.color}`} />
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-white mb-1">
-                  {activity.title}
+                  {type.title}
                 </h3>
                 <p className="text-sm text-gray-400">
-                  {activity.description}
+                  {type.description}
                 </p>
               </div>
             </div>
