@@ -9,20 +9,11 @@ import { Metadata, Viewport } from 'next';
 
 const inter = Inter({ subsets: ['latin'] })
 
-interface AppleWebAppMetadata {
-  capable: boolean;
-  statusBarStyle: 'default' | 'black' | 'black-translucent';
-  title: string;
+interface RootLayoutProps {
+  children: React.ReactNode;
 }
 
-interface AppMetadata extends Metadata {
-  viewport: Viewport;
-  themeColor: string;
-  appleWebApp: AppleWebAppMetadata;
-  manifest: string;
-}
-
-export const metadata: AppMetadata = {
+export const metadata: Metadata = {
   title: 'Futur Génie',
   description: 'Une application éducative interactive',
   viewport: {
@@ -37,25 +28,18 @@ export const metadata: AppMetadata = {
     title: 'Futur Génie',
   },
   manifest: '/manifest.json',
-}
-
-interface RootLayoutProps {
-  children: React.ReactNode;
+  icons: {
+    apple: '/icons/apple-touch-icon.png',
+    icon: [
+      { url: '/icons/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/icons/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+    ]
+  }
 }
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="fr" className="h-full">
-      <head>
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="Futur Génie" />
-        <meta name="theme-color" content="#0B1120" />
-        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png?v=2" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png?v=2" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png?v=2" />
-        <link rel="manifest" href="/manifest.json" />
-      </head>
       <body className={`${inter.className} min-h-full bg-background text-text-primary antialiased`}>
         <AchievementsProvider>
           <div className="safe-area-inset min-h-full">
@@ -100,5 +84,5 @@ export default function RootLayout({ children }: RootLayoutProps) {
         </AchievementsProvider>
       </body>
     </html>
-  )
+  );
 }

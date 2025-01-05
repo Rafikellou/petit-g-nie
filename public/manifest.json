@@ -9,35 +9,18 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/icons/icon-192x192.png?v=2",
+      "src": "/icons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icons/icon-512x512.png?v=2",
+      "src": "/icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
-    },
-    {
-      "src": "/icons/apple-touch-icon.png?v=2",
-      "sizes": "180x180",
-      "type": "image/png"
     }
   ],
   "splash_pages": null,
-  "prefer_related_applications": false,
-  "shortcuts": [
-    {
-      "name": "Quiz",
-      "url": "/quiz",
-      "description": "Commencer un quiz"
-    },
-    {
-      "name": "Histoires",
-      "url": "/stories",
-      "description": "Lire des histoires"
-    }
-  ]
+  "scope": "/"
 }
