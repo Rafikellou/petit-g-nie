@@ -7,7 +7,10 @@ import { ArrowLeft, Users, School as SchoolIcon, Settings, Copy, Check, X } from
 import { Button } from '@/components/ui/ios-button';
 import { School, Profile } from '@/types/auth';
 
-interface Teacher extends Profile {
+interface TeacherWithUser extends Profile {
+  user: {
+    email: string;
+  };
   school: School | null;
 }
 
@@ -15,7 +18,7 @@ export default function SchoolDetails() {
   const params = useParams();
   const router = useRouter();
   const [school, setSchool] = useState<School | null>(null);
-  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [teachers, setTeachers] = useState<TeacherWithUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -40,7 +43,7 @@ export default function SchoolDetails() {
         // Charger les enseignants
         const { data: teachersData, error: teachersError } = await supabase
           .from('profiles')
-          .select('*, school:schools(*)')
+          .select('*, user:users(email), school:schools(*)')
           .eq('school_id', params.id)
           .eq('role', 'teacher');
 
@@ -172,7 +175,7 @@ export default function SchoolDetails() {
                       <p className="font-medium">
                         {teacher.family_name} {teacher.surname}
                       </p>
-                      <p className="text-sm text-white/70">{teacher.email}</p>
+                      <p className="text-sm text-white/70">{teacher.user.email}</p>
                     </div>
                   </div>
                 </div>
