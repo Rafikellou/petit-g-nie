@@ -32,196 +32,95 @@ export const authService = {
       }
 
       // Créer l'utilisateur
-      const { data: auth, error } = await supabase.auth.signUp({
+      const { data: userData, error: signUpError } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
-        options: {
-          data: {
-            family_name: data.family_name,
-            surname: data.surname,
-            role: data.role
-          }
-        }
       })
 
-      if (error) throw error
+      if (signUpError) throw signUpError
 
-      if (auth.user) {
-        // Créer le profil
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: auth.user.id,
+      if (!userData.user) throw new Error('Erreur lors de la création du compte')
+
+      // Créer le profil
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert([
+          {
+            user_id: userData.user.id,
+            role: data.role,
             family_name: data.family_name,
             surname: data.surname,
-            role: data.role,
             school_id: data.school_id,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
+          },
+        ])
 
-        if (profileError) throw profileError
-      }
+      if (profileError) throw profileError
 
-      return { user: auth.user, error: null }
+      return { user: userData.user, error: null }
     } catch (error: any) {
-      return { user: null, error: error.message }
+      console.error('Error in signUp:', error)
+      return { user: null, error }
     }
   },
 
-  // Connexion
+  // Connexion par email
   signIn: async (email: string, password: string) => {
     try {
-      const { data: { user }, error } = await supabase.auth.signInWithPassword({
+      const { data: { user }, error: signInError } = await supabase.auth.signInWithPassword({
         email,
-        password
+        password,
       })
 
-      if (error) throw error
+      if (signInError) throw signInError
 
-      // Récupérer tous les profils de l'utilisateur
+      if (!user) throw new Error('Utilisateur non trouvé')
+
+      // Récupérer les profils de l'utilisateur
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user.id)
+        .eq('user_id', user.id)
 
       if (profilesError) throw profilesError
 
-      // Récupérer le profil actif s'il existe
-      const active_profile = user.user_metadata?.active_profile
-        ? profiles?.find(p => p.id === user.user_metadata.active_profile)
-        : profiles?.[0]
-
-      return { 
-        user: {
-          ...user,
-          profiles: profiles || [],
-          active_profile
-        } as UserWithProfiles, 
-        error: null 
-      }
+      return { user: { ...user, profiles }, error: null }
     } catch (error: any) {
-      return { user: null, error: error.message }
-    }
-  },
-
-  // Connexion avec Google
-  signInWithGoogle: async () => {
-    try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`
-        }
-      })
-      return { data, error }
-    } catch (error) {
-      console.error('Error during Google sign-in:', error)
-      return { data: null, error }
-    }
-  },
-
-  // Créer une école (admin uniquement)
-  createSchool: async (schoolData: { nom_ecole: string; code_postal: string; ville: string; }) => {
-    try {
-      const invitationCode = Math.random().toString(36).substring(2, 15)
-      
-      const { data: school, error } = await supabase
-        .from('schools')
-        .insert({
-          nom_ecole: schoolData.nom_ecole,
-          code_postal: schoolData.code_postal,
-          ville: schoolData.ville,
-          invitation_code: invitationCode,
-          status: 'active',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-
-      return { school, error: null }
-    } catch (error: any) {
-      return { school: null, error: error.message }
-    }
-  },
-
-  // Ajouter un enfant (parent uniquement)
-  addChild: async (parentId: string, childData: Omit<Child, 'id' | 'created_at' | 'updated_at'>) => {
-    try {
-      const { data: child, error } = await supabase
-        .from('children')
-        .insert({
-          ...childData,
-          parent_id: parentId,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-
-      return { child, error: null }
-    } catch (error: any) {
-      return { child: null, error: error.message }
-    }
-  },
-
-  // Mettre à jour le profil actif
-  setActiveProfile: async (userId: string, profileId: string) => {
-    try {
-      const { error } = await supabase.auth.updateUser({
-        data: { active_profile: profileId }
-      })
-
-      if (error) throw error
-
-      return { error: null }
-    } catch (error: any) {
-      return { error: error.message }
+      console.error('Error in signIn:', error)
+      return { user: null, error }
     }
   },
 
   // Déconnexion
   signOut: async () => {
-    return await supabase.auth.signOut()
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) throw error
+      return { error: null }
+    } catch (error: any) {
+      console.error('Error in signOut:', error)
+      return { error }
+    }
   },
 
   // Récupérer les données de l'utilisateur avec ses profils
   getCurrentUser: async () => {
     try {
-      const { data: { user }, error } = await supabase.auth.getUser()
-      if (error) throw error
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
 
-      if (user) {
-        const { data: profiles, error: profilesError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
+      if (userError) throw userError
+      if (!user) return { user: null, error: null }
 
-        if (profilesError) throw profilesError
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user.id)
 
-        // Récupérer le profil actif s'il existe
-        const active_profile = user.user_metadata?.active_profile
-          ? profiles?.find(p => p.id === user.user_metadata.active_profile)
-          : profiles?.[0]
+      if (profilesError) throw profilesError
 
-        return { 
-          user: {
-            ...user,
-            profiles: profiles || [],
-            active_profile
-          } as UserWithProfiles, 
-          error: null 
-        }
-      }
-
-      return { user: null, error: null }
+      return { user: { ...user, profiles }, error: null }
     } catch (error: any) {
-      return { user: null, error: error.message }
+      console.error('Error in getCurrentUser:', error)
+      return { user: null, error }
     }
-  }
+  },
 }
