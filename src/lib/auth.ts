@@ -1,103 +1,197 @@
-import { supabase } from '../../lib/supabase'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { UserRole, Profile, School, Child, UserWithProfiles } from '@/types/auth'
+
+const supabase = createClientComponentClient()
+
+interface SignUpData {
+  email: string;
+  password: string;
+  family_name: string;
+  surname: string;
+  role: UserRole;
+  school_id?: string;
+  invitation_code?: string;
+}
 
 export const authService = {
-  // Email sign up
-  async signUpWithEmail(email: string, password: string, fullName: string, role: 'parent' | 'child') {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
-          role,
-        },
-      },
-    })
-    return { data, error }
-  },
+  // Inscription
+  signUp: async (data: SignUpData) => {
+    try {
+      // Vérifier le code d'invitation pour les enseignants
+      if (data.role === 'teacher' && data.invitation_code) {
+        const { data: school, error: schoolError } = await supabase
+          .from('schools')
+          .select('id')
+          .eq('invitation_code', data.invitation_code)
+          .single()
 
-  // Phone sign up
-  async signUpWithPhone(phone: string, fullName: string, role: 'parent' | 'child') {
-    const { data, error } = await supabase.auth.signInWithOtp({
-      phone,
-      options: {
-        data: {
-          full_name: fullName,
-          role,
-        },
-      },
-    })
-    return { data, error }
-  },
-
-  // Email sign in
-  async signInWithEmail(email: string, password: string) {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-    return { data, error }
-  },
-
-  // Phone sign in
-  async signInWithPhone(phone: string) {
-    const { data, error } = await supabase.auth.signInWithOtp({
-      phone,
-    })
-    return { data, error }
-  },
-
-  // Verify OTP
-  async verifyOtp(phone: string, token: string) {
-    const { data, error } = await supabase.auth.verifyOtp({
-      phone,
-      token,
-      type: 'sms',
-    })
-    return { data, error }
-  },
-
-  // Sign out
-  async signOut() {
-    const { error } = await supabase.auth.signOut()
-    return { error }
-  },
-
-  // Get current session
-  async getSession() {
-    const { data: { session }, error } = await supabase.auth.getSession()
-    return { session, error }
-  },
-
-  // Get current user
-  async getUser() {
-    const { data: { user }, error } = await supabase.auth.getUser()
-    return { user, error }
-  },
-
-  // Sign in with Google
-  async signInWithGoogle() {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        queryParams: {
-          access_type: 'offline',
-          prompt: 'consent',
-        },
-        redirectTo: `${window.location.origin}/auth/callback`
+        if (schoolError || !school) {
+          throw new Error('Code d\'invitation invalide')
+        }
+        data.school_id = school.id
       }
-    })
-    return { data, error }
+
+      // Créer l'utilisateur
+      const { data: auth, error } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          data: {
+            family_name: data.family_name,
+            surname: data.surname,
+            role: data.role
+          }
+        }
+      })
+
+      if (error) throw error
+
+      if (auth.user) {
+        // Créer le profil
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: auth.user.id,
+            family_name: data.family_name,
+            surname: data.surname,
+            role: data.role,
+            school_id: data.school_id,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+
+        if (profileError) throw profileError
+      }
+
+      return { user: auth.user, error: null }
+    } catch (error: any) {
+      return { user: null, error: error.message }
+    }
   },
 
-  // Sign in with Apple
-  async signInWithApple() {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'apple',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`
+  // Connexion
+  signIn: async (email: string, password: string) => {
+    try {
+      const { data: { user }, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+
+      if (error) throw error
+
+      // Récupérer tous les profils de l'utilisateur
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+
+      if (profilesError) throw profilesError
+
+      return { 
+        user: {
+          ...user,
+          profiles: profiles || []
+        } as UserWithProfiles, 
+        error: null 
       }
-    })
-    return { data, error }
+    } catch (error: any) {
+      return { user: null, error: error.message }
+    }
+  },
+
+  // Créer une école (admin uniquement)
+  createSchool: async (name: string, adminId: string) => {
+    try {
+      const invitationCode = Math.random().toString(36).substring(2, 15)
+      
+      const { data: school, error } = await supabase
+        .from('schools')
+        .insert({
+          name,
+          admin_id: adminId,
+          invitation_code: invitationCode,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single()
+
+      if (error) throw error
+
+      return { school, error: null }
+    } catch (error: any) {
+      return { school: null, error: error.message }
+    }
+  },
+
+  // Ajouter un enfant (parent uniquement)
+  addChild: async (parentId: string, childData: Omit<Child, 'id' | 'created_at' | 'updated_at'>) => {
+    try {
+      const { data: child, error } = await supabase
+        .from('children')
+        .insert({
+          ...childData,
+          parent_id: parentId,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single()
+
+      if (error) throw error
+
+      return { child, error: null }
+    } catch (error: any) {
+      return { child: null, error: error.message }
+    }
+  },
+
+  // Mettre à jour le profil actif
+  setActiveProfile: async (userId: string, profileId: string) => {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        data: { active_profile: profileId }
+      })
+
+      if (error) throw error
+
+      return { error: null }
+    } catch (error: any) {
+      return { error: error.message }
+    }
+  },
+
+  // Déconnexion
+  signOut: async () => {
+    return await supabase.auth.signOut()
+  },
+
+  // Récupérer les données de l'utilisateur avec ses profils
+  getCurrentUser: async () => {
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser()
+      if (error) throw error
+
+      if (user) {
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+
+        if (profilesError) throw profilesError
+
+        return { 
+          user: {
+            ...user,
+            profiles: profiles || []
+          } as UserWithProfiles, 
+          error: null 
+        }
+      }
+
+      return { user: null, error: null }
+    } catch (error: any) {
+      return { user: null, error: error.message }
+    }
   }
 }

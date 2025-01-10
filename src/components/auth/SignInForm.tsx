@@ -49,27 +49,27 @@ export default function SignInForm() {
   }
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-lg">
+    <div className="space-y-6">
       <SocialButtons onError={setError} />
 
       <div className="relative mb-6">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-300"></div>
+          <div className="w-full border-t border-white/20"></div>
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="px-2 bg-white text-gray-500">ou</span>
+          <span className="px-2 bg-white/10 text-white/40">ou</span>
         </div>
       </div>
 
       <div className="flex justify-center space-x-4 mb-6">
         <button
-          className={`px-4 py-2 rounded ${method === 'email' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+          className={`px-4 py-2 rounded ${method === 'email' ? 'bg-primary hover:bg-primary/90' : 'bg-white/10 hover:bg-white/20'}`}
           onClick={() => setMethod('email')}
         >
           Email
         </button>
         <button
-          className={`px-4 py-2 rounded ${method === 'phone' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+          className={`px-4 py-2 rounded ${method === 'phone' ? 'bg-primary hover:bg-primary/90' : 'bg-white/10 hover:bg-white/20'}`}
           onClick={() => setMethod('phone')}
         >
           Téléphone
@@ -79,28 +79,40 @@ export default function SignInForm() {
       {method === 'email' ? (
         <form onSubmit={handleEmailSignIn} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <label 
+              htmlFor="email" 
+              className="block text-sm font-medium text-white mb-2"
+            >
+              Email
+            </label>
             <input
+              id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Mot de passe</label>
+            <label 
+              htmlFor="password" 
+              className="block text-sm font-medium text-white mb-2"
+            >
+              Mot de passe
+            </label>
             <input
+              id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               required
             />
           </div>
           <button
             type="submit"
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-medium py-3 rounded-lg transition-colors"
           >
             Se connecter
           </button>
@@ -108,31 +120,43 @@ export default function SignInForm() {
       ) : (
         <form onSubmit={handlePhoneSignIn} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Numéro de téléphone</label>
+            <label 
+              htmlFor="phone" 
+              className="block text-sm font-medium text-white mb-2"
+            >
+              Numéro de téléphone
+            </label>
             <input
+              id="phone"
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
               placeholder="+33612345678"
               required
             />
           </div>
           {otpSent && (
             <div>
-              <label className="block text-sm font-medium text-gray-700">Code de vérification</label>
+              <label 
+                htmlFor="otp" 
+                className="block text-sm font-medium text-white mb-2"
+              >
+                Code de vérification
+              </label>
               <input
+                id="otp"
                 type="text"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value)}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 required
               />
             </div>
           )}
           <button
             type="submit"
-            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-medium py-3 rounded-lg transition-colors"
           >
             {otpSent ? 'Vérifier' : 'Envoyer le code'}
           </button>
@@ -140,8 +164,8 @@ export default function SignInForm() {
       )}
 
       {error && (
-        <div className="mt-4 text-red-600 text-sm">
-          {error}
+        <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+          <p className="text-sm text-red-500">{error}</p>
         </div>
       )}
     </div>
