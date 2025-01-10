@@ -19,7 +19,7 @@ export interface School {
   invitation_code: string;
   created_at: string;
   updated_at: string;
-  status?: 'active' | 'inactive';
+  status: 'active' | 'inactive' | 'pending';
 }
 
 export interface Child {

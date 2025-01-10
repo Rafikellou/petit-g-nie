@@ -339,11 +339,13 @@ export default function SuperAdminDashboard() {
                       <div className={`px-3 py-1 rounded-full text-sm ${
                         school.status === 'active' ? 'bg-green-500/20 text-green-400' :
                         school.status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
-                        'bg-red-500/20 text-red-400'
+                        school.status === 'inactive' ? 'bg-red-500/20 text-red-400' :
+                        'bg-gray-500/20 text-gray-400'
                       }`}>
                         {school.status === 'active' ? 'Actif' :
                          school.status === 'pending' ? 'En attente' :
-                         'Inactif'}
+                         school.status === 'inactive' ? 'Inactif' :
+                         'Inconnu'}
                       </div>
                     </div>
                   </div>
