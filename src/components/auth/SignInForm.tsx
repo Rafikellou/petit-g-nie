@@ -14,9 +14,35 @@ export default function SignInForm() {
     try {
       setLoading(true)
       setError('')
+
+      if (!email || !password) {
+        setError('Veuillez remplir tous les champs')
+        setLoading(false)
+        return
+      }
+
       const { user, error } = await authService.signIn(email, password)
+
       if (error) {
-        setError(error.message || error)
+        let errorMessage = 'Une erreur est survenue lors de la connexion'
+        
+        // Messages d'erreur personnalisés
+        if (error.message?.includes('Invalid login credentials')) {
+          errorMessage = 'Email ou mot de passe incorrect'
+        } else if (error.message?.includes('Email not confirmed')) {
+          errorMessage = 'Veuillez confirmer votre email avant de vous connecter'
+        } else if (error.message?.includes('Profil utilisateur non trouvé')) {
+          errorMessage = 'Votre profil n\'a pas été trouvé. Veuillez contacter le support.'
+        }
+        
+        setError(errorMessage)
+        setLoading(false)
+        return
+      }
+
+      if (!user) {
+        setError('Une erreur est survenue lors de la connexion')
+        setLoading(false)
         return
       }
 
@@ -47,9 +73,9 @@ export default function SignInForm() {
           router.push('/')
         }
       }
-    } catch (err) {
-      console.error('Error during sign in:', err)
-      setError('Une erreur est survenue lors de la connexion')
+    } catch (err: any) {
+      console.error('Erreur inattendue lors de la connexion:', err)
+      setError('Une erreur inattendue est survenue. Veuillez réessayer.')
     } finally {
       setLoading(false)
     }

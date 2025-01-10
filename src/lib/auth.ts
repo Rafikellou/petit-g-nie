@@ -65,39 +65,66 @@ export const authService = {
   // Connexion par email
   signIn: async (email: string, password: string) => {
     try {
-      const { data: { user }, error: signInError } = await supabase.auth.signInWithPassword({
+      console.log('Tentative de connexion pour:', email)
+
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
-      if (signInError) throw signInError
-      if (!user) throw new Error('Utilisateur non trouvé')
+      if (signInError) {
+        console.error('Erreur de connexion:', signInError)
+        return { user: null, error: signInError }
+      }
+
+      if (!data.user) {
+        console.error('Utilisateur non trouvé après connexion')
+        return { user: null, error: new Error('Utilisateur non trouvé') }
+      }
+
+      console.log('Utilisateur connecté:', data.user.id)
 
       // Récupérer les profils de l'utilisateur
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', data.user.id)
 
-      if (profilesError) throw profilesError
+      if (profilesError) {
+        console.error('Erreur lors de la récupération des profils:', profilesError)
+        return { user: null, error: profilesError }
+      }
+
+      if (!profiles || profiles.length === 0) {
+        console.error('Aucun profil trouvé pour l\'utilisateur:', data.user.id)
+        return { user: null, error: new Error('Profil utilisateur non trouvé') }
+      }
+
+      console.log('Profils récupérés:', profiles.length)
 
       // Si l'utilisateur n'a qu'un seul profil, le définir comme actif
-      if (profiles && profiles.length === 1) {
-        await authService.setActiveProfile(user.id, profiles[0].id)
+      if (profiles.length === 1) {
+        try {
+          await authService.setActiveProfile(data.user.id, profiles[0].id)
+          console.log('Profil actif défini:', profiles[0].id)
+        } catch (setProfileError) {
+          console.error('Erreur lors de la définition du profil actif:', setProfileError)
+          // On continue même si la définition du profil actif échoue
+        }
       }
 
-      return { 
-        user: { 
-          ...user, 
-          profiles,
-          active_profile: user.user_metadata?.active_profile 
-            ? profiles?.find(p => p.id === user.user_metadata.active_profile)
-            : profiles?.[0]
-        }, 
-        error: null 
+      const user = { 
+        ...data.user, 
+        profiles,
+        active_profile: data.user.user_metadata?.active_profile 
+          ? profiles.find(p => p.id === data.user.user_metadata.active_profile)
+          : profiles[0]
       }
+
+      console.log('Connexion réussie avec profil actif:', user.active_profile?.id)
+      return { user, error: null }
     } catch (error: any) {
-      console.error('Error in signIn:', error)
+      console.error('Erreur inattendue lors de la connexion:', error)
       return { user: null, error }
     }
   },
