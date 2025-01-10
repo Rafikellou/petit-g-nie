@@ -7,9 +7,11 @@ import { useRouter } from 'next/navigation';
 interface PinModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess: () => void;
+  correctPin: string;
 }
 
-export function PinModal({ isOpen, onClose }: PinModalProps) {
+export function PinModal({ isOpen, onClose, onSuccess, correctPin }: PinModalProps) {
   const [pin, setPin] = useState(['', '', '', '']);
   const [error, setError] = useState(false);
   const router = useRouter();
@@ -34,8 +36,8 @@ export function PinModal({ isOpen, onClose }: PinModalProps) {
     // Vérifier le PIN quand tous les chiffres sont entrés
     if (index === 3 && value) {
       const enteredPin = [...newPin.slice(0, 3), value].join('');
-      if (enteredPin === '0000') {
-        router.push('/parent');
+      if (enteredPin === correctPin) {
+        onSuccess();
         onClose();
       } else {
         setError(true);

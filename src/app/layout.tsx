@@ -3,12 +3,13 @@
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { AchievementsProvider } from '@/contexts/AchievementsContext';
-import { Users, GraduationCap, Bell } from 'lucide-react';
+import { Users } from 'lucide-react';
 import { PinModal } from '@/components/auth/PinModal';
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { NotificationsList } from '@/components/notifications/NotificationsList';
+import { useRouter } from 'next/navigation';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -18,6 +19,7 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+  const router = useRouter();
 
   return (
     <html lang="fr" className="h-full">
@@ -68,7 +70,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
               onClose={() => setIsPinModalOpen(false)}
               onSuccess={() => {
                 setIsPinModalOpen(false);
-                window.location.href = '/parent';
+                router.push('/parent');
               }}
               correctPin="0000"
             />
