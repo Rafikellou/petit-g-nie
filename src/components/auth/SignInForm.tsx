@@ -1,10 +1,12 @@
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { authService } from '@/lib/auth'
 import SocialButtons from './SocialButtons'
 
 type AuthMethod = 'email' | 'phone'
 
 export default function SignInForm() {
+  const router = useRouter()
   const [method, setMethod] = useState<AuthMethod>('email')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
@@ -12,40 +14,71 @@ export default function SignInForm() {
   const [otp, setOtp] = useState('')
   const [otpSent, setOtpSent] = useState(false)
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
-    setError('')
-    const { error } = await authService.signInWithEmail(email, password)
-    if (error) setError(error.message)
+    try {
+      setLoading(true)
+      setError('')
+      const { user, error } = await authService.signIn(email, password)
+      if (error) {
+        setError(error.message || error)
+        return
+      }
+
+      // Si l'utilisateur a plusieurs profils, on le redirige vers le sélecteur
+      if (user.profiles.length > 1) {
+        router.push('/profile-select')
+        return
+      }
+
+      // Sinon, on le redirige vers la page appropriée selon son rôle
+      const profile = user.profiles[0]
+      if (profile) {
+        switch (profile.role) {
+          case 'super_admin':
+            router.push('/super-admin')
+            break
+          case 'admin':
+            router.push('/admin')
+            break
+          case 'teacher':
+            router.push('/teacher')
+            break
+          case 'parent':
+            router.push('/parent')
+            break
+          default:
+            router.push('/')
+        }
+      }
+    } catch (error: any) {
+      setError(error.message || String(error))
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handlePhoneSignIn = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     if (!otpSent) {
-      const { error } = await authService.signInWithPhone(phone)
-      if (error) {
-        setError(error.message)
-      } else {
-        setOtpSent(true)
-      }
-    } else {
-      const { error } = await authService.verifyOtp(phone, otp)
-      if (error) setError(error.message)
+      // TODO: Implémenter la connexion par téléphone
+      setError('La connexion par téléphone n\'est pas encore disponible')
     }
   }
 
   const handleGoogleSignIn = async () => {
     setError('')
-    const { error } = await authService.signInWithGoogle()
-    if (error) setError(error.message)
+    // TODO: Implémenter la connexion Google
+    setError('La connexion avec Google n\'est pas encore disponible')
   }
 
   const handleAppleSignIn = async () => {
     setError('')
-    const { error } = await authService.signInWithApple()
-    if (error) setError(error.message)
+    // TODO: Implémenter la connexion Apple
+    setError('La connexion avec Apple n\'est pas encore disponible')
   }
 
   return (

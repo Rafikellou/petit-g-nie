@@ -30,11 +30,14 @@ export default function SignUpForm() {
         invitation_code: invitationCode
       })
 
-      if (error) throw new Error(error)
+      if (error) {
+        setError(error)
+        return
+      }
 
       router.push('/auth/verify')
     } catch (error: any) {
-      setError(error.message)
+      setError(error.message || String(error))
     } finally {
       setLoading(false)
     }

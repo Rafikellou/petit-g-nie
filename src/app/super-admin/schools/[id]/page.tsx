@@ -8,10 +8,8 @@ import { Button } from '@/components/ui/ios-button';
 import { School, Profile } from '@/types/auth';
 
 interface TeacherWithUser extends Profile {
-  user: {
-    email: string;
-  };
   school: School | null;
+  email: string;
 }
 
 export default function SchoolDetails() {
@@ -43,7 +41,7 @@ export default function SchoolDetails() {
         // Charger les enseignants
         const { data: teachersData, error: teachersError } = await supabase
           .from('profiles')
-          .select('*, user:users(email), school:schools(*)')
+          .select('*, school:schools(*)')
           .eq('school_id', params.id)
           .eq('role', 'teacher');
 
@@ -175,7 +173,7 @@ export default function SchoolDetails() {
                       <p className="font-medium">
                         {teacher.family_name} {teacher.surname}
                       </p>
-                      <p className="text-sm text-white/70">{teacher.user.email}</p>
+                      <p className="text-sm text-white/70">{teacher.email}</p>
                     </div>
                   </div>
                 </div>

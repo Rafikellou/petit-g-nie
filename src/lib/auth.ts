@@ -87,10 +87,16 @@ export const authService = {
 
       if (profilesError) throw profilesError
 
+      // Récupérer le profil actif s'il existe
+      const active_profile = user.user_metadata?.active_profile
+        ? profiles?.find(p => p.id === user.user_metadata.active_profile)
+        : profiles?.[0]
+
       return { 
         user: {
           ...user,
-          profiles: profiles || []
+          profiles: profiles || [],
+          active_profile
         } as UserWithProfiles, 
         error: null 
       }
@@ -100,16 +106,18 @@ export const authService = {
   },
 
   // Créer une école (admin uniquement)
-  createSchool: async (name: string, adminId: string) => {
+  createSchool: async (schoolData: { nom_ecole: string; code_postal: string; ville: string; }) => {
     try {
       const invitationCode = Math.random().toString(36).substring(2, 15)
       
       const { data: school, error } = await supabase
         .from('schools')
         .insert({
-          name,
-          admin_id: adminId,
+          nom_ecole: schoolData.nom_ecole,
+          code_postal: schoolData.code_postal,
+          ville: schoolData.ville,
           invitation_code: invitationCode,
+          status: 'active',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
@@ -180,10 +188,16 @@ export const authService = {
 
         if (profilesError) throw profilesError
 
+        // Récupérer le profil actif s'il existe
+        const active_profile = user.user_metadata?.active_profile
+          ? profiles?.find(p => p.id === user.user_metadata.active_profile)
+          : profiles?.[0]
+
         return { 
           user: {
             ...user,
-            profiles: profiles || []
+            profiles: profiles || [],
+            active_profile
           } as UserWithProfiles, 
           error: null 
         }

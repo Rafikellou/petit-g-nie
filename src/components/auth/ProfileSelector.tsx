@@ -30,10 +30,10 @@ export default function ProfileSelector({ userId, profiles }: ProfileSelectorPro
       const profile = profiles.find(p => p.id === selectedProfile)
       switch (profile?.role) {
         case 'super_admin':
-          router.push('/admin/super')
+          router.push('/super-admin')
           break
         case 'admin':
-          router.push('/admin/school')
+          router.push('/admin')
           break
         case 'teacher':
           router.push('/teacher')
