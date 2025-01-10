@@ -1,40 +1,10 @@
 'use client';
 
-import { cn } from '@/lib/utils';
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { PlusCircle, Brain, LineChart, Settings } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { mockTeacher } from '@/data/mockData';
 import { MobileMenu } from '@/components/teacher/MobileMenu';
-
-// Simuler les données de l'enseignant
-const mockTeacher = {
-  title: 'Mme',
-  lastName: 'Dubois'
-};
-
-const tabs = [
-  {
-    name: 'Ajouter une activité',
-    href: '/teacher',
-    icon: PlusCircle
-  },
-  {
-    name: 'Adapter l\'entrainement',
-    href: '/teacher/training',
-    icon: Brain
-  },
-  {
-    name: 'Performances',
-    href: '/teacher/performance',
-    icon: LineChart
-  },
-  {
-    name: 'Paramètres',
-    href: '/teacher/settings',
-    icon: Settings
-  }
-];
+import { tabs } from '@/config/teacherTabs';
 
 export default function TeacherLayout({
   children,
@@ -46,49 +16,44 @@ export default function TeacherLayout({
 
   return (
     <div className="min-h-screen bg-gray-950">
-      {/* Navigation fixe en haut avec message de bienvenue */}
-      <div className="fixed top-16 left-0 right-0 z-10 bg-gray-900">
-        {/* Message de bienvenue et menu burger */}
-        <div className="border-b border-gray-800">
-          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-            <h2 className="text-xl font-medium text-gray-200">
-              Bonjour {teacher.title} {teacher.lastName}
-            </h2>
-            <MobileMenu tabs={tabs} />
-          </div>
-        </div>
+      <div className="container mx-auto px-4 pt-24">
+        {/* Message de bienvenue */}
+        <h1 className="text-2xl font-bold text-white mb-6">
+          Bonjour {teacher.title} {teacher.lastName}
+        </h1>
 
         {/* Navigation desktop */}
-        <div className="hidden md:block border-b border-gray-800">
-          <div className="container mx-auto px-4">
-            <div className="flex space-x-8">
-              {tabs.map((tab) => {
-                const isActive = pathname === tab.href;
-                return (
-                  <Link
-                    key={tab.href}
-                    href={tab.href}
-                    className={cn(
-                      'flex items-center gap-2 border-b-2 px-1 py-4 text-sm font-medium transition-colors',
-                      isActive
-                        ? 'border-turquoise-500 text-turquoise-500'
-                        : 'border-transparent text-gray-400 hover:border-gray-300 hover:text-gray-300'
-                    )}
-                  >
-                    <tab.icon className="h-5 w-5" />
-                    {tab.name}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
+        <div className="hidden md:block mb-8">
+          <nav className="flex space-x-4">
+            {tabs.map((tab) => {
+              const isActive = pathname === tab.href;
+              const Icon = tab.icon;
+              return (
+                <a
+                  key={tab.href}
+                  href={tab.href}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                    isActive
+                      ? 'bg-white/10 text-white'
+                      : 'text-gray-400 hover:text-white hover:bg-white/5'
+                  }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  {tab.name}
+                </a>
+              );
+            })}
+          </nav>
         </div>
-      </div>
 
-      {/* Contenu principal avec padding-top ajusté */}
-      <main className="container mx-auto px-4 pt-[120px] md:pt-[180px] pb-8">
-        {children}
-      </main>
+        {/* Navigation mobile */}
+        <div className="md:hidden mb-6">
+          <MobileMenu tabs={tabs} />
+        </div>
+
+        {/* Contenu principal */}
+        <main>{children}</main>
+      </div>
     </div>
   );
 }

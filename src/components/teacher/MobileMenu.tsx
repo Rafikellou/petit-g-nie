@@ -44,6 +44,7 @@ export function MobileMenu({ tabs }: MobileMenuProps) {
             <div className="space-y-1">
               {tabs.map((tab) => {
                 const isActive = pathname === tab.href;
+                const Icon = tab.icon;
                 return (
                   <Link
                     key={tab.href}
@@ -55,7 +56,7 @@ export function MobileMenu({ tabs }: MobileMenuProps) {
                         : 'text-gray-400 hover:bg-gray-800 hover:text-gray-300'
                     )}
                   >
-                    <tab.icon className="h-5 w-5" />
+                    <Icon className="h-5 w-5" />
                     {tab.name}
                   </Link>
                 );
