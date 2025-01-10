@@ -105,6 +105,22 @@ export const authService = {
     }
   },
 
+  // Connexion avec Google
+  signInWithGoogle: async () => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      })
+      return { data, error }
+    } catch (error) {
+      console.error('Error during Google sign-in:', error)
+      return { data: null, error }
+    }
+  },
+
   // Créer une école (admin uniquement)
   createSchool: async (schoolData: { nom_ecole: string; code_postal: string; ville: string; }) => {
     try {
