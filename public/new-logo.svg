@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="500" height="500" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Cercle extérieur avec dégradé -->
+  <circle cx="250" cy="250" r="240" fill="url(#circleGradient)" stroke="#E1E1E1" stroke-width="2"/>
+  
+  <!-- Ampoule -->
+  <path d="M250 140C200 140 160 180 160 230C160 260 175 285 190 300C205 315 220 325 220 350V370C220 385 233.43 397 250 397C266.57 397 280 385 280 370V350C280 325 295 315 310 300C325 285 340 260 340 230C340 180 300 140 250 140Z" fill="url(#bulbGradient)"/>
+  
+  <!-- Base de l'ampoule -->
+  <path d="M230 370H270V380C270 388.84 261.05 396 250 396C238.95 396 230 388.84 230 380V370Z" fill="#2B5876"/>
+  
+  <!-- Filament -->
+  <path d="M240 200V260M260 200V260" stroke="#FDB777" stroke-width="4" stroke-linecap="round"/>
+  
+  <!-- Points lumineux -->
+  <circle cx="250" cy="230" r="3" fill="white" fill-opacity="0.8"/>
+  <circle cx="230" cy="250" r="2" fill="white" fill-opacity="0.6"/>
+  <circle cx="270" cy="250" r="2" fill="white" fill-opacity="0.6"/>
+  
+  <!-- Définitions des dégradés -->
+  <defs>
+    <linearGradient id="circleGradient" x1="0" y1="0" x2="500" y2="500" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2B5876"/>
+      <stop offset="50%" stop-color="#4E4376"/>
+      <stop offset="100%" stop-color="#2B5876"/>
+    </linearGradient>
+    
+    <radialGradient id="bulbGradient" cx="250" cy="230" r="90" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FDB777"/>
+      <stop offset="50%" stop-color="#FDA766"/>
+      <stop offset="100%" stop-color="#FD8C66"/>
+    </radialGradient>
+  </defs>
+</svg>

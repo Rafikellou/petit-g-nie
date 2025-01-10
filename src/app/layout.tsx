@@ -20,7 +20,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
 
   return (
     <html lang="fr" className="h-full">
-      <body className={`${inter.className} min-h-full bg-background text-text-primary antialiased`}>
+      <body className={`${inter.className} min-h-full bg-[var(--background)] text-white antialiased`}>
         <AchievementsProvider>
           <div className="min-h-full">
             <header className="fixed top-0 left-0 right-0 z-50 bg-surface-dark border-b border-white/10 pt-safe-top">
@@ -31,21 +31,28 @@ export default function RootLayout({ children }: RootLayoutProps) {
                     className="flex items-center gap-2 sm:gap-3"
                   >
                     <Image
-                      src="/logo.svg"
-                      alt="Logo"
-                      width={32}
-                      height={32}
-                      className="w-8 h-8 sm:w-10 sm:h-10"
+                      src="/logo Futur Génie 4 cropped.png"
+                      alt="Logo Futur Génie"
+                      width={40}
+                      height={40}
+                      className="w-10 h-10 sm:w-12 sm:h-12"
+                      priority
                     />
                     <span className="text-lg sm:text-xl font-semibold text-gradient">La Salle Rouen</span>
                   </Link>
+                  
+                  {/* Titre au milieu */}
+                  <h1 className="hidden md:block text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 text-transparent bg-clip-text">
+                    Futur Génie
+                  </h1>
+
                   <div className="flex items-center gap-2 sm:gap-4">
                     <button 
                       onClick={() => setIsPinModalOpen(true)}
                       className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 rounded-lg bg-white/10 hover:bg-white/20 transition-colors text-sm sm:text-base"
                     >
                       <Users className="w-4 h-4 sm:w-5 sm:h-5" />
-                      <span>Espace Parents</span>
+                      <span className="hidden sm:inline">Espace Parents</span>
                     </button>
                     <button 
                       className="p-2 rounded-lg hover:bg-white/5 transition-colors relative"

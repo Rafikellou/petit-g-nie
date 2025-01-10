@@ -3,6 +3,7 @@
 import { LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { Check } from 'lucide-react';
 
 interface Activity {
   href: string;
@@ -67,8 +68,8 @@ export function ActivitySection({ title, description, activities, isMainTitle }:
               className={`block glass-card hover:scale-[1.02] transition-all hover:shadow-lg relative overflow-hidden rounded-2xl backdrop-blur-sm h-[180px] ${
                 activity.isCompleted !== undefined
                   ? activity.isCompleted
-                    ? 'bg-[#1a1f2e]/60'
-                    : 'bg-[#1a1f2e]/90'
+                    ? 'bg-[#1a1f2e]/90 opacity-75'
+                    : 'bg-[#1a1f2e]/60'
                   : 'bg-[#1a1f2e]/60'
               }`}
             >
@@ -83,16 +84,16 @@ export function ActivitySection({ title, description, activities, isMainTitle }:
                   <div>
                     <h3 className="text-xl font-semibold mb-2 text-white">{activity.title}</h3>
                     {activity.isCompleted !== undefined && (
-                      <div className={`absolute top-4 right-4 rounded-full p-1 ${
+                      <div className={`absolute top-4 right-4 rounded-full p-2 ${
                         activity.isCompleted 
                           ? 'bg-green-500/20 text-green-400' 
                           : 'bg-red-500/30 text-red-500'
                       }`}>
-                        <div className={`w-2 h-2 rounded-full ${
-                          activity.isCompleted 
-                            ? 'bg-green-400' 
-                            : 'bg-red-500'
-                        }`} />
+                        {activity.isCompleted ? (
+                          <Check className="w-4 h-4" />
+                        ) : (
+                          <div className="w-2 h-2 rounded-full bg-red-500" />
+                        )}
                       </div>
                     )}
                   </div>

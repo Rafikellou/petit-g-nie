@@ -3,12 +3,24 @@
 @tailwind utilities;
 
 :root {
-  --primary: 139, 92, 246; /* RGB values for #8B5CF6 */
-  --primary-dark: 124, 58, 237; /* RGB values for #7C3AED */
+  /* Anciennes valeurs (gardées en commentaire pour référence)
+  --primary: 139, 92, 246;
+  --primary-dark: 124, 58, 237;
   --background: #0B1120;
   --surface-dark: #1a1f2e;
   --card-bg: rgba(26, 31, 46, 0.6);
   --card-border: rgba(255, 255, 255, 0.1);
+  */
+
+  /* Nouvelles valeurs avec des couleurs plus vibrantes */
+  --primary: 147, 51, 234; /* Un violet plus vif */
+  --primary-dark: 126, 34, 206;
+  --background: #070B14; /* Un fond légèrement plus sombre pour plus de contraste */
+  --surface-dark: #111827;
+  --card-bg: rgba(17, 24, 39, 0.7);
+  --card-border: rgba(255, 255, 255, 0.08);
+  
+  /* Variables de sécurité iOS */
   --sat: env(safe-area-inset-top);
   --sab: env(safe-area-inset-bottom);
   --sal: env(safe-area-inset-left);
@@ -18,14 +30,18 @@
 @layer base {
   body {
     @apply bg-[var(--background)] text-white;
+    background-image: 
+      radial-gradient(circle at 50% 0%, rgba(var(--primary), 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 0% 100%, rgba(var(--primary), 0.02) 0%, transparent 50%);
   }
 
-  /* Typographie moderne */
+  /* Typographie améliorée */
   h1, h2, h3, h4, h5, h6 {
     @apply font-sans tracking-tight;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
-  /* Scrollbar stylisée */
+  /* Scrollbar plus élégante */
   ::-webkit-scrollbar {
     @apply w-1.5;
   }
@@ -36,6 +52,8 @@
 
   ::-webkit-scrollbar-thumb {
     @apply bg-gradient-to-b from-[rgb(var(--primary))] to-[rgb(var(--primary-dark))] rounded-full;
+    border: 2px solid transparent;
+    background-clip: padding-box;
   }
 
   /* Support pour les marges de sécurité iOS */
@@ -104,36 +122,60 @@
     rounded-lg transition-all duration-200;
   }
 
+  /* Cartes avec effet glassmorphism amélioré */
   .glass-card {
-    @apply bg-[var(--card-bg)] backdrop-blur-xl 
-    border border-white/[0.05] rounded-xl
-    shadow-lg;
-  }
-
-  .safe-area-inset {
-    padding-top: var(--sat);
-    padding-bottom: var(--sab);
-    padding-left: var(--sal);
-    padding-right: var(--sar);
-  }
-
-  /* Cartes avec effet glassmorphism */
-  .glass-card {
-    background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    @apply bg-[var(--card-bg)] backdrop-blur-md border border-[var(--card-border)] 
+    hover:border-white/20 transition-all duration-300;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.12) 0%,
+      rgba(255, 255, 255, 0.06) 100%
+    );
+    box-shadow: 
+      0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06),
+      inset 0 1px 1px rgba(255, 255, 255, 0.05);
   }
 
   .glass-card:hover {
-    background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.075));
-    border-color: rgba(255, 255, 255, 0.2);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px);
+    box-shadow: 
+      0 10px 20px -5px rgba(var(--primary), 0.15),
+      0 4px 6px -2px rgba(0, 0, 0, 0.05),
+      inset 0 1px 1px rgba(255, 255, 255, 0.1);
   }
 
-  .glass-card:hover {
-    @apply border-[rgba(var(--primary),0.2)]
-    shadow-[0_4px_12px_rgba(var(--primary),0.1)];
+  /* Badges avec effet de brillance */
+  .badge {
+    @apply px-3 py-1 rounded-full text-sm font-medium relative overflow-hidden;
+    background: linear-gradient(
+      135deg,
+      rgba(var(--primary), 0.2) 0%,
+      rgba(var(--primary-dark), 0.2) 100%
+    );
+    border: 1px solid rgba(var(--primary), 0.3);
+  }
+
+  .badge::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+      to right,
+      transparent 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      transparent 100%
+    );
+    animation: shine 3s infinite;
+  }
+
+  @keyframes shine {
+    100% {
+      left: 200%;
+    }
   }
 
   /* Inputs */
@@ -175,17 +217,6 @@
 
   .animate-slide-up {
     @apply animate-[slideUp_0.3s_ease-in-out];
-  }
-
-  /* Badges et étiquettes */
-  .badge {
-    @apply px-3 py-1 rounded-full text-sm font-medium
-    border border-[rgba(var(--primary),0.2)];
-    background: linear-gradient(
-      to right,
-      rgba(var(--primary), 0.2),
-      rgba(var(--primary-dark), 0.2)
-    );
   }
 
   /* Conteneurs d'icônes */

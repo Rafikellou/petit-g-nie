@@ -10,10 +10,12 @@ import {
   Languages,
   PenTool,
   Brain,
-  BookOpenCheck
+  BookOpenCheck,
+  Check
 } from 'lucide-react';
 import { ActivitySection } from '@/components/home/ActivitySection';
 import { Footer } from '@/components/layout/Footer';
+import { useUser } from '@/hooks/useUser';
 
 const recommendedActivities = [
   {
@@ -113,6 +115,8 @@ const funActivities = [
 ];
 
 export default function Home() {
+  const { user, teacher } = useUser();
+
   return (
     <>
       <main className="min-h-screen safe-area-inset pt-24">
@@ -124,14 +128,14 @@ export default function Home() {
 
         <div className="max-w-6xl mx-auto px-6 pb-safe-bottom relative">
           <ActivitySection
-            title="Bienvenue sur Futur Génie !"
+            title={`Bonjour ${user?.firstName || ''}!`}
             description="Ton espace personnel pour apprendre et t'amuser"
             activities={[]}
             isMainTitle
           />
 
           <ActivitySection
-            title="Activités recommandées par ton enseignant"
+            title={`Activités recommandées par ${teacher?.title || ''} ${teacher?.lastName || ''}`}
             description="Ces activités ont été spécialement choisies pour toi"
             activities={recommendedActivities}
           />
