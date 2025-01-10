@@ -67,6 +67,18 @@ export const authService = {
     try {
       console.log('Tentative de connexion pour:', email)
 
+      if (!email || !password) {
+        throw new Error('Email et mot de passe requis')
+      }
+
+      // Vérifier si l'utilisateur existe déjà
+      const { data: { user: existingUser }, error: getUserError } = await supabase.auth.getUser()
+      
+      if (existingUser) {
+        console.log('Utilisateur déjà connecté, déconnexion...')
+        await supabase.auth.signOut()
+      }
+
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -84,10 +96,10 @@ export const authService = {
 
       console.log('Utilisateur connecté:', data.user.id)
 
-      // Récupérer les profils de l'utilisateur
+      // Récupérer les profils de l'utilisateur avec plus d'informations
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('*')
+        .select('*, schools(*)')
         .eq('user_id', data.user.id)
 
       if (profilesError) {
@@ -146,16 +158,26 @@ export const authService = {
     try {
       const { data: { user }, error: userError } = await supabase.auth.getUser()
 
-      if (userError) throw userError
-      if (!user) return { user: null, error: null }
+      if (userError) {
+        console.error('Erreur lors de la récupération de l\'utilisateur:', userError)
+        throw userError
+      }
 
-      // Récupérer les profils de l'utilisateur
+      if (!user) {
+        console.log('Aucun utilisateur connecté')
+        return { user: null, error: null }
+      }
+
+      // Récupérer les profils de l'utilisateur avec plus d'informations
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('*')
+        .select('*, schools(*)')
         .eq('user_id', user.id)
 
-      if (profilesError) throw profilesError
+      if (profilesError) {
+        console.error('Erreur lors de la récupération des profils:', profilesError)
+        throw profilesError
+      }
 
       return { 
         user: { 
@@ -168,7 +190,7 @@ export const authService = {
         error: null 
       }
     } catch (error: any) {
-      console.error('Error in getCurrentUser:', error)
+      console.error('Erreur dans getCurrentUser:', error)
       return { user: null, error }
     }
   },
