@@ -32,31 +32,30 @@ export const authService = {
       }
 
       // Créer l'utilisateur
-      const { data: userData, error: signUpError } = await supabase.auth.signUp({
+      const { data: auth, error: signUpError } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
       })
 
       if (signUpError) throw signUpError
-
-      if (!userData.user) throw new Error('Erreur lors de la création du compte')
+      if (!auth.user) throw new Error('Erreur lors de la création du compte')
 
       // Créer le profil
       const { error: profileError } = await supabase
         .from('profiles')
-        .insert([
-          {
-            user_id: userData.user.id,
-            role: data.role,
-            family_name: data.family_name,
-            surname: data.surname,
-            school_id: data.school_id,
-          },
-        ])
+        .insert([{
+          user_id: auth.user.id,
+          family_name: data.family_name,
+          surname: data.surname,
+          role: data.role,
+          school_id: data.school_id,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }])
 
       if (profileError) throw profileError
 
-      return { user: userData.user, error: null }
+      return { user: auth.user, error: null }
     } catch (error: any) {
       console.error('Error in signUp:', error)
       return { user: null, error }
@@ -72,7 +71,6 @@ export const authService = {
       })
 
       if (signInError) throw signInError
-
       if (!user) throw new Error('Utilisateur non trouvé')
 
       // Récupérer les profils de l'utilisateur
@@ -83,7 +81,21 @@ export const authService = {
 
       if (profilesError) throw profilesError
 
-      return { user: { ...user, profiles }, error: null }
+      // Si l'utilisateur n'a qu'un seul profil, le définir comme actif
+      if (profiles && profiles.length === 1) {
+        await authService.setActiveProfile(user.id, profiles[0].id)
+      }
+
+      return { 
+        user: { 
+          ...user, 
+          profiles,
+          active_profile: user.user_metadata?.active_profile 
+            ? profiles?.find(p => p.id === user.user_metadata.active_profile)
+            : profiles?.[0]
+        }, 
+        error: null 
+      }
     } catch (error: any) {
       console.error('Error in signIn:', error)
       return { user: null, error }
@@ -110,6 +122,7 @@ export const authService = {
       if (userError) throw userError
       if (!user) return { user: null, error: null }
 
+      // Récupérer les profils de l'utilisateur
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
@@ -117,10 +130,34 @@ export const authService = {
 
       if (profilesError) throw profilesError
 
-      return { user: { ...user, profiles }, error: null }
+      return { 
+        user: { 
+          ...user, 
+          profiles: profiles || [],
+          active_profile: user.user_metadata?.active_profile 
+            ? profiles?.find(p => p.id === user.user_metadata.active_profile)
+            : profiles?.[0]
+        }, 
+        error: null 
+      }
     } catch (error: any) {
       console.error('Error in getCurrentUser:', error)
       return { user: null, error }
+    }
+  },
+
+  // Mettre à jour le profil actif
+  setActiveProfile: async (userId: string, profileId: string) => {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        data: { active_profile: profileId }
+      })
+
+      if (error) throw error
+      return { error: null }
+    } catch (error: any) {
+      console.error('Error in setActiveProfile:', error)
+      return { error }
     }
   },
 }

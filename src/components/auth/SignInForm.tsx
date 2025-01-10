@@ -24,7 +24,28 @@ export default function SignInForm() {
       if (user.profiles.length > 1) {
         router.push('/profile-selector')
       } else {
-        router.push('/dashboard')
+        // Rediriger vers la page appropriée selon le rôle
+        const profile = user.profiles[0]
+        if (profile) {
+          switch (profile.role) {
+            case 'super_admin':
+              router.push('/super-admin')
+              break
+            case 'admin':
+              router.push('/admin')
+              break
+            case 'teacher':
+              router.push('/teacher')
+              break
+            case 'parent':
+              router.push('/parent')
+              break
+            default:
+              router.push('/')
+          }
+        } else {
+          router.push('/')
+        }
       }
     } catch (err) {
       console.error('Error during sign in:', err)

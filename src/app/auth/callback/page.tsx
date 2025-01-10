@@ -1,22 +1,57 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { authService } from '@/lib/auth'
 
 export default function AuthCallbackPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession()
+        const { user, error } = await authService.getCurrentUser()
         
         if (error) throw error
         
-        if (session) {
-          // Redirect to home page or dashboard after successful authentication
-          router.push('/')
+        if (user) {
+          // Récupérer l'URL de redirection si elle existe
+          const redirectTo = searchParams.get('redirectTo')
+          
+          if (user.profiles.length > 1) {
+            router.push('/profile-selector')
+            return
+          }
+
+          // Rediriger vers la page appropriée selon le rôle
+          const profile = user.profiles[0]
+          if (profile) {
+            if (redirectTo) {
+              router.push(redirectTo)
+            } else {
+              switch (profile.role) {
+                case 'super_admin':
+                  router.push('/super-admin')
+                  break
+                case 'admin':
+                  router.push('/admin')
+                  break
+                case 'teacher':
+                  router.push('/teacher')
+                  break
+                case 'parent':
+                  router.push('/parent')
+                  break
+                default:
+                  router.push('/')
+              }
+            }
+          } else {
+            router.push('/')
+          }
+        } else {
+          router.push('/auth?error=Authentication failed')
         }
       } catch (error) {
         console.error('Error in auth callback:', error)
@@ -25,13 +60,12 @@ export default function AuthCallbackPage() {
     }
 
     handleAuthCallback()
-  }, [router])
+  }, [router, searchParams])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-        <h2 className="mt-4 text-lg font-medium text-gray-900">Authentification en cours...</h2>
+      <div className="p-4 rounded-md bg-white shadow-sm">
+        <p className="text-gray-500">Redirection en cours...</p>
       </div>
     </div>
   )
