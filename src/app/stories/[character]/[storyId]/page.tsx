@@ -22,57 +22,58 @@ export default function StoryPage() {
   }
 
   return (
-    <main className="min-h-screen py-24">
-      <div className="max-w-4xl mx-auto px-6">
+    <main className="min-h-screen pt-safe-top pb-safe-bottom">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6">
         <Link
           href="/histoires"
-          className="inline-flex items-center text-white/70 hover:text-white mb-8 transition-colors"
+          className="inline-flex items-center text-white/70 hover:text-white my-4 sm:my-8 transition-colors"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Retour aux histoires
         </Link>
 
-        <div className="glass-card p-8">
-          <div className="flex items-start gap-8">
-            <div className="relative w-64 h-64 rounded-xl overflow-hidden">
+        <div className="glass-card p-4 sm:p-8">
+          <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-8">
+            <div className="relative w-full sm:w-64 h-48 sm:h-64 rounded-xl overflow-hidden">
               <Image
                 src={story.image}
                 alt={story.title}
                 fill
                 className="object-cover"
+                priority
               />
             </div>
             
             <div className="flex-1">
-              <div className="flex items-center gap-4 mb-4">
+              <div className="flex items-center gap-3 mb-3 sm:mb-4">
                 <Image
                   src={character.image}
                   alt={character.name}
-                  width={48}
-                  height={48}
+                  width={40}
+                  height={40}
                   className="rounded-full"
                 />
-                <h2 className="text-xl font-medium text-white/70">
+                <h2 className="text-lg sm:text-xl font-medium text-white/70">
                   {character.name}
                 </h2>
               </div>
 
-              <h1 className="text-4xl font-bold mb-4">{story.title}</h1>
+              <h1 className="text-2xl sm:text-4xl font-bold mb-3 sm:mb-4">{story.title}</h1>
               
-              <div className="flex items-center gap-6 mb-6">
-                <div className="px-3 py-1 rounded-full bg-white/10">
+              <div className="flex flex-wrap items-center gap-3 mb-4 sm:mb-6">
+                <div className="px-3 py-1 rounded-full bg-white/10 text-sm">
                   {story.duration}
                 </div>
-                <div className="px-3 py-1 rounded-full bg-white/10 capitalize">
+                <div className="px-3 py-1 rounded-full bg-white/10 capitalize text-sm">
                   {story.difficulty}
                 </div>
               </div>
 
-              <p className="text-lg text-white/70 mb-8">
+              <p className="text-base sm:text-lg text-white/70 mb-6 sm:mb-8">
                 {story.description}
               </p>
 
-              <button className="btn-modern">
+              <button className="w-full sm:w-auto btn-modern">
                 <span className="relative z-10">Commencer l'histoire</span>
               </button>
             </div>
