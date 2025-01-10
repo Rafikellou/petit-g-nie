@@ -112,7 +112,7 @@ export default function SchoolDetails() {
               <ArrowLeft className="w-6 h-6" />
               <span className="text-lg font-medium">Retour</span>
             </button>
-            <h1 className="text-xl font-bold">{school.name}</h1>
+            <h1 className="text-xl font-bold">{school.nom_ecole}</h1>
           </div>
         </div>
       </header>
@@ -122,8 +122,8 @@ export default function SchoolDetails() {
         <div className="glass-card p-6 mb-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
-              <h2 className="text-xl font-bold mb-2">{school.name}</h2>
-              <p className="text-white/70">{school.address}</p>
+              <h2 className="text-xl font-bold mb-2">{school.nom_ecole}</h2>
+              <p className="text-white/70">{school.code_postal} {school.ville}</p>
             </div>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
