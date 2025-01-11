@@ -1,0 +1,157 @@
+{
+  "class": "CP",
+  "subject": "Mathématiques",
+  "topics": [
+    {
+      "topic": "Nombres, calcul et résolution de problèmes",
+      "specificities": [
+        {
+          "specificity": "Les nombres entiers",
+          "sub-specificities": [
+            {
+              "sub-specificity": "Comparer et dénombrer des collections en les organisant",
+              "period": "Début d'année"
+            },
+            {
+              "sub-specificity": "Connaître la suite écrite et orale des nombres jusqu’à cent",
+              "period": "Début d'année"
+            },
+            {
+              "sub-specificity": "Comparer, encadrer, intercaler des nombres entiers",
+              "period": "Milieu d'année"
+            }
+          ]
+        },
+        {
+          "specificity": "Les quatre opérations",
+          "sub-specificities": [
+            {
+              "sub-specificity": "Comprendre le sens de l’addition et de la soustraction",
+              "period": "Début d'année"
+            },
+            {
+              "sub-specificity": "Poser et effectuer des additions en colonnes",
+              "period": "Fin d'année"
+            }
+          ]
+        },
+        {
+          "specificity": "Le calcul mental",
+          "sub-specificities": [
+            {
+              "sub-specificity": "Mémoriser des faits numériques",
+              "period": "Début d'année"
+            },
+            {
+              "sub-specificity": "Utiliser ses connaissances en numération pour calculer mentalement",
+              "period": "Milieu d'année"
+            },
+            {
+              "sub-specificity": "Apprendre des procédures de calcul mental",
+              "period": "Fin d'année"
+            }
+          ]
+        },
+        {
+          "specificity": "La résolution de problèmes",
+          "sub-specificities": [
+            {
+              "sub-specificity": "Résoudre des problèmes additifs en une étape",
+              "period": "Milieu d'année"
+            },
+            {
+              "sub-specificity": "Résoudre des problèmes multiplicatifs en une étape",
+              "period": "Fin d'année"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "topic": "Grandeurs et mesures",
+      "specificities": [
+        {
+          "specificity": "Les longueurs et les masses",
+          "sub-specificities": [
+            {
+              "sub-specificity": "Comparer des objets selon leur longueur",
+              "period": "Début d'année"
+            },
+            {
+              "sub-specificity": "Mesurer la longueur d’un segment avec une règle graduée",
+              "period": "Milieu d'année"
+            }
+          ]
+        },
+        {
+          "specificity": "La monnaie",
+          "sub-specificities": [
+            {
+              "sub-specificity": "Comparer les valeurs de deux ensembles de pièces et billets",
+              "period": "Milieu d'année"
+            },
+            {
+              "sub-specificity": "Simuler des achats et rendre la monnaie",
+              "period": "Fin d'année"
+            }
+          ]
+        },
+        {
+          "specificity": "Le repérage dans le temps",
+          "sub-specificities": [
+            {
+              "sub-specificity": "Lire l’heure sur une horloge à aiguilles",
+              "period": "Fin d'année (valeur par défaut)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "topic": "Espace et géométrie",
+      "specificities": [
+        {
+          "specificity": "Les solides",
+          "sub-specificities": [
+            {
+              "sub-specificity": "Reconnaître les solides usuels (cube, boule, cylindre, etc.)",
+              "period": "Début d'année"
+            }
+          ]
+        },
+        {
+          "specificity": "La géométrie plane",
+          "sub-specificities": [
+            {
+              "sub-specificity": "Reconnaître des formes planes (carré, rectangle, triangle)",
+              "period": "Milieu d'année"
+            }
+          ]
+        },
+        {
+          "specificity": "Le repérage dans l’espace",
+          "sub-specificities": [
+            {
+              "sub-specificity": "Utiliser le vocabulaire spatial (gauche, droite, devant, derrière)",
+              "period": "Début d'année"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "topic": "Organisation et gestion de données",
+      "specificities": [
+        {
+          "specificity": "Collecter et présenter des données",
+          "sub-specificities": [
+            {
+              "sub-specificity": "Construire un tableau ou un diagramme en barres",
+              "period": "Fin d'année (valeur par défaut)"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

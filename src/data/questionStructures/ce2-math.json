@@ -1,0 +1,150 @@
+{
+  "class": "CE2",
+  "subject": "Mathématiques",
+  "topics": [
+    {
+      "topic": "Nombres, calcul et résolution de problèmes",
+      "specificities": [
+        {
+          "specificity": "Les nombres entiers",
+          "sub-specificities": [
+            {
+              "sub-specificity": "Dénombrer des collections jusqu'à 10 000",
+              "period": "Début d'année"
+            },
+            {
+              "sub-specificity": "Comparer et ordonner des nombres jusqu'à 10 000",
+              "period": "Milieu d'année"
+            }
+          ]
+        },
+        {
+          "specificity": "Les fractions",
+          "sub-specificities": [
+            {
+              "sub-specificity": "Comparer des fractions simples",
+              "period": "Milieu d'année"
+            }
+          ]
+        },
+        {
+          "specificity": "Les quatre opérations",
+          "sub-specificities": [
+            {
+              "sub-specificity": "Poser et effectuer des multiplications en colonnes",
+              "period": "Milieu d'année"
+            },
+            {
+              "sub-specificity": "Comprendre et utiliser la division",
+              "period": "Fin d'année"
+            }
+          ]
+        },
+        {
+          "specificity": "Le calcul mental",
+          "sub-specificities": [
+            {
+              "sub-specificity": "Mémoriser les tables de multiplication",
+              "period": "Début d'année"
+            },
+            {
+              "sub-specificity": "Utiliser des procédures de calcul mental efficaces",
+              "period": "Fin d'année"
+            }
+          ]
+        },
+        {
+          "specificity": "La résolution de problèmes",
+          "sub-specificities": [
+            {
+              "sub-specificity": "Résoudre des problèmes mixtes en deux ou trois étapes",
+              "period": "Fin d'année"
+            },
+            {
+              "sub-specificity": "Résoudre des problèmes de comparaison multiplicative",
+              "period": "Fin d'année"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "topic": "Grandeurs et mesures",
+      "specificities": [
+        {
+          "specificity": "Les longueurs, les masses et les contenances",
+          "sub-specificities": [
+            {
+              "sub-specificity": "Mesurer des longueurs en utilisant des unités adaptées",
+              "period": "Milieu d'année"
+            }
+          ]
+        },
+        {
+          "specificity": "La monnaie",
+          "sub-specificities": [
+            {
+              "sub-specificity": "Utiliser l'écriture à virgule pour les euros et centimes",
+              "period": "Début d'année"
+            }
+          ]
+        },
+        {
+          "specificity": "Le repérage dans le temps et les durées",
+          "sub-specificities": [
+            {
+              "sub-specificity": "Lire l'heure sur une horloge à aiguilles",
+              "period": "Fin d'année (valeur par défaut)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "topic": "Espace et géométrie",
+      "specificities": [
+        {
+          "specificity": "Les solides",
+          "sub-specificities": [
+            {
+              "sub-specificity": "Décrire une pyramide en utilisant le vocabulaire géométrique",
+              "period": "Milieu d'année"
+            }
+          ]
+        },
+        {
+          "specificity": "La géométrie plane",
+          "sub-specificities": [
+            {
+              "sub-specificity": "Reconnaître et décrire des figures planes (carré, rectangle, losange)",
+              "period": "Début d'année"
+            }
+          ]
+        },
+        {
+          "specificity": "Le repérage dans l'espace",
+          "sub-specificities": [
+            {
+              "sub-specificity": "Utiliser un plan pour localiser des objets",
+              "period": "Fin d'année (valeur par défaut)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "topic": "Organisation et gestion de données",
+      "specificities": [
+        {
+          "specificity": "Collecter et présenter des données",
+          "sub-specificities": [
+            {
+              "sub-specificity": "Produire un diagramme en barres",
+              "period": "Fin d'année (valeur par défaut)"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

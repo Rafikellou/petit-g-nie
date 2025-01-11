@@ -1,6 +1,7 @@
 'use client';
 
 import { Inter } from 'next/font/google';
+import { Toaster } from 'sonner';
 import './globals.css';
 import { AchievementsProvider } from '@/contexts/AchievementsContext';
 import { Users } from 'lucide-react';
@@ -76,6 +77,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
             />
           </div>
         </AchievementsProvider>
+        <Toaster richColors position="top-right" />
       </body>
     </html>
   );
