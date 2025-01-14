@@ -3,7 +3,14 @@ import type { NextRequest } from 'next/server'
 import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
 
 // Routes publiques qui ne nécessitent pas d'authentification
-const PUBLIC_ROUTES = ['/auth', '/auth/callback', '/api']
+const PUBLIC_ROUTES = [
+  '/auth',
+  '/auth/callback',
+  '/api',
+  '/',
+  '/_next',
+  '/favicon.ico'
+]
 
 // Routes protégées par rôle
 const ROLE_ROUTES = {
@@ -14,44 +21,72 @@ const ROLE_ROUTES = {
 }
 
 export async function middleware(req: NextRequest) {
-  const res = NextResponse.next()
-  const supabase = createMiddlewareClient({ req, res })
-  
-  // Vérifier la session
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+  try {
+    // Ne pas traiter les requêtes pour les ressources statiques
+    if (req.nextUrl.pathname.startsWith('/_next') || 
+        req.nextUrl.pathname.startsWith('/static') ||
+        req.nextUrl.pathname === '/favicon.ico') {
+      return NextResponse.next()
+    }
 
-  // Autoriser les routes publiques
-  if (PUBLIC_ROUTES.some(route => req.nextUrl.pathname.startsWith(route))) {
-    return res
-  }
+    const res = NextResponse.next()
+    const supabase = createMiddlewareClient({ req, res })
 
-  // Si pas de session, rediriger vers la page de connexion
-  if (!session) {
-    const redirectUrl = req.nextUrl.clone()
-    redirectUrl.pathname = '/auth'
-    redirectUrl.searchParams.set(`redirectedFrom`, req.nextUrl.pathname)
-    return NextResponse.redirect(redirectUrl)
-  }
+    // Vérifier la session
+    const {
+      data: { session },
+      error: sessionError
+    } = await supabase.auth.getSession()
 
-  // Récupérer les détails de l'utilisateur depuis user_details
-  const { data: userDetails } = await supabase
-    .from('user_details')
-    .select('role')
-    .eq('user_id', session.user.id)
-    .single()
+    if (sessionError) {
+      console.error('Erreur lors de la récupération de la session:', sessionError)
+      return redirectToAuth(req)
+    }
 
-  // Vérifier les permissions basées sur le rôle
-  const userRole = userDetails?.role
-  if (userRole) {
-    const allowedRoutes = ROLE_ROUTES[userRole as keyof typeof ROLE_ROUTES] || []
-    if (allowedRoutes.some(route => req.nextUrl.pathname.startsWith(route))) {
+    const pathname = req.nextUrl.pathname
+
+    // Autoriser les routes publiques
+    if (PUBLIC_ROUTES.some(route => pathname.startsWith(route))) {
       return res
     }
-  }
 
-  // Si l'utilisateur n'a pas les permissions nécessaires, rediriger vers la page d'accueil
+    // Si pas de session, rediriger vers la page de connexion
+    if (!session) {
+      console.log('Pas de session active, redirection vers /auth')
+      return redirectToAuth(req)
+    }
+
+    // Vérifier les permissions basées sur le rôle
+    const userRole = session.user.user_metadata?.role
+    console.log('Rôle utilisateur:', userRole)
+    console.log('Chemin demandé:', pathname)
+
+    if (userRole) {
+      const allowedRoutes = ROLE_ROUTES[userRole as keyof typeof ROLE_ROUTES] || []
+      if (allowedRoutes.some(route => pathname.startsWith(route))) {
+        return res
+      }
+      console.log('Route non autorisée pour le rôle:', userRole)
+    } else {
+      console.log('Aucun rôle trouvé pour l\'utilisateur')
+    }
+
+    // Si l'utilisateur n'a pas les permissions nécessaires, rediriger vers la page d'accueil
+    return redirectToHome(req)
+  } catch (error) {
+    console.error('Erreur dans le middleware:', error)
+    return redirectToHome(req)
+  }
+}
+
+function redirectToAuth(req: NextRequest) {
+  const redirectUrl = req.nextUrl.clone()
+  redirectUrl.pathname = '/auth'
+  redirectUrl.searchParams.set(`redirectedFrom`, req.nextUrl.pathname)
+  return NextResponse.redirect(redirectUrl)
+}
+
+function redirectToHome(req: NextRequest) {
   const redirectUrl = req.nextUrl.clone()
   redirectUrl.pathname = '/'
   return NextResponse.redirect(redirectUrl)
