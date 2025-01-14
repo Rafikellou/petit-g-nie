@@ -129,7 +129,7 @@ export default function Home() {
       <div className="max-w-6xl mx-auto px-6 pb-safe-bottom relative">
         <div className="container mx-auto px-4 py-8">
           <div className="mb-12">
-            <h1 className="text-4xl font-bold mb-4">
+            <h1 className="text-2xl md:text-4xl font-bold mb-2">
               {loading ? (
                 <span>Chargement...</span>
               ) : user ? (
@@ -140,7 +140,7 @@ export default function Home() {
                 "Connectez-vous pour commencer"
               )}
             </h1>
-            <p className="text-xl text-gray-400">
+            <p className="text-base md:text-xl text-gray-400">
               Ton espace personnel pour apprendre et t'amuser
             </p>
           </div>
