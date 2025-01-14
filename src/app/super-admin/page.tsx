@@ -62,7 +62,39 @@ export default function SuperAdminDashboard() {
   const [activeTab, setActiveTab] = useState('questions');
   const [kpiData, setKpiData] = useState<KPIData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(false);
   const supabase = createClientComponentClient();
+
+  // Vérification du rôle super_admin
+  useEffect(() => {
+    const checkRole = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        window.location.href = '/login';
+        return;
+      }
+      
+      const { data: userData, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+        
+      if (error || userData?.role !== 'super_admin') {
+        window.location.href = '/';
+        return;
+      }
+      
+      setIsAuthorized(true);
+    };
+    
+    checkRole();
+  }, [supabase]);
+
+  // Si non autorisé, ne rien afficher pendant la vérification
+  if (!isAuthorized) {
+    return null;
+  }
 
   // États pour les options des menus déroulants
   const [availableTopics, setAvailableTopics] = useState<string[]>([]);
@@ -83,6 +115,9 @@ export default function SuperAdminDashboard() {
   const [generatedQuestion, setGeneratedQuestion] = useState<GeneratedQuestion | null>(null);
   const [similarQuestions, setSimilarQuestions] = useState<GeneratedQuestion[]>([]);
   const [showSimilarQuestions, setShowSimilarQuestions] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedQuestion, setEditedQuestion] = useState<GeneratedQuestion | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -165,16 +200,16 @@ export default function SuperAdminDashboard() {
       try {
         const { data: usersCount } = await supabase
           .from('profiles')
-          .select('*', { count: 'exact' });
+          .select('*, users!inner(*)', { count: 'exact' });
 
         const { data: schoolsCount } = await supabase
-          .from('schools')
+          .from('ecole')
           .select('*', { count: 'exact' });
 
         const { data: teachersCount } = await supabase
           .from('profiles')
-          .select('*', { count: 'exact' })
-          .eq('role', 'teacher');
+          .select('*, users!inner(*)', { count: 'exact' })
+          .eq('users.role', 'teacher');
 
         // Récupérer les nouveaux utilisateurs des 30 derniers jours
         const thirtyDaysAgo = new Date();
@@ -182,30 +217,30 @@ export default function SuperAdminDashboard() {
 
         const { data: newTeachers } = await supabase
           .from('profiles')
-          .select('*', { count: 'exact' })
-          .eq('role', 'teacher')
-          .gte('created_at', thirtyDaysAgo.toISOString());
+          .select('*, users!inner(*)', { count: 'exact' })
+          .eq('users.role', 'teacher')
+          .gte('profiles.created_at', thirtyDaysAgo.toISOString());
 
         const { data: newParents } = await supabase
           .from('profiles')
-          .select('*', { count: 'exact' })
-          .eq('role', 'parent')
-          .gte('created_at', thirtyDaysAgo.toISOString());
+          .select('*, users!inner(*)', { count: 'exact' })
+          .eq('users.role', 'parent')
+          .gte('profiles.created_at', thirtyDaysAgo.toISOString());
 
         const { data: newAdmins } = await supabase
           .from('profiles')
-          .select('*', { count: 'exact' })
-          .eq('role', 'admin')
-          .gte('created_at', thirtyDaysAgo.toISOString());
+          .select('*, users!inner(*)', { count: 'exact' })
+          .eq('users.role', 'admin')
+          .gte('profiles.created_at', thirtyDaysAgo.toISOString());
 
         setKpiData({
-          totalUsers: usersCount?.count || 0,
-          totalSchools: schoolsCount?.count || 0,
-          totalTeachers: teachersCount?.count || 0,
+          totalUsers: usersCount?.length || 0,
+          totalSchools: schoolsCount?.length || 0,
+          totalTeachers: teachersCount?.length || 0,
           newUsers: {
-            teachers: newTeachers?.count || 0,
-            parents: newParents?.count || 0,
-            admins: newAdmins?.count || 0,
+            teachers: newTeachers?.length || 0,
+            parents: newParents?.length || 0,
+            admins: newAdmins?.length || 0,
           },
         });
       } catch (error) {
@@ -229,32 +264,23 @@ export default function SuperAdminDashboard() {
       }
 
       const response = await generateMasterQuestion({
-        class: masterQuestion.class,
-        subject: masterQuestion.subject,
-        topic: masterQuestion.topics[0],
-        specificity: masterQuestion.specificities[0],
-        subSpecificity: masterQuestion.subSpecificities[0],
-        period: masterQuestion.period
+        ...masterQuestion
       });
 
-      try {
-        const parsedQuestion = JSON.parse(response);
-        
-        // Validation du format de la réponse
-        if (!parsedQuestion.question || !parsedQuestion.options || !parsedQuestion.correctAnswer || !parsedQuestion.explanation) {
-          throw new Error("La réponse de l'API ne contient pas tous les champs requis");
-        }
-
-        if (!["A", "B", "C", "D"].includes(parsedQuestion.correctAnswer)) {
-          throw new Error("La réponse correcte doit être A, B, C ou D");
-        }
-
-        setGeneratedQuestion(parsedQuestion);
-        toast.success("Question générée avec succès !");
-      } catch (parseError) {
-        console.error("Erreur lors du parsing de la réponse:", parseError);
-        throw new Error("Format de réponse invalide de l'API");
+      // La réponse est déjà un objet JSON parsé
+      console.log("Réponse complète:", response);
+      
+      // Validation du format de la réponse
+      if (!response.question || !response.options || !response.correctAnswer || !response.explanation) {
+        throw new Error("La réponse de l'API ne contient pas tous les champs requis");
       }
+
+      if (!["A", "B", "C", "D"].includes(response.correctAnswer)) {
+        throw new Error("La réponse correcte doit être A, B, C ou D");
+      }
+
+      setGeneratedQuestion(response);
+      toast.success("Question générée avec succès !");
     } catch (error) {
       console.error("Erreur lors de la génération de la question:", error);
       setError(error instanceof Error ? error.message : "Erreur inconnue");
@@ -262,6 +288,47 @@ export default function SuperAdminDashboard() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleRegenerateQuestion = async () => {
+    setIsLoading(true);
+    try {
+      const response = await generateMasterQuestion({
+        ...masterQuestion
+      });
+      setGeneratedQuestion(response);
+      setShowSimilarQuestions(false);
+      setSimilarQuestions([]);
+    } catch (error) {
+      setError('Erreur lors de la génération de la question');
+      toast.error('Erreur lors de la génération de la question');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSendAdditionalInstructions = async () => {
+    setIsLoading(true);
+    try {
+      const response = await generateMasterQuestion({
+        ...masterQuestion
+      });
+      setGeneratedQuestion(response);
+      setShowSimilarQuestions(false);
+      setSimilarQuestions([]);
+      setShowInstructions(false); // Ferme la zone de texte après l'envoi
+    } catch (error) {
+      setError('Erreur lors de la génération de la question');
+      toast.error('Erreur lors de la génération de la question');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSaveEditedQuestion = async () => {
+    if (!editedQuestion) return;
+    setGeneratedQuestion(editedQuestion);
+    setIsEditing(false);
   };
 
   const handleGenerateSimilarQuestions = async () => {
@@ -282,26 +349,76 @@ export default function SuperAdminDashboard() {
   };
 
   const saveQuestionsToDatabase = async () => {
-    if (!similarQuestions.length) return;
+    if (!generatedQuestion || !similarQuestions.length) return;
 
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      console.log("Tentative de sauvegarde de la question master:", {
+        question: generatedQuestion.question,
+        options: generatedQuestion.options,
+        correct_answer: generatedQuestion.correctAnswer,
+        explanation: generatedQuestion.explanation,
+        class: masterQuestion.class,
+        subject: masterQuestion.subject,
+        topic: masterQuestion.topics[0],
+        specificity: masterQuestion.specificities[0],
+        "sub-specificity": masterQuestion.subSpecificities[0],
+        period: masterQuestion.period,
+      });
+
+      // 1. D'abord, sauvegarder la question master
+      const { data: masterQuestionData, error: masterError } = await supabase
+        .from('master_questions')
+        .insert({
+          question: generatedQuestion.question,
+          options: generatedQuestion.options,
+          correct_answer: generatedQuestion.correctAnswer,
+          explanation: generatedQuestion.explanation,
+          class: masterQuestion.class,
+          subject: masterQuestion.subject,
+          topic: masterQuestion.topics[0],
+          specificity: masterQuestion.specificities[0],
+          "sub-specificity": masterQuestion.subSpecificities[0],
+          period: masterQuestion.period,
+          created_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (masterError) {
+        console.error("Erreur lors de la sauvegarde de la question master:", masterError);
+        throw masterError;
+      }
+
+      console.log("Question master sauvegardée avec succès:", masterQuestionData);
+
+      // 2. Ensuite, sauvegarder les questions similaires avec la référence à la question master
+      const { data: similarQuestionsData, error: similarError } = await supabase
         .from('questions')
         .insert(
           similarQuestions.map(q => ({
-            ...q,
+            question: q.question,
+            options: q.options,
+            correct_answer: q.correctAnswer,
+            explanation: q.explanation,
             class: masterQuestion.class,
             subject: masterQuestion.subject,
-            topics: masterQuestion.topics,
-            specificities: masterQuestion.specificities,
-            sub_specificities: masterQuestion.subSpecificities,
+            topic: masterQuestion.topics[0],
+            specificity: masterQuestion.specificities[0],
+            "sub-specificity": masterQuestion.subSpecificities[0],
             period: masterQuestion.period,
             created_at: new Date().toISOString(),
+            master_question_id: masterQuestionData.id
           }))
         );
 
-      if (error) throw error;
+      if (similarError) {
+        console.error("Erreur lors de la sauvegarde des questions similaires:", similarError);
+        throw similarError;
+      }
+
+      console.log("Questions similaires sauvegardées avec succès:", similarQuestionsData);
+
       toast.success('Questions enregistrées avec succès');
       setShowSimilarQuestions(false);
       setSimilarQuestions([]);
@@ -512,49 +629,90 @@ export default function SuperAdminDashboard() {
                   )}
 
                   {generatedQuestion && (
-                    <div className="mt-8">
-                      <h3 className="text-xl font-semibold mb-4">Question générée</h3>
-                      <QuestionDisplay
-                        question={generatedQuestion.question}
-                        options={generatedQuestion.options}
-                        correctAnswer={generatedQuestion.correctAnswer}
-                        explanation={generatedQuestion.explanation}
-                      />
-
-                      <div className="mt-4 space-x-4">
-                        <Button
-                          onClick={handleGenerateSimilarQuestions}
-                          disabled={loading}
-                          className="bg-blue-600 hover:bg-blue-700"
-                        >
-                          {loading ? "Génération..." : "Générer des questions similaires"}
-                        </Button>
-                      </div>
-
-                      {showSimilarQuestions && similarQuestions.length > 0 && (
-                        <div className="mt-8">
-                          <h3 className="text-xl font-semibold mb-4">Questions similaires</h3>
-                          <div className="space-y-8">
-                            {similarQuestions.map((question, index) => (
-                              <div key={index} className="border-t pt-6">
-                                <h4 className="text-lg font-medium mb-4">Question similaire {index + 1}</h4>
-                                <QuestionDisplay
-                                  question={question.question}
-                                  options={question.options}
-                                  correctAnswer={question.correctAnswer}
-                                  explanation={question.explanation}
+                    <div className="space-y-4">
+                      {!isEditing ? (
+                        <>
+                          <QuestionDisplay 
+                            question={generatedQuestion.question}
+                            options={generatedQuestion.options}
+                            correctAnswer={generatedQuestion.correctAnswer}
+                            explanation={generatedQuestion.explanation}
+                          />
+                          <div className="flex gap-2 mt-4">
+                            <Button onClick={() => handleRegenerateQuestion()} disabled={isLoading}>
+                              Regénérer
+                            </Button>
+                            <Button onClick={() => setShowInstructions(!showInstructions)}>
+                              Affiner les instructions
+                            </Button>
+                            <Button onClick={() => {
+                              setIsEditing(true);
+                              setEditedQuestion(generatedQuestion);
+                            }}>
+                              Modifier
+                            </Button>
+                            <Button onClick={handleGenerateSimilarQuestions} disabled={isLoading}>
+                              Générer des questions similaires
+                            </Button>
+                          </div>
+                          
+                          {showInstructions && (
+                            <div className="mt-4 space-y-4">
+                              <Textarea
+                                placeholder="Ajoutez des instructions supplémentaires pour affiner la génération..."
+                                className="min-h-[100px]"
+                              />
+                              <Button 
+                                onClick={handleSendAdditionalInstructions}
+                                disabled={isLoading}
+                                className="w-full"
+                              >
+                                {isLoading ? "Envoi en cours..." : "Envoyer instructions complémentaires"}
+                              </Button>
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <label className="font-medium">Question</label>
+                            <Textarea
+                              value={editedQuestion?.question || ''}
+                              onChange={(e) => setEditedQuestion(prev => prev ? {...prev, question: e.target.value} : null)}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="font-medium">Options</label>
+                            {editedQuestion && Object.entries(editedQuestion.options).map(([key, value]) => (
+                              <div key={key} className="flex gap-2 items-center">
+                                <span>{key}.</span>
+                                <Textarea
+                                  value={value}
+                                  onChange={(e) => setEditedQuestion(prev => prev ? {
+                                    ...prev,
+                                    options: {
+                                      ...prev.options,
+                                      [key]: e.target.value
+                                    }
+                                  } : null)}
                                 />
                               </div>
                             ))}
                           </div>
-                          
-                          <div className="mt-6">
-                            <Button
-                              onClick={saveQuestionsToDatabase}
-                              disabled={loading}
-                              className="bg-green-600 hover:bg-green-700"
-                            >
-                              {loading ? "Sauvegarde..." : "Sauvegarder les questions"}
+                          <div className="space-y-2">
+                            <label className="font-medium">Explication</label>
+                            <Textarea
+                              value={editedQuestion?.explanation || ''}
+                              onChange={(e) => setEditedQuestion(prev => prev ? {...prev, explanation: e.target.value} : null)}
+                            />
+                          </div>
+                          <div className="flex gap-2">
+                            <Button onClick={handleSaveEditedQuestion}>Sauvegarder</Button>
+                            <Button variant="outline" onClick={() => {
+                              setIsEditing(false);
+                              setEditedQuestion(null);
+                            }}>
+                              Annuler
                             </Button>
                           </div>
                         </div>
@@ -635,6 +793,28 @@ export default function SuperAdminDashboard() {
           </Card>
         </TabsContent>
       </Tabs>
+      {showSimilarQuestions && similarQuestions.length > 0 && (
+        <div className="mt-8 space-y-6">
+          <h3 className="text-xl font-semibold">Questions similaires générées :</h3>
+          {similarQuestions.map((q, index) => (
+            <div key={index} className="p-4 border rounded-lg">
+              <QuestionDisplay
+                question={q.question}
+                options={q.options}
+                correctAnswer={q.correctAnswer}
+                explanation={q.explanation}
+              />
+            </div>
+          ))}
+          <Button 
+            onClick={saveQuestionsToDatabase}
+            disabled={loading}
+            className="w-full mt-4"
+          >
+            {loading ? "Sauvegarde en cours..." : "Sauvegarder toutes les questions"}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
