@@ -130,12 +130,12 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-4 md:px-6 pb-safe-bottom">
           <div className="py-4 md:py-8">
             <div className="mb-8 md:mb-12">
-              <h1 className="text-2xl md:text-4xl font-bold mb-2">
+              <h1 className="text-3xl md:text-4xl font-bold mb-2">
                 {loading ? (
                   <span>Chargement...</span>
                 ) : user ? (
                   <span className="text-violet-500">
-                    {user.surname_child ? `Bonjour ${user.surname_child}!` : 'Bonjour!'}
+                    {user.surname_child ? `Bonjour ${user.surname_child}` : 'Bonjour'}
                   </span>
                 ) : (
                   "Connectez-vous pour commencer"
