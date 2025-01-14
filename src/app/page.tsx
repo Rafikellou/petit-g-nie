@@ -11,7 +11,8 @@ import {
   PenTool,
   Brain,
   BookOpenCheck,
-  Check
+  Check,
+  Smile
 } from 'lucide-react';
 import { ActivitySection } from '@/components/home/ActivitySection';
 import { BaseLayout } from '@/components/layout/BaseLayout';
@@ -99,10 +100,18 @@ const funActivities = [
   {
     href: '/jeux',
     title: 'Jeux éducatifs',
-    description: "Apprends en t'amusant",
+    description: 'Apprends en t\'amusant avec nos jeux',
     icon: GamepadIcon,
     color: 'text-blue-400',
     bgGradient: 'from-blue-500/20 to-indigo-500/20'
+  },
+  {
+    href: '/blagues',
+    title: 'Blagues',
+    description: 'Découvre et partage des blagues amusantes',
+    icon: Smile,
+    color: 'text-amber-400',
+    bgGradient: 'from-amber-500/20 to-orange-500/20'
   }
 ];
 
@@ -120,11 +129,13 @@ export default function Home() {
       <div className="max-w-6xl mx-auto px-6 pb-safe-bottom relative">
         <div className="container mx-auto px-4 py-8">
           <div className="mb-12">
-            <h1 className="text-4xl font-bold text-white mb-4">
+            <h1 className="text-4xl font-bold mb-4">
               {loading ? (
                 <span>Chargement...</span>
               ) : user ? (
-                `Bienvenue sur Petit Génie !`
+                <span className="bg-gradient-to-r from-violet-500 to-purple-500 text-transparent bg-clip-text">
+                  {user.surname_child ? `Bonjour ${user.surname_child}` : 'Bonjour'}
+                </span>
               ) : (
                 "Connectez-vous pour commencer"
               )}
