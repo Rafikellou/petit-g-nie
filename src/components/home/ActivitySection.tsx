@@ -39,19 +39,19 @@ const item = {
 
 export function ActivitySection({ title, description, activities, isMainTitle }: ActivitySectionProps) {
   return (
-    <section className="mb-16">
+    <section className="mb-8 md:mb-16">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-8 text-center"
+        className="mb-6 md:mb-8 text-left md:text-center"
       >
-        <h2 className={`font-bold mb-3 ${
+        <h2 className={`font-bold mb-2 md:mb-3 ${
           isMainTitle 
-            ? 'text-4xl md:text-5xl bg-gradient-to-r from-purple-400 to-blue-400 text-transparent bg-clip-text' 
-            : 'text-2xl md:text-3xl text-white/90'
+            ? 'text-3xl md:text-5xl bg-gradient-to-r from-purple-400 to-blue-400 text-transparent bg-clip-text' 
+            : 'text-xl md:text-3xl text-white/90'
         }`}>{title}</h2>
         {description && (
-          <p className="text-base text-white/70">{description}</p>
+          <p className="text-sm md:text-base text-white/70">{description}</p>
         )}
       </motion.div>
       
@@ -59,13 +59,13 @@ export function ActivitySection({ title, description, activities, isMainTitle }:
         variants={container}
         initial="hidden"
         animate="show"
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
       >
         {activities.map((activity) => (
           <motion.div key={activity.href} variants={item}>
             <Link
               href={activity.href}
-              className={`block glass-card hover:scale-[1.02] transition-all hover:shadow-lg relative overflow-hidden rounded-2xl backdrop-blur-sm h-[180px] ${
+              className={`block glass-card hover:scale-[1.02] transition-all hover:shadow-lg relative overflow-hidden rounded-xl md:rounded-2xl backdrop-blur-sm h-[140px] md:h-[180px] ${
                 activity.isCompleted !== undefined
                   ? activity.isCompleted
                     ? 'bg-[#1a1f2e]/90 opacity-75'
@@ -76,13 +76,18 @@ export function ActivitySection({ title, description, activities, isMainTitle }:
               <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent" />
               
               {/* Content */}
-              <div className="relative p-6">
-                <div className="flex flex-col items-center text-center gap-4">
-                  <div className={`rounded-full ${activity.bgGradient} p-4`}>
-                    <activity.icon className={`w-8 h-8 ${activity.color}`} />
+              <div className="relative p-4 md:p-6">
+                <div className="flex flex-row md:flex-col items-center md:text-center gap-4">
+                  <div className={`rounded-full ${activity.bgGradient} p-3 md:p-4`}>
+                    <activity.icon className={`w-6 h-6 md:w-8 md:h-8 ${activity.color}`} />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold mb-2 text-white">{activity.title}</h3>
+                    <h3 className="text-lg md:text-xl font-semibold text-white">{activity.title}</h3>
+                    {activity.description && (
+                      <p className="text-sm text-white/70 mt-1 line-clamp-2 md:line-clamp-none">
+                        {activity.description}
+                      </p>
+                    )}
                     {activity.isCompleted !== undefined && (
                       <div className={`absolute top-4 right-4 rounded-full p-2 ${
                         activity.isCompleted 
