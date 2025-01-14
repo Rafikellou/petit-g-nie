@@ -133,8 +133,8 @@ export default function Home() {
               {loading ? (
                 <span>Chargement...</span>
               ) : user ? (
-                <span className="bg-gradient-to-r from-violet-500 to-purple-500 text-transparent bg-clip-text">
-                  {user.surname_child ? `Bonjour ${user.surname_child}` : 'Bonjour'}
+                <span className="text-violet-500">
+                  {user.surname_child ? `Bonjour ${user.surname_child}!` : 'Bonjour!'}
                 </span>
               ) : (
                 "Connectez-vous pour commencer"
