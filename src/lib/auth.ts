@@ -1,7 +1,5 @@
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { UserRole, User, School } from '@/types/auth'
-
-const supabase = createClientComponentClient()
+import { supabase } from './supabase'
 
 interface SignUpData {
   email: string;
