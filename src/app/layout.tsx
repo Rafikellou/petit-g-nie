@@ -30,13 +30,13 @@ export default function RootLayout({ children }: RootLayoutProps) {
   useEffect(() => {
     // Rediriger vers la page de connexion si l'utilisateur n'est pas connecté
     if (!loading && !user) {
-      router.push('/login');
+      router.push('/auth');
     }
   }, [user, loading, router]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    router.push('/login');
+    router.push('/auth');
   };
 
   return (
