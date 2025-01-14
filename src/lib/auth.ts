@@ -81,26 +81,26 @@ export const authService = {
       if (error) throw error
       if (!user) return { user: null, error: null }
 
+      // Récupérer les détails de l'utilisateur
+      const { data: userDetails, error: detailsError } = await supabase
+        .from('user_details')
+        .select('surname_child, class')
+        .eq('user_id', user.id)
+        .single()
+
+      if (detailsError) {
+        console.error('Erreur lors de la récupération des détails:', detailsError)
+      }
+
       // Récupérer les informations de l'école si nécessaire
+      let ecole
       if (user.user_metadata.ecole_id) {
-        const { data: ecole } = await supabase
+        const { data: ecoleData } = await supabase
           .from('ecoles')
           .select('id, nom_ecole')
           .eq('id', user.user_metadata.ecole_id)
           .single()
-
-        return {
-          user: {
-            id: user.id,
-            email: user.email!,
-            role: user.user_metadata.role,
-            ecole_id: user.user_metadata.ecole_id,
-            ecole: ecole || undefined,
-            surname_child: user.user_metadata.surname_child,
-            class: user.user_metadata.class
-          } as User,
-          error: null
-        }
+        ecole = ecoleData
       }
 
       return {
@@ -108,6 +108,10 @@ export const authService = {
           id: user.id,
           email: user.email!,
           role: user.user_metadata.role,
+          ecole_id: user.user_metadata.ecole_id,
+          ecole: ecole || undefined,
+          surname_child: userDetails?.surname_child,
+          class: userDetails?.class
         } as User,
         error: null
       }
@@ -115,5 +119,5 @@ export const authService = {
       console.error('Error in getCurrentUser:', error)
       return { user: null, error }
     }
-  }
+  },
 }
