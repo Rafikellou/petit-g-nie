@@ -1,55 +1,65 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
-import { User as SupabaseUser } from '@supabase/supabase-js';
-import { User } from '@/types/auth';
+import { useEffect, useState } from 'react'
+import { supabase } from '@/lib/supabase'
+import { User } from '@/types/auth'
 
 export function useUser() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const fetchUserDetails = async (supabaseUser: SupabaseUser) => {
-    try {
-      const { data: userDetails, error } = await supabase
-        .from('user_details')
-        .select('*')
-        .eq('user_id', supabaseUser.id)
-        .single();
-
-      if (error) throw error;
-
-      setUser({
-        id: supabaseUser.id,
-        email: supabaseUser.email!,
-        role: supabaseUser.user_metadata.role,
-        surname_child: userDetails?.surname_child,
-        class: userDetails?.class,
-        ecole_id: userDetails?.ecole_id,
-        pin: userDetails?.pin,
-        created_at: userDetails?.created_at,
-        updated_at: userDetails?.updated_at
-      });
-    } catch (error) {
-      console.error('Error fetching user details:', error);
-      setUser(null);
-    }
-  };
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
-        if (session?.user) {
-          await fetchUserDetails(session.user);
+    async function getUser() {
+      try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+        if (sessionError) throw sessionError
+
+        if (!session?.user) {
+          setUser(null)
+          return
         }
-      } else if (event === 'SIGNED_OUT') {
-        setUser(null);
+
+        // Récupérer les détails de l'utilisateur depuis user_details
+        const { data: userDetails, error: detailsError } = await supabase
+          .from('user_details')
+          .select('surname_child, class')
+          .eq('user_id', session.user.id)
+          .single()
+
+        if (detailsError) {
+          console.error('Erreur lors de la récupération des détails:', detailsError)
+        }
+
+        setUser({
+          id: session.user.id,
+          email: session.user.email!,
+          role: session.user.user_metadata?.role,
+          ecole_id: session.user.user_metadata?.ecole_id,
+          surname_child: userDetails?.surname_child,
+          class: userDetails?.class,
+          created_at: session.user.created_at,
+          updated_at: session.user.updated_at,
+        })
+      } catch (error) {
+        console.error('Error in getUser:', error)
+        setUser(null)
+      } finally {
+        setLoading(false)
       }
-      setLoading(false);
-    });
+    }
+
+    getUser()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        getUser()
+      } else {
+        setUser(null)
+      }
+    })
 
     return () => {
-      authListener.subscription.unsubscribe();
-    };
-  }, []);
+      subscription.unsubscribe()
+    }
+  }, [])
 
-  return { user, loading };
+  return { user, loading }
 }

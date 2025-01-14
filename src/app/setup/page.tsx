@@ -20,6 +20,12 @@ export default function SetupPage() {
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+    if (!user) {
+      router.push('/auth');
+    }
+  }, [user, router]);
+
   // Validation du PIN
   const validatePin = (value: string) => {
     const pinRegex = /^[0-9]{0,4}$/;
@@ -30,13 +36,6 @@ export default function SetupPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
-
-    // Validation du formulaire
-    if (pin.length !== 4) {
-      setError('Le code PIN doit contenir exactement 4 chiffres');
-      return;
-    }
 
     try {
       setSaving(true);
@@ -47,11 +46,11 @@ export default function SetupPage() {
         pin
       });
 
-      // Mettre à jour ou insérer dans user_details
-      const { error: upsertError } = await supabase
+      // Mettre à jour les détails de l'utilisateur
+      const { error: detailsError } = await supabase
         .from('user_details')
         .upsert({
-          user_id: user.id,
+          user_id: user!.id,
           ecole_id: selectedSchool,
           surname_child: childName,
           class: childClass,
@@ -61,23 +60,28 @@ export default function SetupPage() {
           onConflict: 'user_id'
         });
 
-      console.log('Résultat de la mise à jour user_details:', {
-        upsertError
+      if (detailsError) throw detailsError;
+
+      // Mettre à jour les métadonnées de l'utilisateur
+      const { error: metadataError } = await supabase.auth.updateUser({
+        data: {
+          ecole_id: selectedSchool
+        }
       });
 
-      if (upsertError) throw upsertError;
+      if (metadataError) throw metadataError;
 
       router.push('/');
     } catch (error: any) {
-      console.error('Erreur détaillée lors de la sauvegarde:', error);
-      setError(error.message);
+      console.error('Error in setup:', error);
+      setError('Une erreur est survenue lors de la sauvegarde');
     } finally {
       setSaving(false);
     }
   };
 
   if (!user) {
-    return <div className="text-white">Veuillez vous connecter</div>;
+    return null;
   }
 
   return (

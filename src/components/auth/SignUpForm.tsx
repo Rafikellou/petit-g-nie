@@ -39,7 +39,10 @@ export default function SignUpForm() {
           .from('user_details')
           .insert({
             user_id: user.id,
-            surname_child: name
+            surname_child: name,
+            class: '',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
           })
 
         if (detailsError) {
