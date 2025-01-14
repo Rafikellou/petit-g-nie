@@ -14,8 +14,10 @@ import {
   Check
 } from 'lucide-react';
 import { ActivitySection } from '@/components/home/ActivitySection';
-import { Footer } from '@/components/layout/Footer';
+import { BaseLayout } from '@/components/layout/BaseLayout';
 import { useUser } from '@/hooks/useUser';
+import { PinModal } from '@/components/auth/PinModal';
+import { useState } from 'react';
 
 const recommendedActivities = [
   {
@@ -99,67 +101,72 @@ const funActivities = [
     title: 'Jeux éducatifs',
     description: "Apprends en t'amusant",
     icon: GamepadIcon,
-    color: 'text-indigo-400',
-    bgGradient: 'from-indigo-500/20 to-purple-500/20',
-    progress: 25
-  },
-  {
-    href: '/blagues',
-    title: 'Blagues',
-    description: 'Rigole avec nos devinettes',
-    icon: LightbulbIcon,
-    color: 'text-pink-400',
-    bgGradient: 'from-pink-500/20 to-red-500/20',
-    progress: 15
+    color: 'text-blue-400',
+    bgGradient: 'from-blue-500/20 to-indigo-500/20'
   }
 ];
 
 export default function Home() {
-  const { user, teacher } = useUser();
+  const { user, loading } = useUser();
+  const [showPinModal, setShowPinModal] = useState(false);
+
+  const handlePinSuccess = () => {
+    setShowPinModal(false);
+    // Ajouter ici la logique après validation du PIN
+  };
 
   return (
-    <>
-      <main className="min-h-screen safe-area-inset pt-24">
-        {/* Effets d'arrière-plan */}
-        <div className="fixed inset-0 pointer-events-none">
-          <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-[radial-gradient(circle_at_center,rgba(0,242,195,0.03),transparent_70%)]" />
-          <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(108,99,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(108,99,255,0.05)_1px,transparent_1px)] bg-[size:14px_14px]" />
-        </div>
+    <BaseLayout>
+      <div className="max-w-6xl mx-auto px-6 pb-safe-bottom relative">
+        <div className="container mx-auto px-4 py-8">
+          <div className="mb-12">
+            <h1 className="text-4xl font-bold text-white mb-4">
+              {loading ? (
+                <span>Chargement...</span>
+              ) : user ? (
+                `Bienvenue sur Petit Génie !`
+              ) : (
+                "Connectez-vous pour commencer"
+              )}
+            </h1>
+            <p className="text-xl text-gray-400">
+              Ton espace personnel pour apprendre et t'amuser
+            </p>
+          </div>
 
-        <div className="max-w-6xl mx-auto px-6 pb-safe-bottom relative">
           <ActivitySection
-            title={`Bonjour ${user?.firstName || ''}!`}
-            description="Ton espace personnel pour apprendre et t'amuser"
-            activities={[]}
-            isMainTitle
-          />
-
-          <ActivitySection
-            title={`Activités recommandées par ${teacher?.title || ''} ${teacher?.lastName || ''}`}
+            title="Activités recommandées"
             description="Ces activités ont été spécialement choisies pour toi"
             activities={recommendedActivities}
           />
 
           <ActivitySection
-            title="Amélioration continue"
-            description="Exercices pour renforcer tes compétences"
+            title="Entraînement"
+            description="Choisis une activité pour t'entraîner"
             activities={trainingActivities}
           />
 
           <ActivitySection
             title="Histoires"
-            description="Découvre, lis et crée des histoires passionnantes"
+            description="Découvre des histoires passionnantes"
             activities={storyActivities}
           />
 
           <ActivitySection
-            title="Apprendre en s'amusant"
-            description="Des activités ludiques pour apprendre différemment"
+            title="Jeux"
+            description="Amuse-toi tout en apprenant"
             activities={funActivities}
           />
         </div>
-      </main>
-      <Footer />
-    </>
+      </div>
+
+      {/* Modal PIN */}
+      <PinModal
+        isOpen={showPinModal}
+        onClose={() => setShowPinModal(false)}
+        onSuccess={handlePinSuccess}
+        userEmail={user?.email}
+      />
+    </BaseLayout>
   );
 }

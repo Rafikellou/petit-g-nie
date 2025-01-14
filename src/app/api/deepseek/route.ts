@@ -54,11 +54,15 @@ export async function POST(request: Request) {
       // Supprimer tout ce qui n'est pas du JSON
       content = content.replace(/^[^{\[]+/, '').replace(/[^}\]]+$/, '');
       
+      // Nettoyer les caractères d'échappement superflus
+      content = content.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+      
       try {
         // Vérifier que c'est du JSON valide
-        JSON.parse(content);
+        const parsedContent = JSON.parse(content);
+        console.log("Contenu JSON parsé:", parsedContent);
         
-        return NextResponse.json({ content });
+        return NextResponse.json({ content: parsedContent });
       } catch (parseError) {
         console.error("Erreur lors du parsing du JSON:", parseError);
         console.error("Contenu qui a causé l'erreur:", content);

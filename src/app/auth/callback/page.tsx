@@ -19,43 +19,34 @@ export default function AuthCallbackPage() {
           // Récupérer l'URL de redirection si elle existe
           const redirectTo = searchParams.get('redirectTo')
           
-          if (user.profiles.length > 1) {
-            router.push('/profile-selector')
+          if (redirectTo) {
+            router.push(redirectTo)
             return
           }
 
           // Rediriger vers la page appropriée selon le rôle
-          const profile = user.profiles[0]
-          if (profile) {
-            if (redirectTo) {
-              router.push(redirectTo)
-            } else {
-              switch (profile.role) {
-                case 'super_admin':
-                  router.push('/super-admin')
-                  break
-                case 'admin':
-                  router.push('/admin')
-                  break
-                case 'teacher':
-                  router.push('/teacher')
-                  break
-                case 'parent':
-                  router.push('/parent')
-                  break
-                default:
-                  router.push('/')
-              }
-            }
-          } else {
-            router.push('/')
+          switch (user.role) {
+            case 'super_admin':
+              router.push('/super-admin')
+              break
+            case 'admin':
+              router.push('/admin')
+              break
+            case 'teacher':
+              router.push('/teacher')
+              break
+            case 'parent':
+              router.push('/parent')
+              break
+            default:
+              router.push('/')
           }
         } else {
-          router.push('/auth?error=Authentication failed')
+          router.push('/')
         }
       } catch (error) {
-        console.error('Error in auth callback:', error)
-        router.push('/auth?error=Authentication failed')
+        console.error('Erreur lors de la redirection:', error)
+        router.push('/')
       }
     }
 

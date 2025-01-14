@@ -5,18 +5,22 @@ import { useParams, useRouter } from 'next/navigation';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { ArrowLeft, Users, School as SchoolIcon, Settings, Copy, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/ios-button';
-import { School, Profile } from '@/types/auth';
+import { School, User } from '@/types/auth';
 
-interface TeacherWithUser extends Profile {
+interface TeacherDetails extends User {
   school: School | null;
-  email: string;
+  user_details: {
+    surname_child: string | null;
+    class: string | null;
+    pin: string | null;
+  };
 }
 
 export default function SchoolDetails() {
   const params = useParams();
   const router = useRouter();
   const [school, setSchool] = useState<School | null>(null);
-  const [teachers, setTeachers] = useState<TeacherWithUser[]>([]);
+  const [teachers, setTeachers] = useState<TeacherDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -40,9 +44,13 @@ export default function SchoolDetails() {
 
         // Charger les enseignants
         const { data: teachersData, error: teachersError } = await supabase
-          .from('profiles')
-          .select('*, school:schools(*)')
-          .eq('school_id', params.id)
+          .from('users')
+          .select(`
+            *,
+            user_details (*),
+            school:schools(*)
+          `)
+          .eq('ecole_id', params.id)
           .eq('role', 'teacher');
 
         if (teachersError) throw teachersError;
@@ -171,7 +179,7 @@ export default function SchoolDetails() {
                     </div>
                     <div>
                       <p className="font-medium">
-                        {teacher.family_name} {teacher.surname}
+                        {teacher.user_details?.surname_child || teacher.email}
                       </p>
                       <p className="text-sm text-white/70">{teacher.email}</p>
                     </div>

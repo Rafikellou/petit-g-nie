@@ -73,7 +73,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
                 setIsPinModalOpen(false);
                 router.push('/parent');
               }}
-              correctPin="0000"
             />
           </div>
         </AchievementsProvider>

@@ -3,29 +3,81 @@
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { UserPlus, School, UserX, User } from 'lucide-react';
-import { useState } from 'react';
+import { School, User } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useUser } from '@/hooks/useUser';
+import { supabase } from '@/lib/supabase';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
-interface ChildProfile {
-  id: string;
-  firstName: string;
-  lastName: string;
-  class: string;
-}
+const CLASS_OPTIONS = ['CP', 'CE1', 'CE2', 'CM1', 'CM2'];
 
 export default function SettingsPage() {
-  const [showConfirmation, setShowConfirmation] = useState(false);
-  const [selectedChild, setSelectedChild] = useState<ChildProfile | null>(null);
+  const { user } = useUser();
+  const [childName, setChildName] = useState('');
+  const [childClass, setChildClass] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
 
-  // Simuler des données d'enfants
-  const [children, setChildren] = useState<ChildProfile[]>([
-    { id: '1', firstName: 'Emma', lastName: 'Dupont', class: 'CE2' }
-  ]);
+  useEffect(() => {
+    if (user) {
+      loadUserDetails();
+    }
+  }, [user]);
 
-  const handleClassChange = (childId: string, newClass: string) => {
-    setSelectedChild(children.find(child => child.id === childId) || null);
-    setShowConfirmation(true);
+  const loadUserDetails = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('user_details')
+        .select('surname_child, class')
+        .eq('user_id', user?.id)
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        setChildName(data.surname_child || '');
+        setChildClass(data.class || '');
+      }
+    } catch (error: any) {
+      console.error('Erreur lors du chargement des détails:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleSave = async () => {
+    if (!user) return;
+
+    try {
+      setSaving(true);
+      const { error: updateError } = await supabase
+        .from('user_details')
+        .update({
+          surname_child: childName,
+          class: childClass,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id);
+
+      if (updateError) throw updateError;
+    } catch (error: any) {
+      console.error('Erreur lors de la sauvegarde:', error);
+      setError(error.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="text-white">
+        Chargement des paramètres...
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -34,111 +86,73 @@ export default function SettingsPage() {
           Paramètres
         </h1>
         <p className="text-gray-400">
-          Gérez les profils et les paramètres des enfants
+          Gérez le profil de votre enfant
         </p>
       </div>
 
+      {error && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
       <div className="space-y-6">
-        {/* Profils des enfants */}
-        {children.map(child => (
-          <Card key={child.id}>
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <User className="w-5 h-5 text-turquoise-500" />
-                <CardTitle>Profil de {child.firstName}</CardTitle>
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <User className="w-5 h-5 text-turquoise-500" />
+              <CardTitle>Profil de l'enfant</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1">
+                  Nom de l'enfant
+                </label>
+                <Input
+                  type="text"
+                  value={childName}
+                  onChange={(e) => setChildName(e.target.value)}
+                  className="w-full"
+                />
               </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">
-                      Prénom
-                    </label>
-                    <Input
-                      type="text"
-                      value={child.firstName}
-                      className="w-full"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-1">
-                      Nom
-                    </label>
-                    <Input
-                      type="text"
-                      value={child.lastName}
-                      className="w-full"
-                    />
-                  </div>
-                </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-400 mb-1">
-                    Classe
-                  </label>
-                  <div className="flex gap-2">
-                    <select
-                      value={child.class}
-                      onChange={(e) => handleClassChange(child.id, e.target.value)}
-                      className="flex-1 rounded-md bg-gray-900 border border-gray-800 px-3 py-2 text-sm"
-                    >
-                      <option value="CP">CP</option>
-                      <option value="CE1">CE1</option>
-                      <option value="CE2">CE2</option>
-                      <option value="CM1">CM1</option>
-                      <option value="CM2">CM2</option>
-                    </select>
-                    <Button variant="outline" size="icon">
-                      <School className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="flex justify-end">
-                  <Button variant="destructive" size="sm">
-                    <UserX className="w-4 h-4 mr-2" />
-                    Fermer le profil
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1">
+                  Classe
+                </label>
+                <div className="flex gap-2">
+                  <select
+                    value={childClass}
+                    onChange={(e) => setChildClass(e.target.value)}
+                    className="flex-1 rounded-md bg-gray-900 border border-gray-800 px-3 py-2 text-sm"
+                  >
+                    <option value="">Sélectionner une classe</option>
+                    {CLASS_OPTIONS.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                  <Button variant="outline" size="icon">
+                    <School className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        ))}
 
-        {/* Ajouter un profil */}
-        <Button className="w-full">
-          <UserPlus className="w-4 h-4 mr-2" />
-          Ajouter un profil
-        </Button>
-      </div>
-
-      {/* Modal de confirmation */}
-      {showConfirmation && selectedChild && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
-          <Card className="w-full max-w-md mx-4">
-            <CardHeader>
-              <CardTitle>Confirmer le changement de classe</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-400">
-                Êtes-vous sûr de vouloir changer la classe de {selectedChild.firstName} ?
-              </p>
-              <div className="flex justify-end gap-2 mt-4">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowConfirmation(false)}
+              <div className="flex justify-end pt-4">
+                <Button 
+                  onClick={handleSave}
+                  disabled={saving}
                 >
-                  Annuler
-                </Button>
-                <Button onClick={() => setShowConfirmation(false)}>
-                  Confirmer
+                  {saving ? 'Enregistrement...' : 'Enregistrer les modifications'}
                 </Button>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

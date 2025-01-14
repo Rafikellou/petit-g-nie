@@ -199,7 +199,7 @@ export default function SuperAdminDashboard() {
     const loadKPIData = async () => {
       try {
         const { data: usersCount } = await supabase
-          .from('profiles')
+          .from('user_details')
           .select('*, users!inner(*)', { count: 'exact' });
 
         const { data: schoolsCount } = await supabase
@@ -207,7 +207,7 @@ export default function SuperAdminDashboard() {
           .select('*', { count: 'exact' });
 
         const { data: teachersCount } = await supabase
-          .from('profiles')
+          .from('user_details')
           .select('*, users!inner(*)', { count: 'exact' })
           .eq('users.role', 'teacher');
 
@@ -216,22 +216,22 @@ export default function SuperAdminDashboard() {
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
         const { data: newTeachers } = await supabase
-          .from('profiles')
+          .from('user_details')
           .select('*, users!inner(*)', { count: 'exact' })
           .eq('users.role', 'teacher')
-          .gte('profiles.created_at', thirtyDaysAgo.toISOString());
+          .gte('user_details.created_at', thirtyDaysAgo.toISOString());
 
         const { data: newParents } = await supabase
-          .from('profiles')
+          .from('user_details')
           .select('*, users!inner(*)', { count: 'exact' })
           .eq('users.role', 'parent')
-          .gte('profiles.created_at', thirtyDaysAgo.toISOString());
+          .gte('user_details.created_at', thirtyDaysAgo.toISOString());
 
         const { data: newAdmins } = await supabase
-          .from('profiles')
+          .from('user_details')
           .select('*, users!inner(*)', { count: 'exact' })
           .eq('users.role', 'admin')
-          .gte('profiles.created_at', thirtyDaysAgo.toISOString());
+          .gte('user_details.created_at', thirtyDaysAgo.toISOString());
 
         setKpiData({
           totalUsers: usersCount?.length || 0,

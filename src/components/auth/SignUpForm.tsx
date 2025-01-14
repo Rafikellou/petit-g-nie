@@ -4,12 +4,12 @@ import { Button } from '@/components/ui/ios-button'
 import { Loader2 } from 'lucide-react'
 import { authService } from '@/lib/auth'
 import { UserRole } from '@/types/auth'
+import { supabase } from '@/lib/supabase'
 
 export default function SignUpForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [familyName, setFamilyName] = useState('')
-  const [surname, setSurname] = useState('')
+  const [name, setName] = useState('')
   const [invitationCode, setInvitationCode] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -24,8 +24,6 @@ export default function SignUpForm() {
       const { user, error } = await authService.signUp({
         email,
         password,
-        family_name: familyName,
-        surname: surname,
         role: 'parent', // Par défaut, seuls les parents peuvent s'inscrire directement
         invitation_code: invitationCode
       })
@@ -33,6 +31,21 @@ export default function SignUpForm() {
       if (error) {
         setError(error)
         return
+      }
+
+      // Créer l'entrée dans user_details
+      if (user) {
+        const { error: detailsError } = await supabase
+          .from('user_details')
+          .insert({
+            user_id: user.id,
+            surname_child: name
+          })
+
+        if (detailsError) {
+          setError(detailsError.message)
+          return
+        }
       }
 
       router.push('/auth/verify')
@@ -48,42 +61,25 @@ export default function SignUpForm() {
       <form onSubmit={handleSignUp} className="space-y-4">
         <div>
           <label 
-            htmlFor="familyName" 
-            className="block text-sm font-medium text-white mb-2"
+            htmlFor="name" 
+            className="block text-sm font-medium text-white/70 mb-2"
           >
-            Nom
+            Nom de l'enfant
           </label>
           <input
-            id="familyName"
+            id="name"
             type="text"
-            value={familyName}
-            onChange={(e) => setFamilyName(e.target.value)}
-            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             required
-          />
-        </div>
-
-        <div>
-          <label 
-            htmlFor="surname" 
-            className="block text-sm font-medium text-white mb-2"
-          >
-            Prénom
-          </label>
-          <input
-            id="surname"
-            type="text"
-            value={surname}
-            onChange={(e) => setSurname(e.target.value)}
-            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-            required
+            className="w-full px-3 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
           />
         </div>
 
         <div>
           <label 
             htmlFor="email" 
-            className="block text-sm font-medium text-white mb-2"
+            className="block text-sm font-medium text-white/70 mb-2"
           >
             Email
           </label>
@@ -92,16 +88,15 @@ export default function SignUpForm() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-            placeholder="votre@email.com"
             required
+            className="w-full px-3 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
           />
         </div>
 
         <div>
           <label 
             htmlFor="password" 
-            className="block text-sm font-medium text-white mb-2"
+            className="block text-sm font-medium text-white/70 mb-2"
           >
             Mot de passe
           </label>
@@ -110,16 +105,15 @@ export default function SignUpForm() {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-            placeholder="••••••••"
             required
+            className="w-full px-3 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
           />
         </div>
 
         <div>
           <label 
             htmlFor="invitationCode" 
-            className="block text-sm font-medium text-white mb-2"
+            className="block text-sm font-medium text-white/70 mb-2"
           >
             Code d'invitation (optionnel)
           </label>
@@ -128,32 +122,31 @@ export default function SignUpForm() {
             type="text"
             value={invitationCode}
             onChange={(e) => setInvitationCode(e.target.value)}
-            className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-            placeholder="Pour les enseignants uniquement"
+            className="w-full px-3 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
           />
         </div>
 
-        {error && (
-          <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
-            <p className="text-sm text-red-500">{error}</p>
-          </div>
-        )}
-
-        <Button
-          type="submit"
+        <Button 
+          type="submit" 
           disabled={loading}
-          className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-medium py-3 rounded-lg transition-colors"
+          className="w-full"
         >
           {loading ? (
             <>
-              <Loader2 className="w-5 h-5 animate-spin" />
-              Inscription en cours...
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Création du compte...
             </>
           ) : (
-            "S'inscrire"
+            'Créer un compte'
           )}
         </Button>
       </form>
+
+      {error && (
+        <div className="p-3 rounded bg-red-500/20 border border-red-500 text-red-200">
+          {error}
+        </div>
+      )}
     </div>
   )
 }

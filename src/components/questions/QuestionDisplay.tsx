@@ -1,16 +1,20 @@
 interface QuestionDisplayProps {
-  question: string;
-  options: {
+  question?: string;
+  options?: {
     A: string;
     B: string;
     C: string;
     D: string;
   };
-  correctAnswer: string;
-  explanation: string;
+  correctAnswer?: string;
+  explanation?: string;
 }
 
 export function QuestionDisplay({ question, options, correctAnswer, explanation }: QuestionDisplayProps) {
+  if (!question || !options || !correctAnswer || !explanation) {
+    return null;
+  }
+
   return (
     <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 space-y-6 text-gray-100">
       <div className="space-y-4">

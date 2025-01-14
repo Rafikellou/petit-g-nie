@@ -20,6 +20,7 @@
     "@radix-ui/react-slider": "^1.2.1",
     "@radix-ui/react-slot": "^1.1.1",
     "@radix-ui/react-tabs": "^1.1.1",
+    "@shadcn/ui": "^0.0.4",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/supabase-js": "^2.46.2",
     "@tailwindcss/forms": "^0.5.9",
@@ -37,7 +38,7 @@
     "react-hot-toast": "^2.4.1",
     "recharts": "^2.14.1",
     "sonner": "^1.7.1",
-    "tailwind-merge": "^2.5.5",
+    "tailwind-merge": "^2.6.0",
     "unsplash-js": "^7.0.19",
     "xlsx": "^0.18.5",
     "zustand": "^5.0.1"

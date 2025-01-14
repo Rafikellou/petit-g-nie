@@ -148,15 +148,15 @@ export const audiobookService = {
 export const parentService = {
   async verifyPin(userId: string, pin: string): Promise<boolean> {
     try {
-      type PinRecord = { pin: string };
-      const response = await withTimeout<PinRecord>(
+      type UserDetails = { pin: string };
+      const response = await withTimeout<UserDetails>(
         supabase
-          .from('parent_pins')
+          .from('user_details')
           .select('pin')
           .eq('user_id', userId)
           .single()
           .throwOnError()
-      ) as PostgrestSingleResponse<PinRecord>;
+      ) as PostgrestSingleResponse<UserDetails>;
 
       if (!response.data) return false;
       return response.data.pin === pin;

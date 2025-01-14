@@ -1,58 +1,55 @@
 import { useEffect, useState } from 'react';
-
-interface Teacher {
-  id: string;
-  firstName: string;
-  lastName: string;
-  title: string;
-}
-
-interface User {
-  id: string;
-  firstName: string;
-  lastName: string;
-  teacherId: string;
-}
+import { supabase } from '@/lib/supabase';
+import { User as SupabaseUser } from '@supabase/supabase-js';
+import { User } from '@/types/auth';
 
 export function useUser() {
   const [user, setUser] = useState<User | null>(null);
-  const [teacher, setTeacher] = useState<Teacher | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchUserDetails = async (supabaseUser: SupabaseUser) => {
+    try {
+      const { data: userDetails, error } = await supabase
+        .from('user_details')
+        .select('*')
+        .eq('user_id', supabaseUser.id)
+        .single();
+
+      if (error) throw error;
+
+      setUser({
+        id: supabaseUser.id,
+        email: supabaseUser.email!,
+        role: supabaseUser.user_metadata.role,
+        surname_child: userDetails?.surname_child,
+        class: userDetails?.class,
+        ecole_id: userDetails?.ecole_id,
+        pin: userDetails?.pin,
+        created_at: userDetails?.created_at,
+        updated_at: userDetails?.updated_at
+      });
+    } catch (error) {
+      console.error('Error fetching user details:', error);
+      setUser(null);
+    }
+  };
 
   useEffect(() => {
-    // Données temporaires en attendant l'implémentation de l'API
-    setUser({
-      id: '1',
-      firstName: 'Dani',
-      lastName: 'Dupont',
-      teacherId: '1'
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+        if (session?.user) {
+          await fetchUserDetails(session.user);
+        }
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
+      }
+      setLoading(false);
     });
 
-    setTeacher({
-      id: '1',
-      firstName: 'Marie',
-      lastName: 'Moinault',
-      title: 'Mme'
-    });
-
-    // TODO: Implémenter la vraie logique API
-    // const fetchUserData = async () => {
-    //   try {
-    //     const userData = await fetch('/api/user');
-    //     const userJson = await userData.json();
-    //     setUser(userJson);
-
-    //     if (userJson.teacherId) {
-    //       const teacherData = await fetch(`/api/teacher/${userJson.teacherId}`);
-    //       const teacherJson = await teacherData.json();
-    //       setTeacher(teacherJson);
-    //     }
-    //   } catch (error) {
-    //     console.error('Error fetching user data:', error);
-    //   }
-    // };
-
-    // fetchUserData();
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
-  return { user, teacher };
+  return { user, loading };
 }

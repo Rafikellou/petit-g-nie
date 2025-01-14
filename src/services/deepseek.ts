@@ -13,13 +13,13 @@ export interface QuestionGenerationParams {
   period: string;
 }
 
-export async function generateMasterQuestion(question: MasterQuestion) {
+export async function generateMasterQuestion(params: QuestionGenerationParams) {
   try {
-    const prompt = `Génère une question de mathématiques pour le niveau ${question.class} avec les caractéristiques suivantes :
-    - Thématique : ${question.topic}
-    - Compétence : ${question.specificity}
-    - Sous-compétence : ${question.subSpecificity}
-    - Période : ${question.period}
+    const prompt = `Génère une question de mathématiques pour le niveau ${params.class} avec les caractéristiques suivantes :
+    - Thématique : ${params.topics[0]}
+    - Compétence : ${params.specificities[0]}
+    - Sous-compétence : ${params.subSpecificities[0]}
+    - Période : ${params.period}
 
     La question doit :
     1. Être adaptée au niveau des élèves
@@ -149,14 +149,20 @@ export async function generateSimilarQuestions(masterQuestion: any, count: numbe
     
     if (data.content) {
       try {
-        const questions = JSON.parse(data.content);
+        // Nettoyer la réponse des caractères d'échappement superflus
+        let content = data.content;
+        if (typeof content === 'string') {
+          content = content.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+          // Si la réponse est une chaîne, essayer de la parser
+          content = JSON.parse(content);
+        }
         
         // Validation du format des questions
-        if (!Array.isArray(questions)) {
+        if (!Array.isArray(content)) {
           throw new Error("Le format de réponse doit être un tableau de questions");
         }
 
-        questions.forEach((q, index) => {
+        content.forEach((q, index) => {
           if (!q.question || !q.options || !q.correctAnswer || !q.explanation) {
             throw new Error(`La question ${index + 1} ne contient pas tous les champs requis`);
           }
@@ -168,9 +174,10 @@ export async function generateSimilarQuestions(masterQuestion: any, count: numbe
           }
         });
 
-        return questions;
+        return content;
       } catch (parseError) {
         console.error("Erreur lors du parsing des questions similaires:", parseError);
+        console.error("Contenu qui a causé l'erreur:", data.content);
         throw new Error("Format de réponse invalide pour les questions similaires");
       }
     } else {
