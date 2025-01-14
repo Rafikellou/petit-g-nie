@@ -16,6 +16,8 @@ const ROLE_ROUTES = {
 export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
   const supabase = createMiddlewareClient({ req, res })
+  
+  // Vérifier la session
   const {
     data: { session },
   } = await supabase.auth.getSession()
@@ -33,8 +35,15 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(redirectUrl)
   }
 
+  // Récupérer les détails de l'utilisateur depuis user_details
+  const { data: userDetails } = await supabase
+    .from('user_details')
+    .select('role')
+    .eq('user_id', session.user.id)
+    .single()
+
   // Vérifier les permissions basées sur le rôle
-  const userRole = session.user.user_metadata?.role
+  const userRole = userDetails?.role
   if (userRole) {
     const allowedRoutes = ROLE_ROUTES[userRole as keyof typeof ROLE_ROUTES] || []
     if (allowedRoutes.some(route => req.nextUrl.pathname.startsWith(route))) {
