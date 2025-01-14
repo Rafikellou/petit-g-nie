@@ -313,6 +313,34 @@
   .grid-responsive {
     @apply grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6;
   }
+
+  /* Styles globaux pour le fond */
+  body {
+    @apply bg-slate-950 text-white;
+  }
+
+  /* Style pour les cards et formulaires */
+  .card {
+    @apply bg-slate-900 border-slate-800 rounded-lg shadow-lg;
+  }
+
+  /* Style pour les inputs et selects */
+  .select-trigger {
+    @apply bg-slate-800 border-slate-700 text-white;
+  }
+
+  .select-content {
+    @apply bg-slate-800 border-slate-700;
+  }
+
+  .select-item {
+    @apply text-white hover:bg-slate-700;
+  }
+
+  /* Style pour les boutons */
+  .btn-primary {
+    @apply bg-purple-600 hover:bg-purple-700 text-white;
+  }
 }
 
 /* Optimisations pour mobile */

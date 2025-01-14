@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { useRouter } from 'next/navigation';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,7 @@ import {
   Edit3,
   Laugh,
   MessageSquare,
+  Menu,
   PenTool,
   Users,
 } from 'lucide-react';
@@ -56,222 +58,310 @@ interface GeneratedQuestion {
   };
   correctAnswer: string;
   explanation: string;
+  type: 'short' | 'long' | 'image';
 }
 
-export default function SuperAdminDashboard() {
-  const [activeTab, setActiveTab] = useState('questions');
-  const [kpiData, setKpiData] = useState<KPIData | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const supabase = createClientComponentClient();
+interface FormState {
+  availableTopics: string[];
+  availableSpecificities: string[];
+  availableSubSpecificities: { name: string; period: string }[];
+  availableClasses: string[];
+  availableSubjects: string[];
+  availablePeriods: string[];
+  selectedClass: string;
+  selectedSubject: string;
+  selectedTopic: string;
+  selectedSpecificity: string;
+  selectedSubSpecificity: string;
+  selectedPeriod: string;
+  selectedDifficulty: string;
+  questionPrompt: string;
+  generatedQuestions: GeneratedQuestion[];
+  masterQuestion: QuestionGenerationParams;
+  generatedQuestion: GeneratedQuestion | null;
+  similarQuestions: GeneratedQuestion[];
+  showSimilarQuestions: boolean;
+  showInstructions: boolean;
+  isEditing: boolean;
+  editedQuestion: GeneratedQuestion | null;
+  error: string | null;
+  isLoading: boolean;
+}
 
-  // Vérification du rôle super_admin
-  useEffect(() => {
-    const checkRole = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        window.location.href = '/login';
-        return;
-      }
-      
-      const { data: userData, error } = await supabase
-        .from('users')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-        
-      if (error || userData?.role !== 'super_admin') {
-        window.location.href = '/';
-        return;
-      }
-      
-      setIsAuthorized(true);
-    };
-    
-    checkRole();
-  }, [supabase]);
-
-  // Si non autorisé, ne rien afficher pendant la vérification
-  if (!isAuthorized) {
-    return null;
-  }
-
-  // États pour les options des menus déroulants
-  const [availableTopics, setAvailableTopics] = useState<string[]>([]);
-  const [availableSpecificities, setAvailableSpecificities] = useState<string[]>([]);
-  const [availableSubSpecificities, setAvailableSubSpecificities] = useState<{ name: string; period: string }[]>([]);
-
-  // État pour le formulaire de Master Question
-  const [masterQuestion, setMasterQuestion] = useState<QuestionGenerationParams>({
+const initialFormState: FormState = {
+  availableTopics: [],
+  availableSpecificities: [],
+  availableSubSpecificities: [],
+  availableClasses: [],
+  availableSubjects: [],
+  availablePeriods: [],
+  selectedClass: '',
+  selectedSubject: '',
+  selectedTopic: '',
+  selectedSpecificity: '',
+  selectedSubSpecificity: '',
+  selectedPeriod: '',
+  selectedDifficulty: '',
+  questionPrompt: '',
+  generatedQuestions: [],
+  masterQuestion: {
     class: '',
     subject: '',
     topics: [],
     specificities: [],
     subSpecificities: [],
     period: ''
-  });
+  },
+  generatedQuestion: null,
+  similarQuestions: [],
+  showSimilarQuestions: false,
+  showInstructions: false,
+  isEditing: false,
+  editedQuestion: null,
+  error: null,
+  isLoading: false
+};
 
-  // État pour les questions générées
-  const [generatedQuestion, setGeneratedQuestion] = useState<GeneratedQuestion | null>(null);
-  const [similarQuestions, setSimilarQuestions] = useState<GeneratedQuestion[]>([]);
-  const [showSimilarQuestions, setShowSimilarQuestions] = useState(false);
-  const [showInstructions, setShowInstructions] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedQuestion, setEditedQuestion] = useState<GeneratedQuestion | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+export default function SuperAdminDashboard() {
+  const router = useRouter();
+  const supabase = createClientComponentClient();
+  
+  const [activeTab, setActiveTab] = useState('questions');
+  const [loading, setLoading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [formState, setFormState] = useState<FormState>(initialFormState);
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [kpiData, setKpiData] = useState<KPIData | null>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const checkRole = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+          router.push('/auth');
+          return;
+        }
+        
+        const userRole = user.user_metadata?.role;
+          
+        if (userRole !== 'super_admin') {
+          router.push('/');
+          return;
+        }
+        
+        setIsAuthorized(true);
+      } catch (error) {
+        console.error('Error checking role:', error);
+        router.push('/auth');
+      }
+    };
+    
+    checkRole();
+  }, [supabase, router]);
+
+  // Charger les données initiales
+  useEffect(() => {
+    if (isAuthorized) {
+      const loadInitialData = async () => {
+        try {
+          const classes = await getAvailableClasses();
+          const subjects = await getAvailableSubjects();
+          const periods = await getPeriods();
+          const kpis = await loadKPIData();
+          
+          setFormState(prev => ({
+            ...prev,
+            availableClasses: classes,
+            availableSubjects: subjects,
+            availablePeriods: periods
+          }));
+          setKpiData(kpis);
+        } catch (error) {
+          console.error('Error loading initial data:', error);
+          toast.error('Erreur lors du chargement des données');
+        }
+      };
+
+      loadInitialData();
+    }
+  }, [isAuthorized]);
 
   // Mise à jour des topics quand la classe ou la matière change
   useEffect(() => {
-    if (masterQuestion.class && masterQuestion.subject) {
-      const topics = getTopics(masterQuestion.class, masterQuestion.subject);
-      setAvailableTopics(topics);
-      // Réinitialiser les champs dépendants
-      setMasterQuestion(prev => ({
+    if (formState.masterQuestion.class && formState.masterQuestion.subject) {
+      const topics = getTopics(formState.masterQuestion.class, formState.masterQuestion.subject);
+      setFormState(prev => ({
         ...prev,
-        topics: [],
-        specificities: [],
-        subSpecificities: [],
-        period: ''
+        availableTopics: topics,
+        masterQuestion: {
+          ...prev.masterQuestion,
+          topics: [],
+          specificities: [],
+          subSpecificities: [],
+          period: ''
+        }
       }));
-      setAvailableSpecificities([]);
-      setAvailableSubSpecificities([]);
     }
-  }, [masterQuestion.class, masterQuestion.subject]);
+  }, [formState.masterQuestion.class, formState.masterQuestion.subject]);
 
   // Mise à jour des spécificités quand le topic change
   useEffect(() => {
-    if (masterQuestion.class && masterQuestion.subject && masterQuestion.topics[0]) {
-      const specificities = getSpecificities(masterQuestion.class, masterQuestion.subject, masterQuestion.topics[0]);
-      setAvailableSpecificities(specificities);
-      // Réinitialiser les champs dépendants
-      setMasterQuestion(prev => ({
+    if (formState.masterQuestion.class && 
+        formState.masterQuestion.subject && 
+        formState.masterQuestion.topics[0]) {
+      const specificities = getSpecificities(
+        formState.masterQuestion.class, 
+        formState.masterQuestion.subject, 
+        formState.masterQuestion.topics[0]
+      );
+      setFormState(prev => ({
         ...prev,
-        specificities: [],
-        subSpecificities: [],
-        period: ''
+        availableSpecificities: specificities,
+        masterQuestion: {
+          ...prev.masterQuestion,
+          specificities: [],
+          subSpecificities: [],
+          period: ''
+        }
       }));
-      setAvailableSubSpecificities([]);
     }
-  }, [masterQuestion.topics[0]]);
+  }, [formState.masterQuestion.topics[0]]);
 
   // Mise à jour des sous-spécificités quand la spécificité change
   useEffect(() => {
-    if (
-      masterQuestion.class && 
-      masterQuestion.subject && 
-      masterQuestion.topics[0] && 
-      masterQuestion.specificities[0]
-    ) {
+    if (formState.masterQuestion.class && 
+        formState.masterQuestion.subject && 
+        formState.masterQuestion.topics[0] && 
+        formState.masterQuestion.specificities[0]) {
       const subSpecificities = getSubSpecificities(
-        masterQuestion.class,
-        masterQuestion.subject,
-        masterQuestion.topics[0],
-        masterQuestion.specificities[0]
+        formState.masterQuestion.class,
+        formState.masterQuestion.subject,
+        formState.masterQuestion.topics[0],
+        formState.masterQuestion.specificities[0]
       );
-      setAvailableSubSpecificities(subSpecificities);
-      // Réinitialiser la période
-      setMasterQuestion(prev => ({
+      setFormState(prev => ({
         ...prev,
-        subSpecificities: [],
-        period: ''
+        availableSubSpecificities: subSpecificities,
+        masterQuestion: {
+          ...prev.masterQuestion,
+          subSpecificities: [],
+          period: ''
+        }
       }));
     }
-  }, [masterQuestion.specificities[0]]);
+  }, [formState.masterQuestion.specificities[0]]);
 
   // Mise à jour automatique de la période
   useEffect(() => {
-    if (masterQuestion.subSpecificities[0]) {
-      const selectedSubSpecificity = availableSubSpecificities.find(
-        ss => ss.name === masterQuestion.subSpecificities[0]
+    if (formState.masterQuestion.subSpecificities[0]) {
+      const selectedSubSpecificity = formState.availableSubSpecificities.find(
+        ss => ss.name === formState.masterQuestion.subSpecificities[0]
       );
       if (selectedSubSpecificity) {
-        setMasterQuestion(prev => ({
+        setFormState(prev => ({
           ...prev,
-          period: selectedSubSpecificity.period
+          masterQuestion: {
+            ...prev.masterQuestion,
+            period: selectedSubSpecificity.period
+          }
         }));
       }
     }
-  }, [masterQuestion.subSpecificities[0]]);
+  }, [formState.masterQuestion.subSpecificities[0], formState.availableSubSpecificities]);
 
-  // Chargement des KPIs
-  useEffect(() => {
-    const loadKPIData = async () => {
-      try {
-        const { data: usersCount } = await supabase
-          .from('user_details')
-          .select('*, users!inner(*)', { count: 'exact' });
+  if (!isAuthorized) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2">Vérification des autorisations...</h2>
+          <p className="text-gray-400">Veuillez patienter</p>
+        </div>
+      </div>
+    );
+  }
 
-        const { data: schoolsCount } = await supabase
-          .from('ecole')
-          .select('*', { count: 'exact' });
+  const updateFormState = (key: keyof FormState, value: any) => {
+    setFormState(prev => ({
+      ...prev,
+      [key]: value
+    }));
+  };
 
-        const { data: teachersCount } = await supabase
-          .from('user_details')
-          .select('*, users!inner(*)', { count: 'exact' })
-          .eq('users.role', 'teacher');
+  const loadKPIData = async () => {
+    try {
+      const { data: usersCount } = await supabase
+        .from('user_details')
+        .select('*, users!inner(*)', { count: 'exact' });
 
-        // Récupérer les nouveaux utilisateurs des 30 derniers jours
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const { data: schoolsCount } = await supabase
+        .from('ecole')
+        .select('*', { count: 'exact' });
 
-        const { data: newTeachers } = await supabase
-          .from('user_details')
-          .select('*, users!inner(*)', { count: 'exact' })
-          .eq('users.role', 'teacher')
-          .gte('user_details.created_at', thirtyDaysAgo.toISOString());
+      const { data: teachersCount } = await supabase
+        .from('user_details')
+        .select('*, users!inner(*)', { count: 'exact' })
+        .eq('users.role', 'teacher');
 
-        const { data: newParents } = await supabase
-          .from('user_details')
-          .select('*, users!inner(*)', { count: 'exact' })
-          .eq('users.role', 'parent')
-          .gte('user_details.created_at', thirtyDaysAgo.toISOString());
+      // Récupérer les nouveaux utilisateurs des 30 derniers jours
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-        const { data: newAdmins } = await supabase
-          .from('user_details')
-          .select('*, users!inner(*)', { count: 'exact' })
-          .eq('users.role', 'admin')
-          .gte('user_details.created_at', thirtyDaysAgo.toISOString());
+      const { data: newTeachers } = await supabase
+        .from('user_details')
+        .select('*, users!inner(*)', { count: 'exact' })
+        .eq('users.role', 'teacher')
+        .gte('user_details.created_at', thirtyDaysAgo.toISOString());
 
-        setKpiData({
-          totalUsers: usersCount?.length || 0,
-          totalSchools: schoolsCount?.length || 0,
-          totalTeachers: teachersCount?.length || 0,
-          newUsers: {
-            teachers: newTeachers?.length || 0,
-            parents: newParents?.length || 0,
-            admins: newAdmins?.length || 0,
-          },
-        });
-      } catch (error) {
-        console.error('Erreur lors du chargement des KPIs:', error);
-        toast.error('Erreur lors du chargement des statistiques');
-      }
-    };
+      const { data: newParents } = await supabase
+        .from('user_details')
+        .select('*, users!inner(*)', { count: 'exact' })
+        .eq('users.role', 'parent')
+        .gte('user_details.created_at', thirtyDaysAgo.toISOString());
 
-    loadKPIData();
-  }, []);
+      const { data: newAdmins } = await supabase
+        .from('user_details')
+        .select('*, users!inner(*)', { count: 'exact' })
+        .eq('users.role', 'admin')
+        .gte('user_details.created_at', thirtyDaysAgo.toISOString());
+
+      return {
+        totalUsers: usersCount?.length || 0,
+        totalSchools: schoolsCount?.length || 0,
+        totalTeachers: teachersCount?.length || 0,
+        newUsers: {
+          teachers: newTeachers?.length || 0,
+          parents: newParents?.length || 0,
+          admins: newAdmins?.length || 0,
+        },
+      };
+    } catch (error) {
+      console.error('Erreur lors du chargement des KPIs:', error);
+      toast.error('Erreur lors du chargement des statistiques');
+    }
+  };
 
   const handleGenerateQuestion = async () => {
     try {
-      setIsLoading(true);
-      setError(null);
-      setGeneratedQuestion(null);
+      setIsGenerating(true);
+      updateFormState('error', null);
+      updateFormState('generatedQuestion', null);
 
-      if (!masterQuestion.class || !masterQuestion.subject || !masterQuestion.topics[0] || 
-          !masterQuestion.specificities[0] || !masterQuestion.subSpecificities[0] || !masterQuestion.period) {
+      if (!formState.masterQuestion.class || !formState.masterQuestion.subject || !formState.masterQuestion.topics[0] || 
+          !formState.masterQuestion.specificities[0] || !formState.masterQuestion.subSpecificities[0] || !formState.masterQuestion.period) {
         throw new Error("Veuillez remplir tous les champs");
       }
 
       const response = await generateMasterQuestion({
-        ...masterQuestion
+        ...formState.masterQuestion
       });
 
       // La réponse est déjà un objet JSON parsé
       console.log("Réponse complète:", response);
       
       // Validation du format de la réponse
-      if (!response.question || !response.options || !response.correctAnswer || !response.explanation) {
+      if (!response.question || !response.options || !response.correctAnswer || !response.explanation || !response.type) {
         throw new Error("La réponse de l'API ne contient pas tous les champs requis");
       }
 
@@ -279,66 +369,70 @@ export default function SuperAdminDashboard() {
         throw new Error("La réponse correcte doit être A, B, C ou D");
       }
 
-      setGeneratedQuestion(response);
+      if (!["short", "long", "image"].includes(response.type)) {
+        throw new Error("Le type de question doit être short, long ou image");
+      }
+
+      updateFormState('generatedQuestion', response);
       toast.success("Question générée avec succès !");
     } catch (error) {
       console.error("Erreur lors de la génération de la question:", error);
-      setError(error instanceof Error ? error.message : "Erreur inconnue");
+      updateFormState('error', error instanceof Error ? error.message : "Erreur inconnue");
       toast.error(error instanceof Error ? error.message : "Erreur lors de la génération de la question");
     } finally {
-      setIsLoading(false);
+      setIsGenerating(false);
     }
   };
 
   const handleRegenerateQuestion = async () => {
-    setIsLoading(true);
+    setIsGenerating(true);
     try {
       const response = await generateMasterQuestion({
-        ...masterQuestion
+        ...formState.masterQuestion
       });
-      setGeneratedQuestion(response);
-      setShowSimilarQuestions(false);
-      setSimilarQuestions([]);
+      updateFormState('generatedQuestion', response);
+      updateFormState('showSimilarQuestions', false);
+      updateFormState('similarQuestions', []);
     } catch (error) {
-      setError('Erreur lors de la génération de la question');
+      updateFormState('error', 'Erreur lors de la génération de la question');
       toast.error('Erreur lors de la génération de la question');
     } finally {
-      setIsLoading(false);
+      setIsGenerating(false);
     }
   };
 
   const handleSendAdditionalInstructions = async () => {
-    setIsLoading(true);
+    setIsGenerating(true);
     try {
       const response = await generateMasterQuestion({
-        ...masterQuestion
+        ...formState.masterQuestion
       });
-      setGeneratedQuestion(response);
-      setShowSimilarQuestions(false);
-      setSimilarQuestions([]);
-      setShowInstructions(false); // Ferme la zone de texte après l'envoi
+      updateFormState('generatedQuestion', response);
+      updateFormState('showSimilarQuestions', false);
+      updateFormState('similarQuestions', []);
+      updateFormState('showInstructions', false); // Ferme la zone de texte après l'envoi
     } catch (error) {
-      setError('Erreur lors de la génération de la question');
+      updateFormState('error', 'Erreur lors de la génération de la question');
       toast.error('Erreur lors de la génération de la question');
     } finally {
-      setIsLoading(false);
+      setIsGenerating(false);
     }
   };
 
   const handleSaveEditedQuestion = async () => {
-    if (!editedQuestion) return;
-    setGeneratedQuestion(editedQuestion);
-    setIsEditing(false);
+    if (!formState.editedQuestion) return;
+    updateFormState('generatedQuestion', formState.editedQuestion);
+    updateFormState('isEditing', false);
   };
 
   const handleGenerateSimilarQuestions = async () => {
-    if (!generatedQuestion) return;
+    if (!formState.generatedQuestion) return;
     
     setLoading(true);
     try {
-      const questions = await generateSimilarQuestions(generatedQuestion);
-      setSimilarQuestions(questions);
-      setShowSimilarQuestions(true);
+      const questions = await generateSimilarQuestions(formState.generatedQuestion);
+      updateFormState('similarQuestions', questions);
+      updateFormState('showSimilarQuestions', true);
       toast.success('Questions similaires générées avec succès');
     } catch (error) {
       console.error('Erreur lors de la génération des questions similaires:', error);
@@ -349,472 +443,416 @@ export default function SuperAdminDashboard() {
   };
 
   const saveQuestionsToDatabase = async () => {
-    if (!generatedQuestion || !similarQuestions.length) return;
+    if (!formState.generatedQuestion || !formState.similarQuestions.length) return;
 
     setLoading(true);
     try {
-      console.log("Tentative de sauvegarde de la question master:", {
-        question: generatedQuestion.question,
-        options: generatedQuestion.options,
-        correct_answer: generatedQuestion.correctAnswer,
-        explanation: generatedQuestion.explanation,
-        class: masterQuestion.class,
-        subject: masterQuestion.subject,
-        topic: masterQuestion.topics[0],
-        specificity: masterQuestion.specificities[0],
-        "sub-specificity": masterQuestion.subSpecificities[0],
-        period: masterQuestion.period,
-      });
-
       // 1. D'abord, sauvegarder la question master
       const { data: masterQuestionData, error: masterError } = await supabase
         .from('master_questions')
         .insert({
-          question: generatedQuestion.question,
-          options: generatedQuestion.options,
-          correct_answer: generatedQuestion.correctAnswer,
-          explanation: generatedQuestion.explanation,
-          class: masterQuestion.class,
-          subject: masterQuestion.subject,
-          topic: masterQuestion.topics[0],
-          specificity: masterQuestion.specificities[0],
-          "sub-specificity": masterQuestion.subSpecificities[0],
-          period: masterQuestion.period,
+          question: formState.generatedQuestion.question,
+          options: formState.generatedQuestion.options,
+          correct_answer: formState.generatedQuestion.correctAnswer,
+          explanation: formState.generatedQuestion.explanation,
+          type: formState.generatedQuestion.type,
+          class: formState.masterQuestion.class,
+          subject: formState.masterQuestion.subject,
+          topic: formState.masterQuestion.topics[0],
+          specificity: formState.masterQuestion.specificities[0],
+          "sub-specificity": formState.masterQuestion.subSpecificities[0],
+          period: formState.masterQuestion.period,
           created_at: new Date().toISOString(),
         })
         .select()
         .single();
 
       if (masterError) {
-        console.error("Erreur lors de la sauvegarde de la question master:", masterError);
-        throw masterError;
+        console.error('Erreur lors de la sauvegarde de la question master:', masterError);
+        throw new Error(`Erreur lors de la sauvegarde de la question master: ${masterError.message}`);
       }
 
-      console.log("Question master sauvegardée avec succès:", masterQuestionData);
+      if (!masterQuestionData) {
+        throw new Error('Aucune donnée retournée après la sauvegarde de la question master');
+      }
 
-      // 2. Ensuite, sauvegarder les questions similaires avec la référence à la question master
-      const { data: similarQuestionsData, error: similarError } = await supabase
+      console.log('Question master sauvegardée:', masterQuestionData);
+
+      // 2. Préparer les données des questions similaires
+      const similarQuestionsData = formState.similarQuestions.map(q => ({
+        question: q.question,
+        options: q.options,
+        correct_answer: q.correctAnswer,
+        explanation: q.explanation,
+        type: q.type,
+        class: formState.masterQuestion.class,
+        subject: formState.masterQuestion.subject,
+        topic: formState.masterQuestion.topics[0],
+        specificity: formState.masterQuestion.specificities[0],
+        "sub-specificity": formState.masterQuestion.subSpecificities[0],
+        period: formState.masterQuestion.period,
+        created_at: new Date().toISOString(),
+        master_question_id: masterQuestionData.id
+      }));
+
+      console.log('Tentative de sauvegarde des questions similaires:', similarQuestionsData);
+
+      // 3. Sauvegarder les questions similaires
+      const { data: savedQuestions, error: similarError } = await supabase
         .from('questions')
-        .insert(
-          similarQuestions.map(q => ({
-            question: q.question,
-            options: q.options,
-            correct_answer: q.correctAnswer,
-            explanation: q.explanation,
-            class: masterQuestion.class,
-            subject: masterQuestion.subject,
-            topic: masterQuestion.topics[0],
-            specificity: masterQuestion.specificities[0],
-            "sub-specificity": masterQuestion.subSpecificities[0],
-            period: masterQuestion.period,
-            created_at: new Date().toISOString(),
-            master_question_id: masterQuestionData.id
-          }))
-        );
+        .insert(similarQuestionsData)
+        .select();
 
       if (similarError) {
-        console.error("Erreur lors de la sauvegarde des questions similaires:", similarError);
-        throw similarError;
+        console.error('Erreur lors de la sauvegarde des questions similaires:', similarError);
+        throw new Error(`Erreur lors de la sauvegarde des questions similaires: ${similarError.message}`);
       }
 
-      console.log("Questions similaires sauvegardées avec succès:", similarQuestionsData);
+      console.log('Questions similaires sauvegardées:', savedQuestions);
 
       toast.success('Questions enregistrées avec succès');
-      setShowSimilarQuestions(false);
-      setSimilarQuestions([]);
-      setGeneratedQuestion(null);
+      updateFormState('showSimilarQuestions', false);
+      updateFormState('similarQuestions', []);
+      updateFormState('generatedQuestion', null);
     } catch (error) {
       console.error('Erreur lors de l\'enregistrement des questions:', error);
-      toast.error('Erreur lors de l\'enregistrement des questions');
+      toast.error(error instanceof Error ? error.message : 'Erreur lors de l\'enregistrement des questions');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Espace Super Admin</h1>
+    <div className="min-h-screen">
+      <div className="relative">
+        <button
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+        >
+          <Menu className="w-4 h-4 sm:w-5 sm:h-5" />
+          <span className="hidden sm:inline">Menu</span>
+        </button>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-7 gap-4 mb-6">
-          <TabsTrigger value="questions" className="flex items-center gap-2">
-            <Brain className="w-4 h-4" />
-            Questions
-          </TabsTrigger>
-          <TabsTrigger value="dictees" className="flex items-center gap-2">
-            <PenTool className="w-4 h-4" />
-            Dictées
-          </TabsTrigger>
-          <TabsTrigger value="histoires" className="flex items-center gap-2">
-            <BookOpen className="w-4 h-4" />
-            Histoires
-          </TabsTrigger>
-          <TabsTrigger value="blagues" className="flex items-center gap-2">
-            <Laugh className="w-4 h-4" />
-            Blagues
-          </TabsTrigger>
-          <TabsTrigger value="kpis" className="flex items-center gap-2">
-            <BarChart3 className="w-4 h-4" />
-            KPIs
-          </TabsTrigger>
-          <TabsTrigger value="communaute" className="flex items-center gap-2">
-            <Users className="w-4 h-4" />
-            Communauté
-          </TabsTrigger>
-        </TabsList>
+        {/* Menu déroulant */}
+        {isMenuOpen && (
+          <div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-[#1A1A1B] border border-white/10">
+            <nav className="py-1">
+              <button
+                onClick={() => {
+                  setActiveTab("questions");
+                  setIsMenuOpen(false);
+                }}
+                className="w-full text-left px-4 py-2 text-sm hover:bg-white/5 flex items-center gap-2"
+              >
+                <PenTool className="w-4 h-4" />
+                <span>Questions</span>
+              </button>
+              <button
+                onClick={() => {
+                  setActiveTab("kpis");
+                  setIsMenuOpen(false);
+                }}
+                className="w-full text-left px-4 py-2 text-sm hover:bg-white/5 flex items-center gap-2"
+              >
+                <BarChart3 className="w-4 h-4" />
+                <span>Statistiques</span>
+              </button>
+              <button
+                onClick={() => {
+                  setActiveTab("dictees");
+                  setIsMenuOpen(false);
+                }}
+                className="w-full text-left px-4 py-2 text-sm hover:bg-white/5 flex items-center gap-2"
+              >
+                <Edit3 className="w-4 h-4" />
+                <span>Dictées</span>
+              </button>
+              <button
+                onClick={() => {
+                  setActiveTab("histoires");
+                  setIsMenuOpen(false);
+                }}
+                className="w-full text-left px-4 py-2 text-sm hover:bg-white/5 flex items-center gap-2"
+              >
+                <BookOpen className="w-4 h-4" />
+                <span>Histoires</span>
+              </button>
+              <button
+                onClick={() => {
+                  setActiveTab("blagues");
+                  setIsMenuOpen(false);
+                }}
+                className="w-full text-left px-4 py-2 text-sm hover:bg-white/5 flex items-center gap-2"
+              >
+                <Laugh className="w-4 h-4" />
+                <span>Blagues</span>
+              </button>
+              <button
+                onClick={() => {
+                  setActiveTab("communaute");
+                  setIsMenuOpen(false);
+                }}
+                className="w-full text-left px-4 py-2 text-sm hover:bg-white/5 flex items-center gap-2"
+              >
+                <Users className="w-4 h-4" />
+                <span>Communauté</span>
+              </button>
+            </nav>
+          </div>
+        )}
+      </div>
 
-        <TabsContent value="questions">
-          <Card>
-            <CardContent className="p-6">
-              <h2 className="text-2xl font-semibold mb-4">Création de Master Questions</h2>
-              <div className="p-8">
-                <h1 className="text-2xl font-bold mb-6">Création de Master Questions</h1>
-                
-                <div className="space-y-6 max-w-2xl">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Niveau académique</label>
-                      <Select 
-                        onValueChange={(value) => setMasterQuestion({...masterQuestion, class: value})}
-                        value={masterQuestion.class}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Sélectionner un niveau" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {getAvailableClasses().map((cls) => (
-                            <SelectItem key={cls} value={cls}>
-                              {cls}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium mb-1">Matière</label>
-                      <Select
-                        onValueChange={(value) => setMasterQuestion({...masterQuestion, subject: value})}
-                        value={masterQuestion.subject}
-                        disabled={!masterQuestion.class}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Sélectionner une matière" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {getAvailableSubjects().map((subject) => (
-                            <SelectItem key={subject} value={subject}>
-                              {subject}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+      <main className="p-4">
+        {activeTab === "questions" && (
+          <div className="space-y-4">
+            <div className="card p-4">
+              <div className="space-y-4">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Classe</label>
+                    <Select
+                      value={formState.masterQuestion.class}
+                      onValueChange={(value) => updateFormState('masterQuestion', {
+                        ...formState.masterQuestion,
+                        class: value,
+                        subject: '',
+                        topics: [],
+                        specificities: [],
+                        subSpecificities: [],
+                        period: ''
+                      })}
+                    >
+                      <SelectTrigger className="select-trigger w-full">
+                        <SelectValue placeholder="Sélectionner une classe" />
+                      </SelectTrigger>
+                      <SelectContent className="select-content">
+                        {formState.availableClasses.map((c) => (
+                          <SelectItem key={c} value={c} className="select-item">{c}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Thématique</label>
-                    <Select 
-                      onValueChange={(value) => setMasterQuestion({...masterQuestion, topics: [value]})}
-                      value={masterQuestion.topics[0]}
-                      disabled={!masterQuestion.subject}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Matière</label>
+                    <Select
+                      value={formState.masterQuestion.subject}
+                      onValueChange={(value) => updateFormState('masterQuestion', {
+                        ...formState.masterQuestion,
+                        subject: value,
+                        topics: [],
+                        specificities: [],
+                        subSpecificities: [],
+                        period: ''
+                      })}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="select-trigger w-full">
+                        <SelectValue placeholder="Sélectionner une matière" />
+                      </SelectTrigger>
+                      <SelectContent className="select-content">
+                        {formState.availableSubjects.map((s) => (
+                          <SelectItem key={s} value={s} className="select-item">{s}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Thématique</label>
+                    <Select
+                      value={formState.masterQuestion.topics[0] || ''}
+                      onValueChange={(value) => updateFormState('masterQuestion', {
+                        ...formState.masterQuestion,
+                        topics: [value],
+                        specificities: [],
+                        subSpecificities: [],
+                        period: ''
+                      })}
+                    >
+                      <SelectTrigger className="select-trigger w-full">
                         <SelectValue placeholder="Sélectionner une thématique" />
                       </SelectTrigger>
-                      <SelectContent>
-                        {availableTopics.map((topic) => (
-                          <SelectItem key={topic} value={topic}>
-                            {topic}
-                          </SelectItem>
+                      <SelectContent className="select-content">
+                        {formState.availableTopics.map((t) => (
+                          <SelectItem key={t} value={t} className="select-item">{t}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Compétence</label>
-                    <Select 
-                      onValueChange={(value) => setMasterQuestion({...masterQuestion, specificities: [value]})}
-                      value={masterQuestion.specificities[0]}
-                      disabled={!masterQuestion.topics[0]}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Compétence</label>
+                    <Select
+                      value={formState.masterQuestion.specificities[0] || ''}
+                      onValueChange={(value) => updateFormState('masterQuestion', {
+                        ...formState.masterQuestion,
+                        specificities: [value],
+                        subSpecificities: [],
+                        period: ''
+                      })}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="select-trigger w-full">
                         <SelectValue placeholder="Sélectionner une compétence" />
                       </SelectTrigger>
-                      <SelectContent>
-                        {availableSpecificities.map((specificity) => (
-                          <SelectItem key={specificity} value={specificity}>
-                            {specificity}
-                          </SelectItem>
+                      <SelectContent className="select-content">
+                        {formState.availableSpecificities.map((s) => (
+                          <SelectItem key={s} value={s} className="select-item">{s}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Sous-compétence</label>
-                    <Select 
-                      onValueChange={(value) => setMasterQuestion({...masterQuestion, subSpecificities: [value]})}
-                      value={masterQuestion.subSpecificities[0]}
-                      disabled={!masterQuestion.specificities[0]}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Sous-compétence</label>
+                    <Select
+                      value={formState.masterQuestion.subSpecificities[0] || ''}
+                      onValueChange={(value) => updateFormState('masterQuestion', {
+                        ...formState.masterQuestion,
+                        subSpecificities: [value]
+                      })}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="select-trigger w-full">
                         <SelectValue placeholder="Sélectionner une sous-compétence" />
                       </SelectTrigger>
-                      <SelectContent>
-                        {availableSubSpecificities.map((subSpec) => (
-                          <SelectItem key={subSpec.name} value={subSpec.name}>
-                            {subSpec.name}
-                          </SelectItem>
+                      <SelectContent className="select-content">
+                        {formState.availableSubSpecificities.map((ss) => (
+                          <SelectItem key={ss.name} value={ss.name} className="select-item">{ss.name}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
+                </div>
 
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Période</label>
-                    <Select
-                      value={masterQuestion.period || "non-definie"}
-                      disabled
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Période automatiquement définie" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {masterQuestion.period ? (
-                          <SelectItem value={masterQuestion.period}>
-                            {masterQuestion.period}
-                          </SelectItem>
-                        ) : (
-                          <SelectItem value="non-definie">
-                            Sélectionnez une sous-compétence
-                          </SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <button
-                    className="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 transition-colors"
-                    onClick={handleGenerateQuestion}
-                    disabled={isLoading || !masterQuestion.subSpecificities[0]}
-                  >
-                    {isLoading ? (
-                      <span className="flex items-center justify-center">
-                        <svg className="animate-spin h-5 w-5 mr-3" viewBox="0 0 24 24">
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
-                        Génération en cours...
-                      </span>
-                    ) : (
-                      "Générer la question"
-                    )}
-                  </button>
-
-                  {error && (
-                    <div className="text-red-500 text-sm mt-2">{error}</div>
-                  )}
-
-                  {generatedQuestion && (
-                    <div className="space-y-4">
-                      {!isEditing ? (
-                        <>
-                          <QuestionDisplay 
-                            question={generatedQuestion.question}
-                            options={generatedQuestion.options}
-                            correctAnswer={generatedQuestion.correctAnswer}
-                            explanation={generatedQuestion.explanation}
-                          />
-                          <div className="flex gap-2 mt-4">
-                            <Button onClick={() => handleRegenerateQuestion()} disabled={isLoading}>
-                              Regénérer
-                            </Button>
-                            <Button onClick={() => setShowInstructions(!showInstructions)}>
-                              Affiner les instructions
-                            </Button>
-                            <Button onClick={() => {
-                              setIsEditing(true);
-                              setEditedQuestion(generatedQuestion);
-                            }}>
-                              Modifier
-                            </Button>
-                            <Button onClick={handleGenerateSimilarQuestions} disabled={isLoading}>
-                              Générer des questions similaires
-                            </Button>
-                          </div>
-                          
-                          {showInstructions && (
-                            <div className="mt-4 space-y-4">
-                              <Textarea
-                                placeholder="Ajoutez des instructions supplémentaires pour affiner la génération..."
-                                className="min-h-[100px]"
-                              />
-                              <Button 
-                                onClick={handleSendAdditionalInstructions}
-                                disabled={isLoading}
-                                className="w-full"
-                              >
-                                {isLoading ? "Envoi en cours..." : "Envoyer instructions complémentaires"}
-                              </Button>
-                            </div>
-                          )}
-                        </>
-                      ) : (
-                        <div className="space-y-4">
-                          <div className="space-y-2">
-                            <label className="font-medium">Question</label>
-                            <Textarea
-                              value={editedQuestion?.question || ''}
-                              onChange={(e) => setEditedQuestion(prev => prev ? {...prev, question: e.target.value} : null)}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <label className="font-medium">Options</label>
-                            {editedQuestion && Object.entries(editedQuestion.options).map(([key, value]) => (
-                              <div key={key} className="flex gap-2 items-center">
-                                <span>{key}.</span>
-                                <Textarea
-                                  value={value}
-                                  onChange={(e) => setEditedQuestion(prev => prev ? {
-                                    ...prev,
-                                    options: {
-                                      ...prev.options,
-                                      [key]: e.target.value
-                                    }
-                                  } : null)}
-                                />
-                              </div>
-                            ))}
-                          </div>
-                          <div className="space-y-2">
-                            <label className="font-medium">Explication</label>
-                            <Textarea
-                              value={editedQuestion?.explanation || ''}
-                              onChange={(e) => setEditedQuestion(prev => prev ? {...prev, explanation: e.target.value} : null)}
-                            />
-                          </div>
-                          <div className="flex gap-2">
-                            <Button onClick={handleSaveEditedQuestion}>Sauvegarder</Button>
-                            <Button variant="outline" onClick={() => {
-                              setIsEditing(false);
-                              setEditedQuestion(null);
-                            }}>
-                              Annuler
-                            </Button>
-                          </div>
-                        </div>
-                      )}
+                <Button
+                  onClick={handleGenerateQuestion}
+                  disabled={isGenerating}
+                  className="btn-primary w-full"
+                >
+                  {isGenerating ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Génération...</span>
                     </div>
+                  ) : (
+                    "Générer une question"
                   )}
+                </Button>
+                
+                {formState.generatedQuestion && (
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      onClick={handleRegenerateQuestion}
+                      variant="outline"
+                      className="w-full"
+                      disabled={isGenerating}
+                    >
+                      Régénérer
+                    </Button>
+                    <Button
+                      onClick={handleGenerateSimilarQuestions}
+                      variant="outline"
+                      className="w-full"
+                      disabled={isGenerating || formState.showSimilarQuestions}
+                    >
+                      Questions similaires
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {formState.showSimilarQuestions && formState.similarQuestions.length > 0 && (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold">Questions similaires :</h3>
+                {formState.similarQuestions.map((q, index) => (
+                  <div key={index} className="card p-4">
+                    <QuestionDisplay
+                      question={q.question}
+                      options={q.options}
+                      correctAnswer={q.correctAnswer}
+                      explanation={q.explanation}
+                    />
+                  </div>
+                ))}
+                <Button 
+                  onClick={saveQuestionsToDatabase}
+                  disabled={loading}
+                  className="btn-primary w-full"
+                >
+                  {loading ? "Sauvegarde..." : "Sauvegarder toutes les questions"}
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "kpis" && (
+          <div className="card p-4">
+            <h2 className="text-lg font-semibold mb-4">Tableau de bord</h2>
+            {kpiData && (
+              <div className="grid grid-cols-1 gap-4">
+                <div className="p-4 bg-white rounded-lg shadow-sm border">
+                  <h3 className="text-sm font-medium text-gray-500">Total Utilisateurs</h3>
+                  <p className="text-xl font-bold mt-1">{kpiData.totalUsers}</p>
+                </div>
+                <div className="p-4 bg-white rounded-lg shadow-sm border">
+                  <h3 className="text-sm font-medium text-gray-500">Total Écoles</h3>
+                  <p className="text-xl font-bold mt-1">{kpiData.totalSchools}</p>
+                </div>
+                <div className="p-4 bg-white rounded-lg shadow-sm border">
+                  <h3 className="text-sm font-medium text-gray-500">Total Enseignants</h3>
+                  <p className="text-xl font-bold mt-1">{kpiData.totalTeachers}</p>
+                </div>
+                <div className="p-4 bg-white rounded-lg shadow-sm border">
+                  <h3 className="text-sm font-medium text-gray-500 mb-2">Nouveaux utilisateurs (30j)</h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Enseignants</span>
+                      <span className="font-medium">{kpiData.newUsers.teachers}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Parents</span>
+                      <span className="font-medium">{kpiData.newUsers.parents}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Admins</span>
+                      <span className="font-medium">{kpiData.newUsers.admins}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+            )}
+          </div>
+        )}
 
-        <TabsContent value="kpis">
-          <Card>
-            <CardContent className="p-6">
-              <h2 className="text-2xl font-semibold mb-4">Tableau de bord</h2>
-              {kpiData && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="p-4 bg-white rounded-lg shadow">
-                    <h3 className="text-sm font-medium text-gray-500">Total Utilisateurs</h3>
-                    <p className="text-2xl font-bold">{kpiData.totalUsers}</p>
-                  </div>
-                  <div className="p-4 bg-white rounded-lg shadow">
-                    <h3 className="text-sm font-medium text-gray-500">Total Écoles</h3>
-                    <p className="text-2xl font-bold">{kpiData.totalSchools}</p>
-                  </div>
-                  <div className="p-4 bg-white rounded-lg shadow">
-                    <h3 className="text-sm font-medium text-gray-500">Total Enseignants</h3>
-                    <p className="text-2xl font-bold">{kpiData.totalTeachers}</p>
-                  </div>
-                  <div className="p-4 bg-white rounded-lg shadow">
-                    <h3 className="text-sm font-medium text-gray-500">Nouveaux utilisateurs (30j)</h3>
-                    <div className="space-y-1">
-                      <p className="text-sm">Enseignants: {kpiData.newUsers.teachers}</p>
-                      <p className="text-sm">Parents: {kpiData.newUsers.parents}</p>
-                      <p className="text-sm">Admins: {kpiData.newUsers.admins}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+        {activeTab === "dictees" && (
+          <div className="card p-4">
+            <h2 className="text-lg font-semibold mb-2">Dictées</h2>
+            <p className="text-sm text-gray-500">Bientôt disponible</p>
+          </div>
+        )}
 
-        <TabsContent value="dictees">
-          <Card>
-            <CardContent className="p-6">
-              <h2 className="text-2xl font-semibold mb-4">Gestion des dictées</h2>
-              <p className="text-gray-500">Cette fonctionnalité sera bientôt disponible.</p>
-            </CardContent>
-          </Card>
-        </TabsContent>
+        {activeTab === "histoires" && (
+          <div className="card p-4">
+            <h2 className="text-lg font-semibold mb-2">Histoires</h2>
+            <p className="text-sm text-gray-500">Bientôt disponible</p>
+          </div>
+        )}
 
-        <TabsContent value="histoires">
-          <Card>
-            <CardContent className="p-6">
-              <h2 className="text-2xl font-semibold mb-4">Gestion des histoires</h2>
-              <p className="text-gray-500">Cette fonctionnalité sera bientôt disponible.</p>
-            </CardContent>
-          </Card>
-        </TabsContent>
+        {activeTab === "blagues" && (
+          <div className="card p-4">
+            <h2 className="text-lg font-semibold mb-2">Blagues</h2>
+            <p className="text-sm text-gray-500">Bientôt disponible</p>
+          </div>
+        )}
 
-        <TabsContent value="blagues">
-          <Card>
-            <CardContent className="p-6">
-              <h2 className="text-2xl font-semibold mb-4">Gestion des blagues</h2>
-              <p className="text-gray-500">Cette fonctionnalité sera bientôt disponible.</p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="communaute">
-          <Card>
-            <CardContent className="p-6">
-              <h2 className="text-2xl font-semibold mb-4">Histoires de la communauté</h2>
-              <p className="text-gray-500">Cette fonctionnalité sera bientôt disponible.</p>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-      {showSimilarQuestions && similarQuestions.length > 0 && (
-        <div className="mt-8 space-y-6">
-          <h3 className="text-xl font-semibold">Questions similaires générées :</h3>
-          {similarQuestions.map((q, index) => (
-            <div key={index} className="p-4 border rounded-lg">
-              <QuestionDisplay
-                question={q.question}
-                options={q.options}
-                correctAnswer={q.correctAnswer}
-                explanation={q.explanation}
-              />
-            </div>
-          ))}
-          <Button 
-            onClick={saveQuestionsToDatabase}
-            disabled={loading}
-            className="w-full mt-4"
-          >
-            {loading ? "Sauvegarde en cours..." : "Sauvegarder toutes les questions"}
-          </Button>
-        </div>
-      )}
+        {activeTab === "communaute" && (
+          <div className="card p-4">
+            <h2 className="text-lg font-semibold mb-2">Communauté</h2>
+            <p className="text-sm text-gray-500">Bientôt disponible</p>
+          </div>
+        )}
+      </main>
     </div>
   );
 }

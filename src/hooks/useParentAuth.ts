@@ -3,18 +3,19 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { usePinVerification } from '@/contexts/PinVerificationContext';
 
 export function useParentAuth() {
-  const [isVerified, setIsVerified] = useState(false);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+  const { isPinVerified, verifyPin, resetPinVerification } = usePinVerification();
 
   useEffect(() => {
     const checkParentAuth = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
-          router.push('/login');
+          router.push('/auth');
           return;
         }
 
@@ -30,7 +31,7 @@ export function useParentAuth() {
           return;
         }
 
-        setIsVerified(false); // Par défaut, l'utilisateur doit entrer son PIN
+        // Ne pas réinitialiser isPinVerified ici
       } catch (error) {
         console.error('Erreur lors de la vérification de l\'authentification parent:', error);
       } finally {
@@ -42,8 +43,9 @@ export function useParentAuth() {
   }, [router]);
 
   return {
-    isVerified,
-    setIsVerified,
+    isVerified: isPinVerified,
+    setIsVerified: verifyPin,
+    resetVerification: resetPinVerification,
     loading
   };
 }

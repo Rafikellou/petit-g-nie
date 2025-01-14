@@ -2,6 +2,7 @@
 
 import { useUser } from '@/hooks/useUser';
 import { useParentAuth } from '@/hooks/useParentAuth';
+import { useRouter } from 'next/navigation';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Clock, Lock, LockKeyhole } from 'lucide-react';
@@ -9,6 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BaseLayout } from '@/components/layout/BaseLayout';
 import { PinModal } from '@/components/auth/PinModal';
+import { useEffect } from 'react';
 
 const categories = [
   { id: 'stories-listen', name: 'Écouter une histoire' },
@@ -27,9 +29,16 @@ const timeFrames = [
 export default function ParentPage() {
   const { user, loading: userLoading } = useUser();
   const { isVerified, setIsVerified, loading: authLoading } = useParentAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!isVerified) {
+      router.push('/');
+    }
+  }, [isVerified, router]);
 
   const handlePinSuccess = () => {
-    setIsVerified(true);
+    setIsVerified();
   };
 
   if (userLoading || authLoading) {

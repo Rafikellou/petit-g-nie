@@ -27,6 +27,10 @@ export async function generateMasterQuestion(params: QuestionGenerationParams) {
     3. Proposer 4 réponses possibles (A, B, C, D)
     4. Indiquer la bonne réponse
     5. Inclure une explication pédagogique détaillée
+    6. Déterminer le type de question le plus approprié parmi :
+       - "short" : question courte avec réponses simples
+       - "long" : question avec un paragraphe contextuel
+       - "image" : question nécessitant une image
 
     Réponds uniquement au format JSON suivant :
     {
@@ -38,7 +42,8 @@ export async function generateMasterQuestion(params: QuestionGenerationParams) {
         "D": "Quatrième option"
       },
       "correctAnswer": "A/B/C/D",
-      "explanation": "Explication pédagogique détaillée"
+      "explanation": "Explication pédagogique détaillée",
+      "type": "short/long/image"
     }`;
 
     const response = await fetch('/api/deepseek', {
@@ -121,7 +126,8 @@ export async function generateSimilarQuestions(masterQuestion: any, count: numbe
         "D": "Quatrième option"
       },
       "correctAnswer": "A",
-      "explanation": "Explication pédagogique"
+      "explanation": "Explication pédagogique",
+      "type": "${masterQuestion.type}"
     },
     {
       // autres questions au même format...
