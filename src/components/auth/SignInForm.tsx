@@ -33,31 +33,12 @@ export default function SignInForm() {
         return
       }
 
-      // Rediriger vers la page appropriée selon le rôle
-      switch (user.user_metadata?.role) {
-        case 'super_admin':
-          router.push('/super-admin')
-          break
-        case 'admin':
-          router.push('/admin')
-          break
-        case 'teacher':
-          router.push('/teacher')
-          break
-        case 'parent':
-          // Si l'utilisateur n'a pas encore configuré son compte
-          if (!user.user_metadata?.ecole_id || !user.user_metadata?.surname_child) {
-            router.push('/setup')
-          } else {
-            router.push('/')
-          }
-          break
-        default:
-          router.push('/')
-      }
-    } catch (err: any) {
-      console.error('Erreur inattendue lors de la connexion:', err)
-      setError('Une erreur inattendue est survenue. Veuillez réessayer.')
+      // Rediriger vers la homepage par défaut
+      router.push('/')
+
+    } catch (error: any) {
+      console.error('Error in handleSignIn:', error)
+      setError('Une erreur est survenue lors de la connexion')
     } finally {
       setLoading(false)
     }

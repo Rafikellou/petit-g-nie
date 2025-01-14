@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
 
-/*
 // Routes publiques qui ne nécessitent pas d'authentification
 const PUBLIC_ROUTES = ['/auth', '/auth/callback', '/api']
 
@@ -12,13 +12,50 @@ const ROLE_ROUTES = {
   teacher: ['/teacher'],
   parent: ['/parent']
 }
-*/
 
 export async function middleware(req: NextRequest) {
-  // Middleware temporairement désactivé - toutes les routes sont accessibles
-  return NextResponse.next()
+  const res = NextResponse.next()
+  const supabase = createMiddlewareClient({ req, res })
+  const {
+    data: { session },
+  } = await supabase.auth.getSession()
+
+  // Autoriser les routes publiques
+  if (PUBLIC_ROUTES.some(route => req.nextUrl.pathname.startsWith(route))) {
+    return res
+  }
+
+  // Si pas de session, rediriger vers la page de connexion
+  if (!session) {
+    const redirectUrl = req.nextUrl.clone()
+    redirectUrl.pathname = '/auth'
+    redirectUrl.searchParams.set(`redirectedFrom`, req.nextUrl.pathname)
+    return NextResponse.redirect(redirectUrl)
+  }
+
+  // Vérifier les permissions basées sur le rôle
+  const userRole = session.user.user_metadata?.role
+  if (userRole) {
+    const allowedRoutes = ROLE_ROUTES[userRole as keyof typeof ROLE_ROUTES] || []
+    if (allowedRoutes.some(route => req.nextUrl.pathname.startsWith(route))) {
+      return res
+    }
+  }
+
+  // Si l'utilisateur n'a pas les permissions nécessaires, rediriger vers la page d'accueil
+  const redirectUrl = req.nextUrl.clone()
+  redirectUrl.pathname = '/'
+  return NextResponse.redirect(redirectUrl)
 }
 
 export const config = {
-  matcher: []
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    '/((?!_next/static|_next/image|favicon.ico).*)',
+  ],
 }
