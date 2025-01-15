@@ -523,7 +523,7 @@ export default function SuperAdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen pt-20">
       <div className="relative">
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -535,7 +535,7 @@ export default function SuperAdminDashboard() {
 
         {/* Menu déroulant */}
         {isMenuOpen && (
-          <div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-[#1A1A1B] border border-white/10">
+          <div className="absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-[#1A1A1B] border border-white/10 z-50">
             <nav className="py-1">
               <button
                 onClick={() => {

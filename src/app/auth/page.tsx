@@ -11,12 +11,12 @@ export default function AuthPage() {
     <div className="min-h-screen flex flex-col justify-center bg-background px-4">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <h2 className="text-center text-3xl font-bold text-white">
-          {mode === 'signin' ? 'Se connecter à Petit Génie' : 'Créer un compte Petit Génie'}
+          {mode === 'signin' ? 'Se connecter à Futur Génie' : 'Créer un compte Futur Génie'}
         </h2>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="glass-card p-8 space-y-6 bg-gray-950/50 backdrop-blur-xl border border-white/10 rounded-2xl">
+        <div className="glass-card p-8 space-y-6 bg-gray-900/70 backdrop-blur-xl border border-white/10 rounded-2xl">
           {mode === 'signin' ? <SignInForm /> : <SignUpForm />}
           
           <div className="mt-6 text-center">
