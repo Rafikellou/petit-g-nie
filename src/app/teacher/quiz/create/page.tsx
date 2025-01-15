@@ -24,6 +24,13 @@ interface TeacherInfo {
   class_name: string;
 }
 
+interface Message {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp: Date;
+  validated?: boolean;
+}
+
 export default function CreateQuizPage() {
   const router = useRouter();
   const supabase = createClientComponentClient();
@@ -32,7 +39,7 @@ export default function CreateQuizPage() {
   const [systemPrompt] = useState<string>(
     "Bonjour, je suis Futur Génie et je vais vous aider à créer un quiz pour vos élèves. Quelle a été la leçon du jour ?"
   );
-  const [conversationHistory, setConversationHistory] = useState<any[]>([]);
+  const [conversationHistory, setConversationHistory] = useState<Message[]>([]);
 
   useEffect(() => {
     async function loadTeacherInfo() {
@@ -74,7 +81,7 @@ export default function CreateQuizPage() {
     loadTeacherInfo();
   }, [supabase]);
 
-  const handleSendMessage = async (message: string, history: any[]) => {
+  const handleSendMessage = async (message: string, history: Message[]) => {
     try {
       // Filtrer et formater correctement l'historique
       const formattedHistory = history
@@ -103,7 +110,7 @@ export default function CreateQuizPage() {
       }
 
       const data = await response.json();
-      setConversationHistory(prev => [...prev, { role: 'user', message }, { role: 'assistant', message: data.response }]);
+      setConversationHistory(prev => [...prev, { role: 'user', content: message, timestamp: new Date() }, { role: 'assistant', content: data.response, timestamp: new Date() }]);
       return data.response;
     } catch (error) {
       console.error('Error:', error);
@@ -111,7 +118,7 @@ export default function CreateQuizPage() {
     }
   };
 
-  const handleValidateQuestion = (message: { content: string }) => {
+  const handleValidateQuestion = (message: Message) => {
     try {
       // Extraire la question du message
       // On suppose que la réponse est formatée correctement
@@ -186,11 +193,10 @@ export default function CreateQuizPage() {
         </div>
 
         <ChatInterface
-          onSendMessage={(message, history) => handleSendMessage(message, history)}
+          onSendMessage={handleSendMessage}
           onValidateMessage={handleValidateQuestion}
           onGenerateActivity={handleGenerateActivity}
           systemPrompt={systemPrompt}
-          conversationHistory={conversationHistory}
         />
 
         {validatedQuestions.length > 0 && (

@@ -16,13 +16,15 @@ interface ChatInterfaceProps {
   onValidateMessage?: (message: Message) => void;
   onGenerateActivity?: () => void;
   systemPrompt?: string;
+  onMessageReceived?: (message: Message) => void;
 }
 
 export default function ChatInterface({ 
   onSendMessage, 
   onValidateMessage,
   onGenerateActivity,
-  systemPrompt
+  systemPrompt,
+  onMessageReceived
 }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>(() => systemPrompt ? [
     {
@@ -83,6 +85,9 @@ export default function ChatInterface({
       };
       // Ajouter la réponse de l'assistant à l'historique
       setMessages(prev => [...prev, assistantMessage]);
+      if (onMessageReceived) {
+        onMessageReceived(assistantMessage);
+      }
     } catch (error) {
       toast.error('Erreur lors de l\'envoi du message');
       // Retirer le dernier message en cas d'erreur
