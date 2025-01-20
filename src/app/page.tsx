@@ -12,7 +12,8 @@ import {
   Brain,
   BookOpenCheck,
   Check,
-  Smile
+  Smile,
+  Music2
 } from 'lucide-react';
 import { ActivitySection } from '@/components/home/ActivitySection';
 import { BaseLayout } from '@/components/layout/BaseLayout';
@@ -104,6 +105,14 @@ const funActivities = [
     icon: GamepadIcon,
     color: 'text-blue-400',
     bgGradient: 'from-blue-500/20 to-indigo-500/20'
+  },
+  {
+    href: '/jeux/piano',
+    title: 'Piano Magique',
+    description: 'Apprends à jouer du piano en t\'amusant',
+    icon: Music2,
+    color: 'text-purple-400',
+    bgGradient: 'from-purple-500/20 to-pink-500/20'
   },
   {
     href: '/blagues',
