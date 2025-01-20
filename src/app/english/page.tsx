@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Play, ArrowLeft, Volume2, ChevronLeft, ChevronRight, Star } from 'lucide-react';
-import { Button } from '@/components/ui/ios-button';
+import { Button } from '@/components/ui/button';
 import confetti from 'canvas-confetti';
 import { createClient } from '@supabase/supabase-js';
 
