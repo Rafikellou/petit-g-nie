@@ -4,234 +4,388 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Play, ArrowLeft, Volume2, ChevronLeft, ChevronRight, Star } from 'lucide-react';
-import { commonEnglishWords } from '@/data/english-words';
 import { Button } from '@/components/ui/ios-button';
+import confetti from 'canvas-confetti';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 interface EnglishWord {
+  id: string;
   word: string;
   translation: string;
   category: string;
-  image: string;
+  image_url: string;
   example: string;
+  example_translation: string;
 }
 
-interface FavoriteWord extends EnglishWord {
-  addedAt: string;
-  lastReviewed?: string;
-  mastery: number; // 0-100
+interface QuizQuestion {
+  correctWord: EnglishWord;
+  options: EnglishWord[];
+  answered?: boolean;
+  isCorrect?: boolean;
+  selectedWord?: EnglishWord;
 }
 
 export default function EnglishLearning() {
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
-  const [synth, setSynth] = useState<SpeechSynthesis | null>(null);
-  const [favorites, setFavorites] = useState<FavoriteWord[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const currentWord = commonEnglishWords[currentWordIndex] as EnglishWord;
-
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showFinalScore, setShowFinalScore] = useState(false);
+  const [words, setWords] = useState<EnglishWord[]>([]);
+  
   useEffect(() => {
-    try {
-      if (typeof window !== 'undefined') {
-        // Vérifier si la synthèse vocale est disponible
-        if ('speechSynthesis' in window) {
-          setSynth(window.speechSynthesis);
-        } else {
-          setError('La synthèse vocale n\'est pas disponible sur votre navigateur');
-        }
-
-        // Vérifier si localStorage est disponible
-        if (typeof localStorage !== 'undefined') {
-          try {
-            const savedFavorites = localStorage.getItem('englishFavorites');
-            if (savedFavorites) {
-              setFavorites(JSON.parse(savedFavorites));
-            }
-          } catch (e) {
-            console.error('Erreur lors de la lecture des favoris:', e);
-            setError('Impossible de charger vos favoris');
-          }
-        }
+    const fetchWords = async () => {
+      const { data, error } = await supabase
+        .from('english_words')
+        .select('*');
+      
+      if (error) {
+        console.error('Error fetching words:', error);
+        setError('Une erreur est survenue lors du chargement des mots');
+        return;
       }
-    } catch (e) {
-      console.error('Erreur lors de l\'initialisation:', e);
-      setError('Une erreur est survenue lors de l\'initialisation');
-    }
+
+      setWords(data);
+    };
+
+    fetchWords();
   }, []);
 
-  const saveFavorites = (newFavorites: FavoriteWord[]) => {
+  const currentWord = words[currentWordIndex];
+  const wordsPerSession = 10;
+  const progress = ((currentWordIndex + 1) % wordsPerSession) || wordsPerSession;
+
+  const playPronunciation = async (text: string, language: 'english' | 'french' = 'english') => {
     try {
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem('englishFavorites', JSON.stringify(newFavorites));
+      setIsLoading(true);
+      const response = await fetch('/api/tts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text, language }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get audio');
       }
-    } catch (e) {
-      console.error('Erreur lors de la sauvegarde des favoris:', e);
-      setError('Impossible de sauvegarder vos favoris');
-    }
-  };
 
-  const playPronunciation = (text: string) => {
-    try {
-      if (synth) {
-        // Arrêter toute prononciation en cours
-        synth.cancel();
-
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'en-US';
-        utterance.rate = 0.8;
-
-        // Gérer les erreurs de prononciation
-        utterance.onerror = (event) => {
-          console.error('Erreur de prononciation:', event);
-          setError('Impossible de prononcer ce mot');
-        };
-
-        synth.speak(utterance);
-      } else {
-        setError('La synthèse vocale n\'est pas disponible');
-      }
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      await audio.play();
     } catch (e) {
       console.error('Erreur lors de la prononciation:', e);
       setError('Une erreur est survenue lors de la prononciation');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const nextWord = () => {
-    setCurrentWordIndex((prev) => 
-      prev === commonEnglishWords.length - 1 ? 0 : prev + 1
-    );
-  };
-
-  const previousWord = () => {
-    setCurrentWordIndex((prev) => 
-      prev === 0 ? commonEnglishWords.length - 1 : prev - 1
-    );
-  };
-
-  const toggleFavorite = () => {
-    const isFavorite = favorites.some(f => f.word === currentWord.word);
-    const newFavorites = isFavorite
-      ? favorites.filter(f => f.word !== currentWord.word)
-      : [...favorites, {
-          ...currentWord,
-          addedAt: new Date().toISOString(),
-          mastery: 0
-        }];
+  const generateQuiz = () => {
+    if (words.length === 0) return;
     
-    setFavorites(newFavorites);
-    saveFavorites(newFavorites);
+    const questions: QuizQuestion[] = [];
+    const startIndex = Math.floor(currentWordIndex / wordsPerSession) * wordsPerSession;
+    
+    for (let i = 0; i < wordsPerSession; i++) {
+      const correctWord = words[startIndex + i];
+      const otherWords = words
+        .filter((_, index) => index !== startIndex + i)
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 3);
+      
+      questions.push({
+        correctWord,
+        options: [...otherWords, correctWord].sort(() => Math.random() - 0.5),
+      });
+    }
+    
+    setQuizQuestions(questions);
+    setCurrentQuestionIndex(0);
+    setScore(0);
+    setShowQuiz(true);
+    setShowFinalScore(false);
   };
+
+  const handleQuizAnswer = (selectedWord: EnglishWord) => {
+    const isCorrect = selectedWord.word === quizQuestions[currentQuestionIndex].correctWord.word;
+    
+    // Mettre à jour la question avec la réponse
+    const updatedQuestions = [...quizQuestions];
+    updatedQuestions[currentQuestionIndex] = {
+      ...updatedQuestions[currentQuestionIndex],
+      answered: true,
+      isCorrect,
+      selectedWord
+    };
+    setQuizQuestions(updatedQuestions);
+
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+    }
+
+    // Attendre 2 secondes avant de passer à la question suivante
+    setTimeout(() => {
+      if (currentQuestionIndex < quizQuestions.length - 1) {
+        setCurrentQuestionIndex(prev => prev + 1);
+      } else {
+        setShowFinalScore(true);
+        if ((score + (isCorrect ? 1 : 0)) >= 7) {
+          confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }
+          });
+        }
+      }
+    }, 2000);
+  };
+
+  const nextWord = () => {
+    if (currentWordIndex >= words.length - 1) {
+      setCurrentWordIndex(0);
+      return;
+    }
+
+    setCurrentWordIndex((prev) => {
+      const next = prev + 1;
+      if (next % wordsPerSession === 0) {
+        generateQuiz();
+      }
+      return next;
+    });
+  };
+
+  if (!currentWord) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-primary/10 to-background flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-lg text-muted-foreground">Chargement des mots...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (showQuiz) {
+    if (showFinalScore) {
+      return (
+        <div className="min-h-screen bg-gradient-to-b from-primary/10 to-background">
+          <div className="container mx-auto px-4 py-8">
+            <div className="max-w-md mx-auto bg-card rounded-xl shadow-lg p-6 space-y-4">
+              <h1 className="text-2xl font-bold text-center mb-6">Quiz terminé !</h1>
+              <div className="text-center space-y-4">
+                <p className="text-4xl font-bold text-primary">
+                  {score}/{wordsPerSession}
+                </p>
+                <p className="text-muted-foreground">
+                  {score >= 7 
+                    ? "Excellent travail ! Continue comme ça !" 
+                    : "Continue de t'entraîner, tu vas y arriver !"}
+                </p>
+                <Button 
+                  onClick={() => {
+                    setShowQuiz(false);
+                    setShowFinalScore(false);
+                  }}
+                  className="w-full"
+                >
+                  Continuer l'apprentissage
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    const currentQuestion = quizQuestions[currentQuestionIndex];
+    const isAnswered = currentQuestion.answered;
+    
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-primary/10 to-background">
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-md mx-auto space-y-6">
+            <div className="flex items-center justify-between mb-6">
+              <h1 className="text-2xl font-bold">Quiz!</h1>
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground text-right">
+                  Question {currentQuestionIndex + 1}/{wordsPerSession}
+                </p>
+                <p className="text-sm font-medium text-right">
+                  Score: {score}/{currentQuestionIndex}
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-card rounded-xl shadow-lg p-6 space-y-6">
+              <div className="aspect-square relative rounded-lg overflow-hidden">
+                <Image
+                  src={currentQuestion.correctWord.image_url}
+                  alt="Quiz image"
+                  fill
+                  className="object-contain"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => {
+                  const isSelected = isAnswered && currentQuestion.selectedWord?.word === option.word;
+                  const isCorrect = option.word === currentQuestion.correctWord.word;
+                  
+                  let buttonStyle = "h-auto py-4 text-lg transition-all duration-200";
+                  if (isAnswered) {
+                    if (isCorrect) {
+                      buttonStyle += " bg-green-500 hover:bg-green-500 text-white border-green-500";
+                    } else if (isSelected) {
+                      buttonStyle += " bg-red-500 hover:bg-red-500 text-white border-red-500";
+                    }
+                  }
+
+                  return (
+                    <Button
+                      key={index}
+                      onClick={() => !isAnswered && handleQuizAnswer(option)}
+                      className={buttonStyle}
+                      variant={isAnswered ? "outline" : "default"}
+                      disabled={isAnswered}
+                    >
+                      {option.word}
+                    </Button>
+                  );
+                })}
+              </div>
+
+              {isAnswered && (
+                <div className="mt-4 p-4 rounded-lg bg-card border">
+                  <p className="text-sm">
+                    {currentQuestion.isCorrect ? (
+                      <>
+                        <span className="font-medium text-green-500">Correct !</span>
+                        <br />
+                        "{currentQuestion.correctWord.word}" signifie bien "{currentQuestion.correctWord.translation}".
+                      </>
+                    ) : (
+                      <>
+                        <span className="font-medium text-red-500">Pas tout à fait...</span>
+                        <br />
+                        "{currentQuestion.selectedWord?.word}" signifie "{currentQuestion.selectedWord?.translation}".
+                        <br />
+                        La bonne réponse était "{currentQuestion.correctWord.word}" qui signifie "{currentQuestion.correctWord.translation}".
+                      </>
+                    )}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-background safe-area-inset">
-      <header className="bg-surface-dark border-b border-white/10 pt-safe-top">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Link 
-              href="/"
-              className="flex items-center space-x-2 text-white hover:text-white/80 transition tap-target touch-manipulation"
-              aria-label="Retour à l'accueil"
-            >
-              <ArrowLeft className="w-6 h-6" />
-              <span className="text-lg font-medium">Retour</span>
-            </Link>
-            <h1 className="text-xl font-bold">Anglais</h1>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
-        <div className="text-center">
-          <h2 className="text-2xl md:text-3xl font-bold mb-2">Apprends l'anglais</h2>
-          <p className="text-white/70">Découvre de nouveaux mots en anglais</p>
-        </div>
-
-        <div className="glass-card p-6 max-w-2xl mx-auto">
-          <div className="aspect-video relative rounded-lg overflow-hidden mb-6">
-            {currentWord.image && (
-              <Image
-                src={currentWord.image}
-                alt={currentWord.word}
-                fill
-                className="object-cover"
-              />
-            )}
-          </div>
-
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-2xl font-bold mb-1">{currentWord.word}</h3>
-                <p className="text-white/70">{currentWord.translation}</p>
-              </div>
-              <button
-                onClick={() => playPronunciation(currentWord.word)}
-                className="p-3 hover:bg-white/10 rounded-full transition tap-target touch-manipulation"
-                aria-label="Écouter la prononciation"
-              >
-                <Volume2 className="w-6 h-6" />
-              </button>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <Button
-                onClick={previousWord}
-                className="min-h-[44px] flex items-center space-x-2"
-              >
-                <ChevronLeft className="w-5 h-5" />
-                <span>Précédent</span>
-              </Button>
-
-              <button
-                onClick={toggleFavorite}
-                className={`p-3 rounded-full transition tap-target touch-manipulation ${
-                  favorites.some(f => f.word === currentWord.word)
-                    ? 'text-yellow-400 hover:text-yellow-500'
-                    : 'text-white/70 hover:text-white'
-                }`}
-                aria-label={favorites.some(f => f.word === currentWord.word) ? "Retirer des favoris" : "Ajouter aux favoris"}
-              >
-                <Star className="w-6 h-6" />
-              </button>
-
-              <Button
-                onClick={nextWord}
-                className="min-h-[44px] flex items-center space-x-2"
-              >
-                <span>Suivant</span>
-                <ChevronRight className="w-5 h-5" />
-              </Button>
-            </div>
-
-            {currentWord.example && (
-              <div className="p-4 bg-white/5 rounded-lg">
-                <p className="text-sm font-medium mb-1">Exemple :</p>
-                <p className="text-white/70 italic">{currentWord.example}</p>
-              </div>
-            )}
+    <div className="min-h-screen bg-gradient-to-b from-primary/10 to-background">
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-4 flex items-center justify-between">
+          <Link href="/" className="flex items-center text-primary hover:text-primary/80 transition-colors">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Retour
+          </Link>
+          <div className="flex items-center space-x-2">
+            <Star className="h-4 w-4 text-yellow-400" />
+            <span className="text-sm text-muted-foreground">{progress}/{wordsPerSession}</span>
           </div>
         </div>
 
-        {favorites.length > 0 && (
-          <div className="glass-card p-6">
-            <h3 className="text-lg font-medium mb-4">Mots favoris</h3>
-            <div className="flex flex-wrap gap-2">
-              {favorites.map(word => (
-                <div
-                  key={word.word}
-                  className="px-3 py-1 bg-white/10 rounded-full text-sm"
-                >
-                  {word.word}
+        <div className="max-w-md mx-auto bg-card rounded-xl shadow-lg overflow-hidden">
+          <div className="aspect-square relative">
+            <Image
+              src={currentWord.image_url}
+              alt={currentWord.word}
+              fill
+              className="object-contain"
+            />
+          </div>
+
+          <div className="p-6 space-y-6">
+            <div className="space-y-4">
+              <div className="p-4 rounded-lg bg-primary/5 space-y-3">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-2xl font-bold">{currentWord.word}</h2>
+                  <Button
+                    className="flex items-center gap-2 text-sm"
+                    variant="ghost"
+                    onClick={() => playPronunciation(currentWord.word)}
+                    disabled={isLoading}
+                  >
+                    <Volume2 className="h-4 w-4" />
+                    Écouter en anglais
+                  </Button>
                 </div>
-              ))}
+                <div className="flex justify-between items-center text-muted-foreground">
+                  <p className="text-lg">{currentWord.translation}</p>
+                  <Button
+                    className="flex items-center gap-2 text-sm"
+                    variant="ghost"
+                    onClick={() => playPronunciation(currentWord.translation, 'french')}
+                    disabled={isLoading}
+                  >
+                    <Volume2 className="h-4 w-4" />
+                    Écouter en français
+                  </Button>
+                </div>
+              </div>
+
+              <div className="p-4 rounded-lg bg-secondary/5 space-y-3">
+                <p className="text-sm font-medium text-secondary-foreground">Exemple :</p>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <p className="text-sm flex-1">{currentWord.example}</p>
+                    <Button
+                      className="flex items-center gap-2 text-sm ml-2"
+                      variant="ghost"
+                      onClick={() => playPronunciation(currentWord.example)}
+                      disabled={isLoading}
+                    >
+                      <Volume2 className="h-4 w-4" />
+                      Écouter
+                    </Button>
+                  </div>
+                  <div className="flex justify-between items-center text-muted-foreground">
+                    <p className="text-sm flex-1">{currentWord.example_translation}</p>
+                    <Button
+                      className="flex items-center gap-2 text-sm ml-2"
+                      variant="ghost"
+                      onClick={() => playPronunciation(currentWord.example_translation, 'french')}
+                      disabled={isLoading}
+                    >
+                      <Volume2 className="h-4 w-4" />
+                      Écouter
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-4">
+              <Button onClick={nextWord} className="w-full">
+                Suivant
+                <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
             </div>
           </div>
-        )}
-        {error && (
-          <div className="glass-card p-6">
-            <h3 className="text-lg font-medium mb-4">Erreur</h3>
-            <p className="text-white/70">{error}</p>
-          </div>
-        )}
-      </main>
+        </div>
+      </div>
     </div>
   );
 }

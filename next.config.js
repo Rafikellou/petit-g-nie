@@ -3,7 +3,7 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    domains: ['images.unsplash.com'],
+    domains: ['images.unsplash.com', 'rgddalgzstcoysrcdetw.supabase.co'],
   },
   env: {
     ELEVENLABS_API_KEY: process.env.ELEVENLABS_API_KEY,

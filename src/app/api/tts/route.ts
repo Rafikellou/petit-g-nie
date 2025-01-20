@@ -6,8 +6,12 @@ if (!process.env.ELEVENLABS_API_KEY) {
 
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
 const ELEVENLABS_API_URL = 'https://api.elevenlabs.io/v1';
-// Voix "Rémy" - voix masculine française
-const VOICE_ID = 'ThT5KcBeYPX3keUQqHPh';
+
+// Voice IDs
+const VOICES = {
+  english: 'pNInz6obpgDQGcFmaJgB', // Adam - American English male voice
+  french: 'ThT5KcBeYPX3keUQqHPh'  // Rémy - French male voice
+};
 
 // Formater le texte pour la dictée
 function formatDictationText(text: string): string {
@@ -25,8 +29,8 @@ function formatDictationText(text: string): string {
 
 export async function POST(req: NextRequest) {
   try {
-    const { text, isDictation } = await req.json();
-    console.log('Request received:', { text, isDictation });
+    const { text, isDictation, language = 'english' } = await req.json();
+    console.log('Request received:', { text, isDictation, language });
 
     if (!text) {
       return NextResponse.json(
@@ -36,8 +40,10 @@ export async function POST(req: NextRequest) {
     }
 
     const formattedText = isDictation ? formatDictationText(text) : text;
+    const voiceId = VOICES[language as keyof typeof VOICES] || VOICES.english;
+    
     console.log('Formatted text:', formattedText);
-    console.log('Using voice ID:', VOICE_ID);
+    console.log('Using voice ID:', voiceId);
 
     const requestBody = {
       text: formattedText,
@@ -52,7 +58,7 @@ export async function POST(req: NextRequest) {
     console.log('Request body:', JSON.stringify(requestBody, null, 2));
 
     const response = await fetch(
-      `${ELEVENLABS_API_URL}/text-to-speech/${VOICE_ID}`,
+      `${ELEVENLABS_API_URL}/text-to-speech/${voiceId}`,
       {
         method: 'POST',
         headers: {
@@ -64,7 +70,7 @@ export async function POST(req: NextRequest) {
       }
     );
 
-    console.log('API URL:', `${ELEVENLABS_API_URL}/text-to-speech/${VOICE_ID}`);
+    console.log('API URL:', `${ELEVENLABS_API_URL}/text-to-speech/${voiceId}`);
     console.log('Headers:', {
       'Accept': 'audio/mpeg',
       'Content-Type': 'application/json',
