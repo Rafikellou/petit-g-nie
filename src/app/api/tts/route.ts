@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+if (!process.env.ELEVENLABS_API_KEY) {
+  throw new Error('ELEVENLABS_API_KEY is not configured in environment variables');
+}
+
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
 const ELEVENLABS_API_URL = 'https://api.elevenlabs.io/v1';
 // Voix "Rémy" - voix masculine française
@@ -20,14 +24,6 @@ function formatDictationText(text: string): string {
 }
 
 export async function POST(req: NextRequest) {
-  if (!ELEVENLABS_API_KEY) {
-    console.error('ElevenLabs API key is missing');
-    return NextResponse.json(
-      { error: 'ELEVENLABS_API_KEY is not configured' },
-      { status: 500 }
-    );
-  }
-
   try {
     const { text, isDictation } = await req.json();
     console.log('Request received:', { text, isDictation });
