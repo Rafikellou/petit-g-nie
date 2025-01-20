@@ -256,7 +256,7 @@ export default function EnglishLearning() {
                       key={index}
                       onClick={() => !isAnswered && handleQuizAnswer(option)}
                       className={buttonStyle}
-                      variant={isAnswered ? "outline" : "default"}
+                      variant={isAnswered ? "secondary" : "default"}
                       disabled={isAnswered}
                     >
                       {option.word}
