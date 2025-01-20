@@ -22,6 +22,11 @@ const ROLE_ROUTES = {
 
 export async function middleware(req: NextRequest) {
   try {
+    // Vérifier si nous sommes déjà en train de rediriger vers /auth pour éviter les boucles
+    if (req.nextUrl.pathname === '/auth' && req.nextUrl.searchParams.get('redirected')) {
+      return NextResponse.next()
+    }
+
     // Ne pas traiter les requêtes pour les ressources statiques
     if (req.nextUrl.pathname.startsWith('/_next') || 
         req.nextUrl.pathname.startsWith('/static') ||
@@ -40,7 +45,7 @@ export async function middleware(req: NextRequest) {
 
     if (sessionError) {
       console.error('Erreur lors de la récupération de la session:', sessionError)
-      return redirectToAuth(req)
+      return redirectToAuth(req, true)
     }
 
     const pathname = req.nextUrl.pathname
@@ -53,7 +58,7 @@ export async function middleware(req: NextRequest) {
     // Si pas de session, rediriger vers la page de connexion
     if (!session) {
       console.log('Pas de session active, redirection vers /auth')
-      return redirectToAuth(req)
+      return redirectToAuth(req, true)
     }
 
     // Vérifier les permissions basées sur le rôle
@@ -79,10 +84,12 @@ export async function middleware(req: NextRequest) {
   }
 }
 
-function redirectToAuth(req: NextRequest) {
+function redirectToAuth(req: NextRequest, addRedirectFlag = false) {
   const redirectUrl = req.nextUrl.clone()
   redirectUrl.pathname = '/auth'
-  redirectUrl.searchParams.set(`redirectedFrom`, req.nextUrl.pathname)
+  if (addRedirectFlag) {
+    redirectUrl.searchParams.set('redirected', 'true')
+  }
   return NextResponse.redirect(redirectUrl)
 }
 
