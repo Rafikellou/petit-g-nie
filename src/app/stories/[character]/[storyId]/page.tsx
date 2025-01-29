@@ -4,7 +4,16 @@ import { useParams } from 'next/navigation';
 import { characters } from '@/data/characters';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+const StoryContent = dynamic(() => import('./StoryContent'), { 
+  loading: () => (
+    <div className="flex justify-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white/70"></div>
+    </div>
+  )
+});
 
 export default function StoryPage() {
   const params = useParams();
@@ -16,10 +25,13 @@ export default function StoryPage() {
     throw new Error(`Character ${characterId} not found`);
   }
 
-  const story = character.stories.find(s => s.id === storyId);
-  if (!story) {
+  const currentStoryIndex = character.stories.findIndex(s => s.id === storyId);
+  if (currentStoryIndex === -1) {
     throw new Error(`Story ${storyId} not found for character ${characterId}`);
   }
+
+  const story = character.stories[currentStoryIndex];
+  const nextStory = character.stories[currentStoryIndex + 1];
 
   return (
     <main className="min-h-screen pt-safe-top pb-safe-bottom">
@@ -32,9 +44,9 @@ export default function StoryPage() {
           Retour aux histoires
         </Link>
 
-        <div className="glass-card p-4 sm:p-8">
+        <div className="glass-card p-4 sm:p-8 mb-8">
           <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-8">
-            <div className="relative w-full sm:w-64 h-48 sm:h-64 rounded-xl overflow-hidden">
+            <div className="relative w-full sm:w-64 h-48 sm:h-64 rounded-xl overflow-hidden shrink-0">
               <Image
                 src={story.image}
                 alt={story.title}
@@ -44,20 +56,7 @@ export default function StoryPage() {
               />
             </div>
             
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-3 sm:mb-4">
-                <Image
-                  src={character.image}
-                  alt={character.name}
-                  width={40}
-                  height={40}
-                  className="rounded-full"
-                />
-                <h2 className="text-lg sm:text-xl font-medium text-white/70">
-                  {character.name}
-                </h2>
-              </div>
-
+            <div className="flex-1 min-w-0">
               <h1 className="text-2xl sm:text-4xl font-bold mb-3 sm:mb-4">{story.title}</h1>
               
               <div className="flex flex-wrap items-center gap-3 mb-4 sm:mb-6">
@@ -69,16 +68,28 @@ export default function StoryPage() {
                 </div>
               </div>
 
-              <p className="text-base sm:text-lg text-white/70 mb-6 sm:mb-8">
+              <p className="text-base sm:text-lg text-white/70">
                 {story.description}
               </p>
-
-              <button className="w-full sm:w-auto btn-modern">
-                <span className="relative z-10">Commencer l'histoire</span>
-              </button>
             </div>
           </div>
         </div>
+
+        <div className="glass-card p-4 sm:p-8">
+          <StoryContent characterId={characterId} storyId={storyId} />
+        </div>
+
+        {nextStory && (
+          <div className="flex justify-center mt-8">
+            <Link
+              href={`/histoires/${characterId}/${nextStory.id}`}
+              className="btn-modern inline-flex items-center gap-2"
+            >
+              <span>Prochain épisode</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        )}
       </div>
     </main>
   );
