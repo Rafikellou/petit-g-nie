@@ -88,9 +88,7 @@ export default function Histoires() {
               <StoryCard
                 key={story.id}
                 story={story}
-                character={story.character}
-                difficulty={story.difficulty}
-                duration={story.duration}
+                characterId={story.character.id}
               />
             </Link>
           ))}
