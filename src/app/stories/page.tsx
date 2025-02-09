@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { characters } from '@/data/characters';
-import { StoryCard } from '@/components/stories/StoryLibrary';
+import { StoryCard } from '@/components/ui/molecules/StoryCard/StoryCard';
 import { ArrowLeft, Search, BookOpen, Clock, Star } from 'lucide-react';
+import { Button } from '@/components/ui/atoms/Button/Button';
 import type { CharacterStory } from '@/types/story-types';
 
 export default function Histoires() {
@@ -84,41 +85,13 @@ export default function Histoires() {
               href={`/stories/${story.character.id}/${story.id}`}
               className="block"
             >
-              <div className="glass-card p-4 hover:bg-white/5 transition tap-target touch-manipulation">
-                <div className="flex gap-4">
-                  <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
-                    {story.image ? (
-                      <img
-                        src={story.image}
-                        alt={story.title}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className={`w-full h-full bg-gradient-to-r ${story.character.gradient} flex items-center justify-center`}>
-                        <BookOpen className="w-8 h-8 text-white/40" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex-grow">
-                    <h2 className="text-lg font-medium mb-1">{story.title}</h2>
-                    <p className="text-white/70 text-sm line-clamp-2 mb-2">{story.description}</p>
-                    <div className="flex items-center gap-4 text-sm text-white/60">
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-4 h-4" />
-                        <span>{story.duration}</span>
-                      </div>
-                      <div className={`flex items-center gap-1 ${
-                        story.difficulty === 'facile' ? 'text-green-400' :
-                        story.difficulty === 'moyen' ? 'text-yellow-400' :
-                        'text-red-400'
-                      }`}>
-                        <Star className="w-4 h-4" />
-                        <span className="capitalize">{story.difficulty}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <StoryCard
+                key={story.id}
+                story={story}
+                character={story.character}
+                difficulty={story.difficulty}
+                duration={story.duration}
+              />
             </Link>
           ))}
 
