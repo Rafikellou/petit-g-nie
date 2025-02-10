@@ -10,4 +10,4 @@ export interface StorySchema {
   theme?: StoryThemeType;
 }
 
-export type StoryThemeType = 'aventure' | 'mystère' | 'historique';
+export type StoryThemeType = 'adventure' | 'magic' | 'science' | 'nature' | 'space' | 'fantasy' | 'animals';
