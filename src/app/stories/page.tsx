@@ -15,7 +15,7 @@ export default function Histoires() {
   const allStories = Object.values(characters).flatMap(character =>
     character.stories.map(story => ({
       ...story,
-      character,
+      characterId: character.id,
     }))
   );
 
@@ -82,13 +82,13 @@ export default function Histoires() {
           {filteredStories.map((story, index) => (
             <Link
               key={story.id}
-              href={`/stories/${story.character.id}/${story.id}`}
+              href={`/stories/${story.characterId}/${story.id}`}
               className="block"
             >
               <StoryCard
                 key={story.id}
                 story={story}
-                characterId={story.character.id}
+                characterId={story.characterId} // ✅ Utilisation de l'identifiant
               />
             </Link>
           ))}
