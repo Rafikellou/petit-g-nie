@@ -30,7 +30,7 @@ export default function SettingsPage() {
       setLoading(true);
       const { data, error } = await supabase
         .from('user_details')
-        .select('surname_child, class')
+        .select('surname_child, class_level')
         .eq('user_id', user?.id)
         .single();
 
@@ -38,7 +38,7 @@ export default function SettingsPage() {
 
       if (data) {
         setChildName(data.surname_child || '');
-        setChildClass(data.class || '');
+        setChildClass(data.class_level || '');
       }
     } catch (error: any) {
       console.error('Erreur lors du chargement des détails:', error);
@@ -57,7 +57,7 @@ export default function SettingsPage() {
         .from('user_details')
         .update({
           surname_child: childName,
-          class: childClass,
+          class_level: childClass,
           updated_at: new Date().toISOString()
         })
         .eq('user_id', user.id);

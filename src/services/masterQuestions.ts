@@ -18,15 +18,15 @@ export interface Topic {
 }
 
 export interface MasterQuestionStructure {
-  class: string;
+  class_level: string;
   subject: string;
   topics: Topic[];
 }
 
 const questionStructures: { [key: string]: MasterQuestionStructure } = {
-  'CP-Mathématiques': cpMathData,
-  'CE1-Mathématiques': ce1MathData,
-  'CE2-Mathématiques': ce2MathData,
+  'CP-Mathématiques': { ...cpMathData, class_level: 'CP' },
+  'CE1-Mathématiques': { ...ce1MathData, class_level: 'CE1' },
+  'CE2-Mathématiques': { ...ce2MathData, class_level: 'CE2' },
 };
 
 export function getAvailableClasses(): string[] {

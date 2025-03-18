@@ -7,7 +7,7 @@ export interface Question {
   question_text: string
   answers: string[]
   correct_answer: string
-  academic_level: string
+  class_level: string
   difficulty: number
 }
 
@@ -60,12 +60,12 @@ const handleError = (error: any): never => {
 };
 
 export const quizService = {
-  async getQuizQuestions(academicLevel: string, categoryId?: string, limit = 10): Promise<Question[]> {
+  async getQuizQuestions(classLevel: string, categoryId?: string, limit = 10): Promise<Question[]> {
     try {
       let query = supabase
         .from('questions')
         .select('*')
-        .eq('academic_level', academicLevel)
+        .eq('class_level', classLevel)
         .limit(limit);
       
       if (categoryId) {

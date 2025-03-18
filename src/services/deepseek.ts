@@ -5,7 +5,7 @@ const DEEPSEEK_API_KEY = process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY;
 const API_URL = "https://api.deepseek.com/v1/chat/completions";
 
 export interface QuestionGenerationParams {
-  class: string;
+  class_level: string;
   subject: string;
   topics: string[];
   specificities: string[];
@@ -15,7 +15,7 @@ export interface QuestionGenerationParams {
 
 export async function generateMasterQuestion(params: QuestionGenerationParams) {
   try {
-    const prompt = `Génère une question de mathématiques pour le niveau ${params.class} avec les caractéristiques suivantes :
+    const prompt = `Génère une question de mathématiques pour le niveau ${params.class_level} avec les caractéristiques suivantes :
     - Thématique : ${params.topics[0]}
     - Compétence : ${params.specificities[0]}
     - Sous-compétence : ${params.subSpecificities[0]}
@@ -75,7 +75,7 @@ export async function generateMasterQuestion(params: QuestionGenerationParams) {
 }
 
 function generatePrompt(question: MasterQuestion): string {
-  return `Génère une question de mathématiques pour le niveau ${question.class} avec les caractéristiques suivantes :
+  return `Génère une question de mathématiques pour le niveau ${question.class_level} avec les caractéristiques suivantes :
   - Thématique : ${question.topic}
   - Compétence : ${question.specificity}
   - Sous-compétence : ${question.subSpecificity}

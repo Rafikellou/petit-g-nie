@@ -5,7 +5,7 @@ import { Pencil, Trash2, UserPlus } from 'lucide-react'
 interface ChildProfile {
   id: string
   name: string
-  class: string
+  class_level: string
   gender: 'Garçon' | 'Fille'
 }
 
@@ -46,7 +46,7 @@ export default function ChildProfiles({
             <div className="flex justify-between items-start">
               <div>
                 <h3 className="text-lg font-semibold">{profile.name}</h3>
-                <p className="text-sm text-white/60">Classe : {profile.class}</p>
+                <p className="text-sm text-white/60">Classe : {profile.class_level}</p>
                 <p className="text-sm text-white/60">Genre : {profile.gender}</p>
               </div>
               <div className="flex gap-2">

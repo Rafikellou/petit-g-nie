@@ -5,7 +5,7 @@ export const mockTeacher = {
   firstName: 'Marie',
   lastName: 'Dubois',
   email: 'marie.dubois@lasalle-rouen.fr',
-  class: {
+  class_level: {
     id: '1',
     name: 'CE2-A',
     students: [

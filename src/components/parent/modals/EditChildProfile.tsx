@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
 interface ChildProfile {
   id?: string
   name: string
-  class: string
+  class_level: string
   gender: 'Garçon' | 'Fille'
   age: number
 }
@@ -25,7 +25,7 @@ export default function EditChildProfile({
 }: EditChildProfileProps) {
   const [formData, setFormData] = useState<ChildProfile>({
     name: '',
-    class: '',
+    class_level: '',
     gender: 'Garçon',
     age: 6
   })
@@ -106,13 +106,13 @@ export default function EditChildProfile({
               </div>
 
               <div>
-                <label htmlFor="class" className="block text-sm font-medium text-white/80 mb-2">
+                <label htmlFor="class_level" className="block text-sm font-medium text-white/80 mb-2">
                   Classe
                 </label>
                 <select
-                  id="class"
-                  value={formData.class}
-                  onChange={(e) => setFormData({ ...formData, class: e.target.value })}
+                  id="class_level"
+                  value={formData.class_level}
+                  onChange={(e) => setFormData({ ...formData, class_level: e.target.value })}
                   className="input-modern"
                   required
                 >

@@ -14,7 +14,7 @@ interface Dictation {
   title: string;
   content: string;
   difficulty: 'easy' | 'medium' | 'hard';
-  class: string;
+  class_level: string;
   topic: string;
   duration: number;
 }
@@ -28,7 +28,7 @@ export default function RecommendedDictationsPage() {
 
   useEffect(() => {
     const loadRecommendedDictations = async () => {
-      if (!user?.class) {
+      if (!user?.class_level) {
         router.push('/dictee');
         return;
       }
@@ -41,7 +41,7 @@ export default function RecommendedDictationsPage() {
             title: 'Le petit chaperon rouge',
             content: 'Il était une fois une petite fille que tout le monde aimait...',
             difficulty: 'easy',
-            class: user.class,
+            class_level: user.class_level,
             topic: 'Contes classiques',
             duration: 10
           },
@@ -50,7 +50,7 @@ export default function RecommendedDictationsPage() {
             title: 'Les saisons',
             content: 'Au printemps, la nature se réveille doucement...',
             difficulty: 'medium',
-            class: user.class,
+            class_level: user.class_level,
             topic: 'Nature',
             duration: 15
           }
@@ -109,7 +109,7 @@ export default function RecommendedDictationsPage() {
               >
                 <h3 className="text-xl font-semibold mb-2">{dictation.title}</h3>
                 <div className="flex items-center gap-4 text-sm text-gray-400">
-                  <span>Niveau: {dictation.class}</span>
+                  <span>Niveau: {dictation.class_level}</span>
                   <span>Difficulté: {dictation.difficulty}</span>
                   <span>Durée: {dictation.duration} min</span>
                 </div>

@@ -11,15 +11,33 @@ export interface School {
   email?: string;
 }
 
+export interface Class {
+  id: string;
+  name: string;
+  school_id: string;
+}
+
+export interface Child {
+  id: string;
+  name: string;
+  class_id?: string;
+  class_name?: string;
+  school_id?: string;
+}
+
 export interface User {
   id: string;
   email: string;
   role: UserRole;
   surname_child?: string;
-  class?: string;
+  class_level?: string;
   ecole_id?: string;
   ecole?: School;
   pin?: string;
   created_at?: string;
   updated_at?: string;
+  // Nouvelles propriétés pour la structure hiérarchique
+  schools?: School[];
+  classes?: Class[];
+  children?: Child[];
 }

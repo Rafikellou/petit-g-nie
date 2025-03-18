@@ -5,7 +5,7 @@ export interface Teacher {
   name: string;
   email: string;
   avatar?: string;
-  class: {
+  class_level: {
     id: string;
     name: string;
     grade: string;

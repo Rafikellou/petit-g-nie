@@ -42,7 +42,7 @@ export default function SetupPage() {
       console.log('Début de la sauvegarde avec les données:', {
         ecole_id: selectedSchool,
         surname_child: childName,
-        class: childClass,
+        class_level: childClass,
         pin
       });
 
@@ -53,7 +53,7 @@ export default function SetupPage() {
           user_id: user!.id,
           ecole_id: selectedSchool,
           surname_child: childName,
-          class: childClass,
+          class_level: childClass,
           pin,
           updated_at: new Date().toISOString()
         }, {

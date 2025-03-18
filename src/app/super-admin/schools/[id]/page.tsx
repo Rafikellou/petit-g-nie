@@ -11,7 +11,7 @@ interface TeacherDetails extends User {
   school: School | null;
   user_details: {
     surname_child: string | null;
-    class: string | null;
+    class_level: string | null;
     pin: string | null;
   };
 }

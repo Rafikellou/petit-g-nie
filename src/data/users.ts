@@ -2,7 +2,7 @@ export interface Student {
   id: string;
   name: string;
   age: number;
-  class: string;
+  class_level: string;
   avatarUrl?: string;
   parentId: string;
   teacherId: string;
@@ -17,12 +17,12 @@ export interface Parent {
 
 export interface Teacher {
   id: string;
-  class: {
+  class_level: {
     name: string;
     students: {
       id: string;
       name: string;
-      class: string;
+      class_level: string;
       avatar?: string;
       progress: StudentProgress;
     }[];
@@ -69,7 +69,7 @@ export const mockStudents: Record<string, Student> = {
     id: 'student1',
     name: 'Lucas Martin',
     age: 8,
-    class: 'CE2',
+    class_level: 'CE2',
     parentId: 'parent1',
     teacherId: 'teacher1'
   },
@@ -77,7 +77,7 @@ export const mockStudents: Record<string, Student> = {
     id: 'student2',
     name: 'Emma Bernard',
     age: 9,
-    class: 'CM1',
+    class_level: 'CM1',
     parentId: 'parent2',
     teacherId: 'teacher1'
   },
@@ -85,7 +85,7 @@ export const mockStudents: Record<string, Student> = {
     id: 'student3',
     name: 'Noah Dubois',
     age: 8,
-    class: 'CE2',
+    class_level: 'CE2',
     parentId: 'parent3',
     teacherId: 'teacher1'
   },
@@ -93,7 +93,7 @@ export const mockStudents: Record<string, Student> = {
     id: 'student4',
     name: 'Chloé Petit',
     age: 9,
-    class: 'CM1',
+    class_level: 'CM1',
     parentId: 'parent4',
     teacherId: 'teacher1'
   },
@@ -101,7 +101,7 @@ export const mockStudents: Record<string, Student> = {
     id: 'student5',
     name: 'Louis Moreau',
     age: 8,
-    class: 'CE2',
+    class_level: 'CE2',
     parentId: 'parent5',
     teacherId: 'teacher1'
   },
@@ -109,7 +109,7 @@ export const mockStudents: Record<string, Student> = {
     id: 'student6',
     name: 'Léa Robert',
     age: 9,
-    class: 'CM1',
+    class_level: 'CM1',
     parentId: 'parent6',
     teacherId: 'teacher1'
   },
@@ -117,7 +117,7 @@ export const mockStudents: Record<string, Student> = {
     id: 'student7',
     name: 'Gabriel Simon',
     age: 8,
-    class: 'CE2',
+    class_level: 'CE2',
     parentId: 'parent7',
     teacherId: 'teacher1'
   },
@@ -125,7 +125,7 @@ export const mockStudents: Record<string, Student> = {
     id: 'student8',
     name: 'Alice Laurent',
     age: 9,
-    class: 'CM1',
+    class_level: 'CM1',
     parentId: 'parent8',
     teacherId: 'teacher1'
   },
@@ -133,7 +133,7 @@ export const mockStudents: Record<string, Student> = {
     id: 'student9',
     name: 'Arthur Michel',
     age: 8,
-    class: 'CE2',
+    class_level: 'CE2',
     parentId: 'parent9',
     teacherId: 'teacher1'
   },
@@ -141,7 +141,7 @@ export const mockStudents: Record<string, Student> = {
     id: 'student10',
     name: 'Inès Lefebvre',
     age: 9,
-    class: 'CM1',
+    class_level: 'CM1',
     parentId: 'parent10',
     teacherId: 'teacher1'
   },
@@ -149,7 +149,7 @@ export const mockStudents: Record<string, Student> = {
     id: 'student11',
     name: 'Jules Leroy',
     age: 8,
-    class: 'CE2',
+    class_level: 'CE2',
     parentId: 'parent11',
     teacherId: 'teacher1'
   },
@@ -157,7 +157,7 @@ export const mockStudents: Record<string, Student> = {
     id: 'student12',
     name: 'Manon Roux',
     age: 9,
-    class: 'CM1',
+    class_level: 'CM1',
     parentId: 'parent12',
     teacherId: 'teacher1'
   },
@@ -165,7 +165,7 @@ export const mockStudents: Record<string, Student> = {
     id: 'student13',
     name: 'Adam David',
     age: 8,
-    class: 'CE2',
+    class_level: 'CE2',
     parentId: 'parent13',
     teacherId: 'teacher1'
   },
@@ -173,7 +173,7 @@ export const mockStudents: Record<string, Student> = {
     id: 'student14',
     name: 'Sarah Bertrand',
     age: 9,
-    class: 'CM1',
+    class_level: 'CM1',
     parentId: 'parent14',
     teacherId: 'teacher1'
   },
@@ -181,7 +181,7 @@ export const mockStudents: Record<string, Student> = {
     id: 'student15',
     name: 'Thomas Morel',
     age: 8,
-    class: 'CE2',
+    class_level: 'CE2',
     parentId: 'parent15',
     teacherId: 'teacher1'
   },
@@ -189,7 +189,7 @@ export const mockStudents: Record<string, Student> = {
     id: 'student16',
     name: 'Camille Fournier',
     age: 9,
-    class: 'CM1',
+    class_level: 'CM1',
     parentId: 'parent16',
     teacherId: 'teacher1'
   },
@@ -197,7 +197,7 @@ export const mockStudents: Record<string, Student> = {
     id: 'student17',
     name: 'Hugo Girard',
     age: 8,
-    class: 'CE2',
+    class_level: 'CE2',
     parentId: 'parent17',
     teacherId: 'teacher1'
   },
@@ -205,7 +205,7 @@ export const mockStudents: Record<string, Student> = {
     id: 'student18',
     name: 'Zoé Bonnet',
     age: 9,
-    class: 'CM1',
+    class_level: 'CM1',
     parentId: 'parent18',
     teacherId: 'teacher1'
   },
@@ -213,7 +213,7 @@ export const mockStudents: Record<string, Student> = {
     id: 'student19',
     name: 'Raphaël Dupont',
     age: 8,
-    class: 'CE2',
+    class_level: 'CE2',
     parentId: 'parent19',
     teacherId: 'teacher1'
   },
@@ -221,7 +221,7 @@ export const mockStudents: Record<string, Student> = {
     id: 'student20',
     name: 'Louise Lambert',
     age: 9,
-    class: 'CM1',
+    class_level: 'CM1',
     parentId: 'parent20',
     teacherId: 'teacher1'
   },
@@ -229,7 +229,7 @@ export const mockStudents: Record<string, Student> = {
     id: 'student21',
     name: 'Paul Fontaine',
     age: 8,
-    class: 'CE2',
+    class_level: 'CE2',
     parentId: 'parent21',
     teacherId: 'teacher1'
   },
@@ -237,7 +237,7 @@ export const mockStudents: Record<string, Student> = {
     id: 'student22',
     name: 'Eva Rousseau',
     age: 9,
-    class: 'CM1',
+    class_level: 'CM1',
     parentId: 'parent22',
     teacherId: 'teacher1'
   },
@@ -245,7 +245,7 @@ export const mockStudents: Record<string, Student> = {
     id: 'student23',
     name: 'Maxime Vincent',
     age: 8,
-    class: 'CE2',
+    class_level: 'CE2',
     parentId: 'parent23',
     teacherId: 'teacher1'
   },
@@ -253,7 +253,7 @@ export const mockStudents: Record<string, Student> = {
     id: 'student24',
     name: 'Jade Muller',
     age: 9,
-    class: 'CM1',
+    class_level: 'CM1',
     parentId: 'parent24',
     teacherId: 'teacher1'
   },
@@ -261,7 +261,7 @@ export const mockStudents: Record<string, Student> = {
     id: 'student25',
     name: 'Nathan Faure',
     age: 8,
-    class: 'CE2',
+    class_level: 'CE2',
     parentId: 'parent25',
     teacherId: 'teacher1'
   }
@@ -423,13 +423,13 @@ export const mockParents: Record<string, Parent> = {
 export const mockTeachers: Teacher[] = [
   {
     id: 'teacher1',
-    class: {
+    class_level: {
       name: 'CE1',
       students: [
         {
           id: 'student1',
           name: 'Alice Dupont',
-          class: 'CE1',
+          class_level: 'CE1',
           avatar: '/avatars/student1.png',
           progress: {
             studentId: 'student1',
@@ -464,7 +464,7 @@ export const mockTeachers: Teacher[] = [
         {
           id: 'student2',
           name: 'Lucas Martin',
-          class: 'CE1',
+          class_level: 'CE1',
           progress: {
             studentId: 'student2',
             storiesProgress: {},

@@ -20,7 +20,7 @@ export function useUser() {
         // Récupérer les détails de l'utilisateur depuis user_details
         const { data: userDetails, error: detailsError } = await supabase
           .from('user_details')
-          .select('surname_child, class')
+          .select('surname_child, class_level')
           .eq('user_id', session.user.id)
           .single()
 
@@ -34,7 +34,7 @@ export function useUser() {
           role: session.user.user_metadata?.role,
           ecole_id: session.user.user_metadata?.ecole_id,
           surname_child: userDetails?.surname_child,
-          class: userDetails?.class,
+          class_level: userDetails?.class_level,
           created_at: session.user.created_at,
           updated_at: session.user.updated_at,
         })

@@ -61,23 +61,45 @@ export async function middleware(req: NextRequest) {
       return redirectToAuth(req, true)
     }
 
-    // Vérifier les permissions basées sur le rôle
-    const userRole = session.user.user_metadata?.role
-    console.log('Rôle utilisateur:', userRole)
-    console.log('Chemin demandé:', pathname)
+    // Vérification des autorisations basées sur les rôles
+    if (session) {
+      // Récupérer le rôle de l'utilisateur depuis la base de données
+      const { data: userData, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', session.user.id)
+        .single()
 
-    if (userRole) {
-      const allowedRoutes = ROLE_ROUTES[userRole as keyof typeof ROLE_ROUTES] || []
-      if (allowedRoutes.some(route => pathname.startsWith(route))) {
-        return res
+      if (error || !userData) {
+        // En cas d'erreur ou si l'utilisateur n'existe pas, déconnexion
+        await supabase.auth.signOut()
+        return redirectToAuth(req, true)
       }
-      console.log('Route non autorisée pour le rôle:', userRole)
-    } else {
-      console.log('Aucun rôle trouvé pour l\'utilisateur')
+
+      const role = userData.role
+
+      // Routes réservées aux super administrateurs
+      if (req.nextUrl.pathname.startsWith('/super-admin') && role !== 'super_admin') {
+        return redirectToHome(req)
+      }
+
+      // Routes réservées aux administrateurs et super administrateurs
+      if (req.nextUrl.pathname.startsWith('/admin') && !['admin', 'super_admin'].includes(role)) {
+        return redirectToHome(req)
+      }
+
+      // Routes réservées aux enseignants, administrateurs et super administrateurs
+      if (req.nextUrl.pathname.startsWith('/teacher') && !['teacher', 'admin', 'super_admin'].includes(role)) {
+        return redirectToHome(req)
+      }
+
+      // Routes réservées aux parents
+      if (req.nextUrl.pathname.startsWith('/parent') && !['parent', 'super_admin'].includes(role)) {
+        return redirectToHome(req)
+      }
     }
 
-    // Si l'utilisateur n'a pas les permissions nécessaires, rediriger vers la page d'accueil
-    return redirectToHome(req)
+    return res
   } catch (error) {
     console.error('Erreur dans le middleware:', error)
     return redirectToHome(req)
@@ -106,7 +128,8 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * - public (public files)
      */
-    '/((?!_next/static|_next/image|favicon.ico).*)',
+    '/((?!_next/static|_next/image|favicon.ico|public).*)',
   ],
 }

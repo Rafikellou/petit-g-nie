@@ -105,7 +105,7 @@ const initialFormState: FormState = {
   questionPrompt: '',
   generatedQuestions: [],
   masterQuestion: {
-    class: '',
+    class_level: '',
     subject: '',
     topics: [],
     specificities: [],
@@ -190,8 +190,8 @@ export default function SuperAdminDashboard() {
 
   // Mise à jour des topics quand la classe ou la matière change
   useEffect(() => {
-    if (formState.masterQuestion.class && formState.masterQuestion.subject) {
-      const topics = getTopics(formState.masterQuestion.class, formState.masterQuestion.subject);
+    if (formState.masterQuestion.class_level && formState.masterQuestion.subject) {
+      const topics = getTopics(formState.masterQuestion.class_level, formState.masterQuestion.subject);
       setFormState(prev => ({
         ...prev,
         availableTopics: topics,
@@ -204,15 +204,15 @@ export default function SuperAdminDashboard() {
         }
       }));
     }
-  }, [formState.masterQuestion.class, formState.masterQuestion.subject]);
+  }, [formState.masterQuestion.class_level, formState.masterQuestion.subject]);
 
   // Mise à jour des spécificités quand le topic change
   useEffect(() => {
-    if (formState.masterQuestion.class && 
+    if (formState.masterQuestion.class_level && 
         formState.masterQuestion.subject && 
         formState.masterQuestion.topics[0]) {
       const specificities = getSpecificities(
-        formState.masterQuestion.class, 
+        formState.masterQuestion.class_level, 
         formState.masterQuestion.subject, 
         formState.masterQuestion.topics[0]
       );
@@ -231,12 +231,12 @@ export default function SuperAdminDashboard() {
 
   // Mise à jour des sous-spécificités quand la spécificité change
   useEffect(() => {
-    if (formState.masterQuestion.class && 
+    if (formState.masterQuestion.class_level && 
         formState.masterQuestion.subject && 
         formState.masterQuestion.topics[0] && 
         formState.masterQuestion.specificities[0]) {
       const subSpecificities = getSubSpecificities(
-        formState.masterQuestion.class,
+        formState.masterQuestion.class_level,
         formState.masterQuestion.subject,
         formState.masterQuestion.topics[0],
         formState.masterQuestion.specificities[0]
@@ -348,7 +348,7 @@ export default function SuperAdminDashboard() {
       updateFormState('error', null);
       updateFormState('generatedQuestion', null);
 
-      if (!formState.masterQuestion.class || !formState.masterQuestion.subject || !formState.masterQuestion.topics[0] || 
+      if (!formState.masterQuestion.class_level || !formState.masterQuestion.subject || !formState.masterQuestion.topics[0] || 
           !formState.masterQuestion.specificities[0] || !formState.masterQuestion.subSpecificities[0] || !formState.masterQuestion.period) {
         throw new Error("Veuillez remplir tous les champs");
       }
@@ -456,7 +456,7 @@ export default function SuperAdminDashboard() {
           correct_answer: formState.generatedQuestion.correctAnswer,
           explanation: formState.generatedQuestion.explanation,
           type: formState.generatedQuestion.type,
-          class: formState.masterQuestion.class,
+          class_level: formState.masterQuestion.class_level,
           subject: formState.masterQuestion.subject,
           topic: formState.masterQuestion.topics[0],
           specificity: formState.masterQuestion.specificities[0],
@@ -485,7 +485,7 @@ export default function SuperAdminDashboard() {
         correct_answer: q.correctAnswer,
         explanation: q.explanation,
         type: q.type,
-        class: formState.masterQuestion.class,
+        class_level: formState.masterQuestion.class_level,
         subject: formState.masterQuestion.subject,
         topic: formState.masterQuestion.topics[0],
         specificity: formState.masterQuestion.specificities[0],
@@ -611,10 +611,10 @@ export default function SuperAdminDashboard() {
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Classe</label>
                     <Select
-                      value={formState.masterQuestion.class}
+                      value={formState.masterQuestion.class_level}
                       onValueChange={(value) => updateFormState('masterQuestion', {
                         ...formState.masterQuestion,
-                        class: value,
+                        class_level: value,
                         subject: '',
                         topics: [],
                         specificities: [],

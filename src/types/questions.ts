@@ -1,4 +1,4 @@
-export type ClassLevel = 'CE1' | 'CE2' | 'CM1' | 'CM2'
+export type ClassLevel = 'CP' | 'CE1' | 'CE2' | 'CM1' | 'CM2'
 export type Subject = 'Français' | 'Mathématiques'
 export type Period = 'Début d\'année' | 'Milieu d\'année' | 'Fin d\'année'
 export type QuestionType = 'short' | 'long'
@@ -12,7 +12,7 @@ export interface QuestionOptions {
 
 export interface Question {
   id?: string
-  class: ClassLevel
+  class_level: ClassLevel
   subject: Subject
   topic: string
   period: Period

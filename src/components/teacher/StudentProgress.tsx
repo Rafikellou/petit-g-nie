@@ -12,7 +12,7 @@ import * as XLSX from 'xlsx';
 interface StudentProgressProps {
   student: {
     name: string;
-    class: string;
+    class_level: string;
     id: string | number;
   };
   progress: {

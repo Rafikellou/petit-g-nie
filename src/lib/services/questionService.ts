@@ -25,7 +25,7 @@ export const questionService = {
       .select('*')
 
     if (classLevel) {
-      query = query.eq('class', classLevel)
+      query = query.eq('class_level', classLevel)
     }
     if (subject) {
       query = query.eq('subject', subject)
@@ -65,7 +65,7 @@ export const questionService = {
       .select('*')
 
     if (classLevel) {
-      query = query.eq('class', classLevel)
+      query = query.eq('class_level', classLevel)
     }
     if (subject) {
       query = query.eq('subject', subject)

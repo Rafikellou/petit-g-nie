@@ -1,5 +1,5 @@
 export interface MasterQuestion {
-  class: string;
+  class_level: string;
   subject: string;
   topic: string;
   specificity: string;

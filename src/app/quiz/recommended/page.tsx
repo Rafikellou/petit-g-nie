@@ -21,7 +21,7 @@ interface Question {
   };
   correct_answer: string;
   explanation: string;
-  class: string;
+  class_level: string;
   subject: string;
   topic: string;
   specificity: string;
@@ -38,7 +38,7 @@ export default function RecommendedQuizPage() {
 
   useEffect(() => {
     const loadRecommendedQuestions = async () => {
-      if (!user?.class) {
+      if (!user?.class_level) {
         router.push('/quiz');
         return;
       }
@@ -47,7 +47,7 @@ export default function RecommendedQuizPage() {
         const { data, error } = await supabase
           .from('questions')
           .select('*')
-          .eq('class', user.class)
+          .eq('class_level', user.class_level)
           .limit(5);
 
         if (error) throw error;
