@@ -19,6 +19,9 @@ interface ClassData {
   schools?: SchoolData;
 }
 
+// Constante pour les niveaux de classe
+const CLASS_OPTIONS = ['CP', 'CE1', 'CE2', 'CM1', 'CM2'];
+
 export default function SignUpForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -98,7 +101,7 @@ export default function SignUpForm() {
         role: 'parent',
         invitation_code: invitationCode,
         child_name: childName,
-        class_id: selectedClass
+        class_level: selectedClass
       })
 
       if (error) {
@@ -222,9 +225,9 @@ export default function SignUpForm() {
             className="w-full px-3 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
           >
             <option value="">Sélectionnez une classe</option>
-            {classes.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name} - {c.school_name}
+            {CLASS_OPTIONS.map((option) => (
+              <option key={option} value={option}>
+                {option}
               </option>
             ))}
           </select>

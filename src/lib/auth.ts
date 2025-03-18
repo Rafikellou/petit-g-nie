@@ -9,7 +9,7 @@ interface SignUpData {
   invitation_code?: string;
   full_name?: string;
   child_name?: string;
-  class_id?: string;
+  class_level?: string;
   school_data?: {
     nom_ecole: string;
     code_postal?: string;
@@ -120,13 +120,13 @@ export const authService = {
       }
 
       // Si c'est un parent et qu'il a fourni un nom d'enfant et une classe
-      if (data.role === 'parent' && data.child_name && data.class_id) {
+      if (data.role === 'parent' && data.child_name && data.class_level) {
         // Créer l'enfant
         const { data: child, error: childError } = await supabase
           .from('children')
           .insert({
             full_name: data.child_name,
-            class_id: data.class_id
+            class_level: data.class_level
           })
           .select('id')
           .single()
@@ -155,7 +155,7 @@ export const authService = {
           .insert({
             user_id: auth.user.id,
             surname_child: data.child_name || '',
-            class_level: '',
+            class_level: data.class_level || '',
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           })
@@ -267,7 +267,7 @@ export const authService = {
             children (
               id,
               full_name,
-              class_id,
+              class_level,
               classes (
                 id,
                 name,
@@ -283,7 +283,7 @@ export const authService = {
           userInfo.children = children.map((item: any) => ({
             id: item.children.id,
             name: item.children.full_name,
-            class_id: item.children.class_id,
+            class_level: item.children.class_level,
             class_name: item.children.classes?.name,
             school_id: item.children.classes?.school_id
           }))
