@@ -59,7 +59,7 @@ export default function CreateQuizPage() {
         // Récupérer les détails de l'utilisateur avec sa classe
         const { data: userDetails, error: detailsError } = await supabase
           .from('user_details')
-          .select('class')
+          .select('class_level')
           .eq('user_id', user.id)
           .single();
 
@@ -69,7 +69,7 @@ export default function CreateQuizPage() {
           setTeacherInfo({
             title: userData.title,
             full_name: userData.family_name,
-            class_name: userDetails.class
+            class_name: userDetails.class_level
           });
         }
       } catch (error) {
@@ -143,11 +143,11 @@ export default function CreateQuizPage() {
 
       const { data: teacherData, error: teacherError } = await supabase
         .from('user_details')
-        .select('class_id')
+        .select('class_level')
         .eq('user_id', user.id)
         .single();
 
-      if (teacherError || !teacherData?.class_id) {
+      if (teacherError || !teacherData?.class_level) {
         throw new Error('Impossible de récupérer la classe');
       }
 
@@ -156,7 +156,7 @@ export default function CreateQuizPage() {
         .from('activities')
         .insert({
           type: 'quiz',
-          class_id: teacherData.class_id,
+          class_level: teacherData.class_level,
           teacher_id: user.id,
           content: validatedQuestions,
           created_at: new Date().toISOString(),
