@@ -79,9 +79,45 @@ export async function POST(request: Request) {
         { status: 500 }
       );
     }
+    
+    // Récupérer le contenu de la réponse
+    let responseContent = data.choices[0].message.content;
+    
+    // Nettoyer la réponse pour extraire uniquement le JSON valide
+    try {
+      // Vérifier si la réponse contient des délimiteurs de code markdown
+      if (responseContent.includes('```json')) {
+        console.log('Détection de délimiteurs de code JSON dans la réponse');
+        const jsonMatch = responseContent.match(/```json\s*([\s\S]*?)\s*```/);
+        if (jsonMatch && jsonMatch[1]) {
+          responseContent = jsonMatch[1].trim();
+          console.log('JSON extrait des délimiteurs de code');
+        }
+      } else if (responseContent.includes('```')) {
+        console.log('Détection de délimiteurs de code génériques dans la réponse');
+        const codeMatch = responseContent.match(/```\s*([\s\S]*?)\s*```/);
+        if (codeMatch && codeMatch[1]) {
+          responseContent = codeMatch[1].trim();
+          console.log('Code extrait des délimiteurs');
+        }
+      }
+      
+      // Essayer de trouver un objet ou tableau JSON dans la réponse
+      const jsonRegex = /\{[\s\S]*\}|\[[\s\S]*\]/;
+      const jsonMatch = responseContent.match(jsonRegex);
+      if (jsonMatch && jsonMatch[0]) {
+        // Vérifier que c'est un JSON valide en le parsant puis en le stringifiant à nouveau
+        const parsedJson = JSON.parse(jsonMatch[0]);
+        responseContent = JSON.stringify(parsedJson);
+        console.log('JSON valide extrait et reformatté');
+      }
+    } catch (error) {
+      console.warn('Erreur lors du nettoyage de la réponse JSON:', error);
+      // Continuer avec la réponse originale
+    }
 
     return NextResponse.json({
-      response: data.choices[0].message.content
+      response: responseContent
     });
   } catch (error) {
     console.error('Error in Deepseek chat:', error);
