@@ -5,7 +5,8 @@ import { useState, useEffect } from 'react'
 interface ChildProfile {
   id?: string
   name: string
-  class_level: string
+  class_level?: string // Marqué comme optionnel pour la migration
+  class_id?: string // Nouvel identifiant de classe
   gender: 'Garçon' | 'Fille'
   age: number
 }
@@ -25,7 +26,8 @@ export default function EditChildProfile({
 }: EditChildProfileProps) {
   const [formData, setFormData] = useState<ChildProfile>({
     name: '',
-    class_level: '',
+    class_level: '', // Pour la compatibilité
+    class_id: '', // Nouvel identifiant
     gender: 'Garçon',
     age: 6
   })
@@ -36,10 +38,54 @@ export default function EditChildProfile({
     }
   }, [profile])
 
+  // État pour stocker les classes disponibles
+  const [availableClasses, setAvailableClasses] = useState<Array<{ id: string, name: string, class_level: string }>>([]);
+  
+  // Charger les classes disponibles
+  useEffect(() => {
+    const fetchClasses = async () => {
+      try {
+        const { data, error } = await fetch('/api/classes').then(res => res.json());
+        
+        if (error) throw error;
+        
+        if (data) {
+          setAvailableClasses(data);
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement des classes:', error);
+      }
+    };
+    
+    fetchClasses();
+  }, []);
+
+  // Mettre à jour class_id lorsque class_level change (pour la compatibilité)
+  useEffect(() => {
+    if (formData.class_level && availableClasses.length > 0) {
+      const matchingClass = availableClasses.find(c => c.class_level === formData.class_level);
+      if (matchingClass) {
+        setFormData(prev => ({ ...prev, class_id: matchingClass.id }));
+      }
+    }
+  }, [formData.class_level, availableClasses]);
+
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onSave(formData)
-    onClose()
+    e.preventDefault();
+    
+    // S'assurer que class_id est défini si class_level est fourni
+    if (formData.class_level && !formData.class_id && availableClasses.length > 0) {
+      const matchingClass = availableClasses.find(c => c.class_level === formData.class_level);
+      if (matchingClass) {
+        const updatedFormData = { ...formData, class_id: matchingClass.id };
+        onSave(updatedFormData);
+        onClose();
+        return;
+      }
+    }
+    
+    onSave(formData);
+    onClose();
   }
 
   return (
@@ -106,23 +152,34 @@ export default function EditChildProfile({
               </div>
 
               <div>
-                <label htmlFor="class_level" className="block text-sm font-medium text-white/80 mb-2">
+                <label htmlFor="class_display" className="block text-sm font-medium text-white/80 mb-2">
                   Classe
                 </label>
-                <select
-                  id="class_level"
-                  value={formData.class_level}
-                  onChange={(e) => setFormData({ ...formData, class_level: e.target.value })}
-                  className="input-modern"
-                  required
-                >
-                  <option value="">Sélectionnez une classe</option>
-                  <option value="CP">CP</option>
-                  <option value="CE1">CE1</option>
-                  <option value="CE2">CE2</option>
-                  <option value="CM1">CM1</option>
-                  <option value="CM2">CM2</option>
-                </select>
+                <div className="input-modern bg-opacity-50 py-2 px-3 flex items-center">
+                  {formData.class_id ? (
+                    <>
+                      {availableClasses.find(c => c.id === formData.class_id)?.name || 'Classe inconnue'} 
+                      ({availableClasses.find(c => c.id === formData.class_id)?.class_level || ''})
+                    </>
+                  ) : (
+                    <span className="text-white/50">Aucune classe assignée</span>
+                  )}
+                </div>
+                <p className="text-xs text-white/50 mt-1">
+                  La classe est assignée par l'établissement et ne peut pas être modifiée ici.
+                </p>
+                
+                {/* Champs cachés pour conserver les valeurs */}
+                <input 
+                  type="hidden" 
+                  id="class_id" 
+                  value={formData.class_id || ''} 
+                />
+                <input 
+                  type="hidden" 
+                  id="class_level" 
+                  value={formData.class_level || ''} 
+                />
               </div>
 
               <div>

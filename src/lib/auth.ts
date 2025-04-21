@@ -9,7 +9,8 @@ interface SignUpData {
   invitation_code?: string;
   full_name?: string;
   child_name?: string;
-  class_level?: string;
+  class_level?: string; // Deprecated: utilisez class_id à la place
+  class_id?: string; // Nouvelle propriété pour lier à une classe
   school_data?: {
     nom_ecole: string;
     code_postal?: string;
@@ -117,17 +118,77 @@ export const authService = {
         if (schoolUserError) {
           console.error('Erreur lors de la création de la relation école-utilisateur:', schoolUserError)
         }
+        
+        // S'assurer que l'ID de l'école est correctement stocké dans les métadonnées utilisateur
+        // Cette étape est cruciale pour garantir la cohérence des données
+        const { error: updateMetadataError } = await supabase.auth.updateUser({
+          data: {
+            school_id: data.school_id
+          }
+        })
+        
+        if (updateMetadataError) {
+          console.error('Erreur lors de la mise à jour des métadonnées utilisateur avec l\'ID de l\'école:', updateMetadataError)
+          
+          // Tentative alternative de mise à jour des métadonnées
+          try {
+            const { error: adminUpdateError } = await supabase.auth.admin.updateUserById(
+              auth.user.id,
+              { 
+                user_metadata: { 
+                  ...auth.user.user_metadata,
+                  school_id: data.school_id 
+                } 
+              }
+            )
+            
+            if (adminUpdateError) {
+              console.error('Échec de la tentative alternative de mise à jour des métadonnées:', adminUpdateError)
+            } else {
+              console.log('Métadonnées mises à jour avec succès via la méthode alternative')
+            }
+          } catch (err) {
+            console.error('Erreur lors de la tentative alternative de mise à jour des métadonnées:', err)
+          }
+        } else {
+          console.log('Métadonnées utilisateur mises à jour avec succès avec l\'ID de l\'école')
+        }
       }
 
       // Si c'est un parent et qu'il a fourni un nom d'enfant et une classe
-      if (data.role === 'parent' && data.child_name && data.class_level) {
+      if (data.role === 'parent' && data.child_name && (data.class_id || data.class_level)) {
+        // Préparer les données de l'enfant
+        const childData: any = {
+          full_name: data.child_name
+        };
+        
+        // Priorité au class_id s'il est fourni
+        if (data.class_id) {
+          childData.class_id = data.class_id;
+        } 
+        // Sinon, utiliser class_level pour la compatibilité avec le code existant
+        else if (data.class_level) {
+          // Essayer de trouver une classe correspondant au niveau
+          const { data: classData, error: classError } = await supabase
+            .from('classes')
+            .select('id')
+            .eq('class_level', data.class_level)
+            .limit(1)
+            .single();
+            
+          if (!classError && classData) {
+            // Si une classe correspondante est trouvée, utiliser son ID
+            childData.class_id = classData.id;
+          } else {
+            // Sinon, stocker temporairement le class_level pour la compatibilité
+            console.log('Aucune classe trouvée pour le niveau', data.class_level, '. Stockage temporaire du niveau.');
+          }
+        }
+        
         // Créer l'enfant
         const { data: child, error: childError } = await supabase
           .from('children')
-          .insert({
-            full_name: data.child_name,
-            class_level: data.class_level
-          })
+          .insert(childData)
           .select('id')
           .single()
 
@@ -150,15 +211,51 @@ export const authService = {
 
       // Créer l'entrée dans user_details pour le PIN (si c'est un parent)
       if (data.role === 'parent') {
+        // Préparer les données utilisateur
+        const userDetailsData: any = {
+          user_id: auth.user.id,
+          surname_child: data.child_name || '',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        
+        // Priorité au class_id s'il est fourni
+        if (data.class_id) {
+          userDetailsData.class_id = data.class_id;
+          
+          // Récupérer le class_level correspondant pour la compatibilité
+          const { data: classData, error: classError } = await supabase
+            .from('classes')
+            .select('class_level')
+            .eq('id', data.class_id)
+            .single();
+            
+          if (!classError && classData) {
+            // Stocker aussi le class_level pour la compatibilité avec le code existant
+            userDetailsData.class_level = classData.class_level;
+          }
+        } 
+        // Sinon, utiliser class_level pour la compatibilité avec le code existant
+        else if (data.class_level) {
+          userDetailsData.class_level = data.class_level;
+          
+          // Essayer de trouver une classe correspondant au niveau
+          const { data: classData, error: classError } = await supabase
+            .from('classes')
+            .select('id')
+            .eq('class_level', data.class_level)
+            .limit(1)
+            .single();
+            
+          if (!classError && classData) {
+            // Si une classe correspondante est trouvée, stocker son ID
+            userDetailsData.class_id = classData.id;
+          }
+        }
+        
         const { error: detailsError } = await supabase
           .from('user_details')
-          .insert({
-            user_id: auth.user.id,
-            surname_child: data.child_name || '',
-            class_level: data.class_level || '',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          })
+          .insert(userDetailsData)
 
         if (detailsError) {
           console.error('Erreur lors de la création des détails utilisateur:', detailsError)
@@ -267,7 +364,7 @@ export const authService = {
             children (
               id,
               full_name,
-              class_level,
+              class_id,
               classes (
                 id,
                 name,
@@ -283,7 +380,7 @@ export const authService = {
           userInfo.children = children.map((item: any) => ({
             id: item.children.id,
             name: item.children.full_name,
-            class_level: item.children.class_level,
+            class_id: item.children.class_id,
             class_name: item.children.classes?.name,
             school_id: item.children.classes?.school_id
           }))
@@ -365,7 +462,8 @@ export const authService = {
             userInfo.classes = classTeachers.map((item: any) => ({
               id: item.classes.id,
               name: item.classes.name,
-              school_id: item.classes.school_id
+              school_id: item.classes.school_id,
+              class_level: item.classes.class_level // Ajout de la propriété manquante
             }))
           }
         }

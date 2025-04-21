@@ -9,12 +9,14 @@ const supabase = createClient(
 export const questionService = {
   async getQuestions({
     classLevel,
+    classId,
     subject,
     topic,
     period,
     limit = 10
   }: {
     classLevel?: ClassLevel
+    classId?: string
     subject?: Subject
     topic?: string
     period?: Period
@@ -24,8 +26,27 @@ export const questionService = {
       .from('questions')
       .select('*')
 
-    if (classLevel) {
-      query = query.eq('class_level', classLevel)
+    // Si classId est fourni, récupérer d'abord le class_level correspondant
+    if (classId) {
+      try {
+        const { data: classData, error: classError } = await supabase
+          .from('classes')
+          .select('class_level')
+          .eq('id', classId)
+          .single();
+          
+        if (!classError && classData) {
+          query = query.eq('class_level', classData.class_level);
+        } else {
+          console.warn('Aucune classe trouvée pour l\'ID', classId);
+        }
+      } catch (error) {
+        console.error('Erreur lors de la récupération de la classe:', error);
+      }
+    } 
+    // Sinon, utiliser directement classLevel s'il est fourni
+    else if (classLevel) {
+      query = query.eq('class_level', classLevel);
     }
     if (subject) {
       query = query.eq('subject', subject)
@@ -49,12 +70,14 @@ export const questionService = {
 
   async getRandomQuestions({
     classLevel,
+    classId,
     subject,
     topic,
     period,
     limit = 10
   }: {
     classLevel?: ClassLevel
+    classId?: string
     subject?: Subject
     topic?: string
     period?: Period
@@ -64,8 +87,27 @@ export const questionService = {
       .from('questions')
       .select('*')
 
-    if (classLevel) {
-      query = query.eq('class_level', classLevel)
+    // Si classId est fourni, récupérer d'abord le class_level correspondant
+    if (classId) {
+      try {
+        const { data: classData, error: classError } = await supabase
+          .from('classes')
+          .select('class_level')
+          .eq('id', classId)
+          .single();
+          
+        if (!classError && classData) {
+          query = query.eq('class_level', classData.class_level);
+        } else {
+          console.warn('Aucune classe trouvée pour l\'ID', classId);
+        }
+      } catch (error) {
+        console.error('Erreur lors de la récupération de la classe:', error);
+      }
+    } 
+    // Sinon, utiliser directement classLevel s'il est fourni
+    else if (classLevel) {
+      query = query.eq('class_level', classLevel);
     }
     if (subject) {
       query = query.eq('subject', subject)

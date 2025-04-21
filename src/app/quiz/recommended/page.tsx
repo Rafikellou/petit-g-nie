@@ -38,16 +38,38 @@ export default function RecommendedQuizPage() {
 
   useEffect(() => {
     const loadRecommendedQuestions = async () => {
-      if (!user?.class_level) {
+      // Vérifier si l'utilisateur a un niveau de classe (soit via class_id, soit via class_level)
+      if (!user?.class_level && !user?.class_id) {
         router.push('/quiz');
         return;
       }
 
       try {
+        // Si l'utilisateur a un class_id, récupérer d'abord le class_level correspondant
+        let classLevel = user.class_level;
+        
+        if (user.class_id && !classLevel) {
+          // Récupérer le class_level à partir du class_id
+          const { data: classData, error: classError } = await supabase
+            .from('classes')
+            .select('class_level')
+            .eq('id', user.class_id)
+            .single();
+            
+          if (!classError && classData) {
+            classLevel = classData.class_level;
+          }
+        }
+        
+        if (!classLevel) {
+          console.error('Impossible de déterminer le niveau de classe de l\'utilisateur');
+          return;
+        }
+        
         const { data, error } = await supabase
           .from('questions')
           .select('*')
-          .eq('class_level', user.class_level)
+          .eq('class_level', classLevel)
           .limit(5);
 
         if (error) throw error;

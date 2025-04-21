@@ -39,41 +39,87 @@ export default function SetupPage() {
 
     try {
       setSaving(true);
-      console.log('Début de la sauvegarde avec les données:', {
-        ecole_id: selectedSchool,
+      console.log('[SETUP] Début de la sauvegarde avec les données:', {
+        school_id: selectedSchool,
         surname_child: childName,
-        class_level: childClass,
+        class_level: childClass, // Sera remplacé par class_id si possible
         pin
       });
 
+      // Trouver la classe correspondant au niveau sélectionné
+      let classId = null;
+      try {
+        const { data: classData, error: classError } = await supabase
+          .from('classes')
+          .select('id')
+          .eq('class_level', childClass)
+          .limit(1)
+          .single();
+
+        if (!classError && classData) {
+          classId = classData.id;
+          console.log('[SETUP] Classe trouvée pour le niveau', childClass, ':', classId);
+        } else {
+          console.warn('[SETUP] Aucune classe trouvée pour le niveau', childClass);
+        }
+      } catch (error) {
+        console.error('[SETUP] Erreur lors de la recherche de classe:', error);
+      }
+
       // Mettre à jour les détails de l'utilisateur
+      console.log('[SETUP] Mise à jour des détails utilisateur');
+      // Préparer les données à mettre à jour
+      const updateData: any = {
+        user_id: user!.id,
+        surname_child: childName,
+        pin,
+        updated_at: new Date().toISOString()
+      };
+
+      // Si une classe correspondante a été trouvée, utiliser son ID
+      if (classId) {
+        updateData.class_id = classId;
+      }
+      
+      // Conserver class_level pour la compatibilité avec le code existant
+      updateData.class_level = childClass;
+
       const { error: detailsError } = await supabase
         .from('user_details')
-        .upsert({
-          user_id: user!.id,
-          ecole_id: selectedSchool,
-          surname_child: childName,
-          class_level: childClass,
-          pin,
-          updated_at: new Date().toISOString()
-        }, {
+        .upsert(updateData, {
           onConflict: 'user_id'
         });
 
-      if (detailsError) throw detailsError;
+      if (detailsError) {
+        console.error('[SETUP] Erreur lors de la mise à jour des détails utilisateur:', detailsError);
+        throw detailsError;
+      }
+      console.log('[SETUP] Détails utilisateur mis à jour avec succès');
 
-      // Mettre à jour les métadonnées de l'utilisateur
-      const { error: metadataError } = await supabase.auth.updateUser({
-        data: {
-          ecole_id: selectedSchool
+      // Créer ou mettre à jour la relation école-utilisateur
+      if (selectedSchool) {
+        console.log('[SETUP] Création/mise à jour de la relation école-utilisateur avec school_id:', selectedSchool);
+        const { error: schoolUserError } = await supabase
+          .from('school_users')
+          .upsert({
+            user_id: user!.id,
+            school_id: selectedSchool,
+            role: user!.role
+          }, {
+            onConflict: 'user_id,school_id'
+          });
+
+        if (schoolUserError) {
+          console.error('[SETUP] Erreur lors de la création/mise à jour de la relation école-utilisateur:', schoolUserError);
+          throw schoolUserError;
         }
-      });
+        console.log('[SETUP] Relation école-utilisateur créée/mise à jour avec succès');
+      }
 
-      if (metadataError) throw metadataError;
-
+      console.log('[SETUP] Configuration terminée avec succès, redirection vers la page d\'accueil');
       router.push('/');
     } catch (error: any) {
-      console.error('Error in setup:', error);
+      console.error('[SETUP] Erreur lors de la configuration:', error);
       setError('Une erreur est survenue lors de la sauvegarde');
     } finally {
       setSaving(false);

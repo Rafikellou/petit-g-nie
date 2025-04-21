@@ -11,7 +11,8 @@ Ce document décrit les différentes tables de la base de données Supabase util
   - `created_at` : Date de création
   - `email` : Adresse email (unique)
   - `role` : Rôle de l'utilisateur ('super_admin', 'admin', 'teacher', 'parent')
-  - `full_name` : Nom complet
+  - `surname` : Prénom
+  - `family_name` : Nom de famille
 - **Relations** :
   - Lié à `user_details` via `user_id`
   - Lié à `school_users` via `user_id`
@@ -24,7 +25,7 @@ Ce document décrit les différentes tables de la base de données Supabase util
   - `user_id` : Référence à l'utilisateur
   - `pin` : Code PIN à 4 chiffres (pour les parents)
   - `surname_child` : Nom de l'enfant (pour les parents)
-  - `class_level` : Niveau de classe (CP, CE1, CE2, CM1, CM2)
+  - `class_level` : Niveau de classe (CP, CE1, CE2, CM1, CM2) - Champ standardisé pour tous les niveaux de classe dans l'application
   - `created_at` : Date de création
   - `updated_at` : Date de mise à jour
 - **Relations** :
@@ -53,6 +54,7 @@ Ce document décrit les différentes tables de la base de données Supabase util
   - `id` : Identifiant unique (UUID)
   - `school_id` : Référence à l'école
   - `name` : Nom de la classe
+  - `class_level` : Niveau de classe (CP, CE1, CE2, CM1, CM2)
   - `academic_year` : Année académique
   - `created_at` : Date de création
   - `updated_at` : Date de mise à jour
@@ -66,11 +68,12 @@ Ce document décrit les différentes tables de la base de données Supabase util
 - **Champs principaux** :
   - `id` : Identifiant unique (UUID)
   - `full_name` : Nom complet
-  - `class_level` : Niveau de classe (remplace l'ancien `class_id`)
+  - `class_id` : Référence à la classe (relation avec la table `classes`)
   - `created_at` : Date de création
   - `updated_at` : Date de mise à jour
+- **Note** : Les enfants peuvent être liés à une classe spécifique via `class_id` ou avoir un niveau de classe générique via `class_level` dans d'autres tables.
 - **Relations** :
-  - Peut appartenir à une `classes` via `class_id`
+  - Appartient à une `classes` via `class_id`
   - Lié à `parent_children` via `child_id`
 
 ## Tables de Relations

@@ -30,7 +30,12 @@ export default function SettingsPage() {
       setLoading(true);
       const { data, error } = await supabase
         .from('user_details')
-        .select('surname_child, class_level')
+        .select(`
+          surname_child, 
+          class_id,
+          class_level,
+          classes:class_id (class_level)
+        `)
         .eq('user_id', user?.id)
         .single();
 
@@ -38,7 +43,12 @@ export default function SettingsPage() {
 
       if (data) {
         setChildName(data.surname_child || '');
-        setChildClass(data.class_level || '');
+        // Priorité à la classe liée, sinon utiliser class_level pour la compatibilité
+        // classes est un tableau, donc nous devons vérifier s'il contient des éléments
+        const classLevel = data.classes && Array.isArray(data.classes) && data.classes.length > 0
+          ? data.classes[0].class_level 
+          : data.class_level;
+        setChildClass(classLevel || '');
       }
     } catch (error: any) {
       console.error('Erreur lors du chargement des détails:', error);
@@ -53,13 +63,34 @@ export default function SettingsPage() {
 
     try {
       setSaving(true);
+      // Trouver la classe correspondant au niveau sélectionné
+      const { data: classData, error: classError } = await supabase
+        .from('classes')
+        .select('id')
+        .eq('class_level', childClass)
+        .limit(1)
+        .single();
+
+      if (classError && !classData) {
+        console.warn('Aucune classe trouvée pour le niveau', childClass);
+      }
+
+      const updateData = {
+        surname_child: childName,
+        updated_at: new Date().toISOString()
+      };
+
+      // Si une classe correspondante est trouvée, utiliser son ID
+      if (classData) {
+        updateData['class_id'] = classData.id;
+      }
+      
+      // Conserver class_level pour la compatibilité avec le code existant
+      updateData['class_level'] = childClass;
+
       const { error: updateError } = await supabase
         .from('user_details')
-        .update({
-          surname_child: childName,
-          class_level: childClass,
-          updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('user_id', user.id);
 
       if (updateError) throw updateError;
