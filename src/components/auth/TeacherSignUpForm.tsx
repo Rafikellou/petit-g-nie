@@ -72,6 +72,7 @@ export default function TeacherSignUpForm() {
         full_name: fullName,
         invitation_code: invitationCode,
         school_id: selectedSchool || undefined
+        // Pas de niveaux de classe enseignés - ils seront assignés par l'administrateur
       })
 
       if (error) {
