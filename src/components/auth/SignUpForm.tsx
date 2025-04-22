@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/ios-button'
 import { Loader2 } from 'lucide-react'
 import { authService } from '@/lib/auth'
@@ -33,59 +33,20 @@ export default function SignUpForm() {
   const [password, setPassword] = useState('')
   const [fullName, setFullName] = useState('')
   const [childName, setChildName] = useState('')
-  const [invitationCode, setInvitationCode] = useState('')
-  const [selectedClassId, setSelectedClassId] = useState('')
-  const [selectedClassLevel, setSelectedClassLevel] = useState('') // Pour la compatibilité
-  const [availableClasses, setAvailableClasses] = useState<ClassData[]>([])
+  const [classCode, setClassCode] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [step, setStep] = useState(1) 
   const router = useRouter()
+  const searchParams = useSearchParams()
 
+  // Récupérer le code de classe depuis l'URL si présent
   useEffect(() => {
-    if (step === 3) {
-      const fetchClasses = async () => {
-        try {
-          const { data, error } = await supabase
-            .from('classes')
-            .select(`
-              id,
-              name,
-              school_id,
-              class_level,
-              schools (
-                name
-              )
-            `)
-            .order('name', { ascending: true })
-
-          if (error) throw error
-
-          if (data) {
-            // Conversion explicite du type pour s'assurer que les données correspondent à l'interface ClassData
-            const classesData = data.map(c => {
-              const classItem: ClassData = {
-                id: c.id,
-                name: c.name,
-                school_id: c.school_id,
-                class_level: c.class_level,
-                // Traiter schools comme un tableau et prendre le premier élément
-                schools: Array.isArray(c.schools) && c.schools.length > 0 
-                  ? { name: c.schools[0].name || 'École inconnue' } 
-                  : undefined
-              };
-              return classItem;
-            });
-            setAvailableClasses(classesData);
-          }
-        } catch (error: any) {
-          console.error('Erreur lors de la récupération des classes:', error);
-        }
-      };
-
-      fetchClasses();
+    const code = searchParams.get('code')
+    if (code) {
+      setClassCode(code)
     }
-  }, [step]);
+  }, [searchParams]);
 
   const handleNextStep = (e: React.FormEvent) => {
     e.preventDefault()
@@ -113,8 +74,9 @@ export default function SignUpForm() {
       setLoading(true)
       setError(null)
 
-      if (!selectedClassId && !selectedClassLevel) {
-        setError('Veuillez sélectionner une classe')
+      // Vérifier que le code de classe est fourni
+      if (!classCode) {
+        setError('Veuillez entrer le code de classe fourni par l\'enseignant')
         setLoading(false)
         return
       }
@@ -124,10 +86,8 @@ export default function SignUpForm() {
         password,
         full_name: fullName,
         role: 'parent',
-        invitation_code: invitationCode,
-        child_name: childName,
-        class_id: selectedClassId,
-        class_level: selectedClassLevel // Pour la compatibilité avec le code existant
+        invitation_code: classCode, // Utiliser le code de classe comme code d'invitation
+        child_name: childName
       })
 
       if (error) {
@@ -238,18 +198,20 @@ export default function SignUpForm() {
 
           <div>
             <label 
-              htmlFor="invitationCode" 
+              htmlFor="classCode" 
               className="block text-sm font-medium text-white/70 mb-2"
             >
-              Code d'invitation (optionnel)
+              Code de classe *
             </label>
             <input
-              id="invitationCode"
+              id="classCode"
               type="text"
-              value={invitationCode}
-              onChange={(e) => setInvitationCode(e.target.value)}
+              value={classCode}
+              onChange={(e) => setClassCode(e.target.value)}
+              required
               className="w-full px-3 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
             />
+            <p className="text-xs text-gray-400 mt-1">Ce code vous a été fourni par l'enseignant ou l'administrateur</p>
           </div>
 
           <div className="flex space-x-4">
@@ -282,35 +244,25 @@ export default function SignUpForm() {
 
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-medium text-white">Sélectionnez la classe de votre enfant</h3>
+      <h3 className="text-lg font-medium text-white">Finalisez l'inscription</h3>
       
       <form onSubmit={handleSignUp} className="space-y-4">
         <div>
           <label 
-            htmlFor="class" 
+            htmlFor="classCode" 
             className="block text-sm font-medium text-white/70 mb-2"
           >
-            Classe
+            Code de classe *
           </label>
-          <select
-            id="class"
-            value={selectedClassId}
-            onChange={(e) => {
-              setSelectedClassId(e.target.value);
-              // Mettre à jour également le class_level pour la compatibilité
-              const selectedClass = availableClasses.find(c => c.id === e.target.value);
-              setSelectedClassLevel(selectedClass?.class_level || '');
-            }}
+          <input
+            id="classCode"
+            type="text"
+            value={classCode}
+            onChange={(e) => setClassCode(e.target.value)}
             required
             className="w-full px-3 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-          >
-            <option value="">Sélectionnez une classe</option>
-            {availableClasses.map((classItem) => (
-              <option key={classItem.id} value={classItem.id}>
-                {classItem.name} ({classItem.class_level}) - {classItem.schools?.name || 'École inconnue'}
-              </option>
-            ))}
-          </select>
+          />
+          <p className="text-xs text-gray-400 mt-1">Ce code vous a été fourni par l'enseignant ou l'administrateur</p>
         </div>
 
         <div className="flex space-x-4">

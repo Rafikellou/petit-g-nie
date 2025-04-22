@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/ios-button'
 import { Loader2 } from 'lucide-react'
 import { authService } from '@/lib/auth'
@@ -23,7 +23,16 @@ export default function TeacherSignUpForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+  const searchParams = useSearchParams()
 
+  // Récupérer le code d'invitation depuis l'URL si présent
+  useEffect(() => {
+    const code = searchParams.get('code')
+    if (code) {
+      setInvitationCode(code)
+    }
+  }, [searchParams]);
+  
   // Récupérer la liste des écoles disponibles
   useEffect(() => {
     const fetchSchools = async () => {
@@ -189,6 +198,7 @@ export default function TeacherSignUpForm() {
                   setSelectedSchool('')
                 }
               }}
+              required
               className="w-full px-3 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
             />
           </div>
