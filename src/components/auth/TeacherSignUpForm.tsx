@@ -52,15 +52,16 @@ export default function TeacherSignUpForm() {
       setLoading(true)
       setError(null)
 
+      // Vérifier les champs de base obligatoires
       if (!email || !password || !fullName) {
-        setError('Veuillez remplir tous les champs obligatoires')
+        setError('Veuillez remplir les informations de base (nom, email, mot de passe)')
         setLoading(false)
         return
       }
 
-      // Si un code d'invitation est fourni, on ne vérifie pas l'école sélectionnée
-      if (!invitationCode && !selectedSchool) {
-        setError('Veuillez sélectionner une école ou saisir un code d\'invitation')
+      // Vérifier si un code d'invitation est fourni
+      if (!invitationCode) {
+        setError('Veuillez entrer le code d\'invitation')
         setLoading(false)
         return
       }
