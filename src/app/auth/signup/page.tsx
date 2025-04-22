@@ -36,11 +36,17 @@ export default function SignUpPage() {
   // Étape 2 - Sélection du rôle
   const [role, setRole] = useState<UserRole>('parent')
 
-  // Vérifier si un rôle est spécifié dans l'URL
+  // Vérifier si un rôle est spécifié dans l'URL et récupérer le code d'invitation
   useEffect(() => {
     // Récupérer les paramètres de l'URL
     const params = new URLSearchParams(window.location.search)
     const roleParam = params.get('role')
+    const codeParam = params.get('code')
+    
+    // Si un code est spécifié dans l'URL, le définir comme code d'invitation
+    if (codeParam) {
+      setInvitationCode(codeParam)
+    }
     
     // Si un rôle valide est spécifié dans l'URL, le définir comme rôle sélectionné
     if (roleParam === 'parent' || roleParam === 'teacher' || roleParam === 'admin' || roleParam === 'super_admin') {
@@ -65,7 +71,7 @@ export default function SignUpPage() {
   
   // Parent
   const [pinCode, setPinCode] = useState('')
-  const [children, setChildren] = useState<Child[]>([{ id: '', name: '', classLevel: '' }])
+  const [childFirstName, setChildFirstName] = useState('')
   
   // États généraux
   const [loading, setLoading] = useState(false)
@@ -119,22 +125,7 @@ export default function SignUpPage() {
     })
   }
 
-  // Gestion des enfants pour les parents
-  const handleChildChange = (index: number, field: keyof Child, value: string) => {
-    const newChildren = [...children]
-    newChildren[index] = { ...newChildren[index], [field]: value }
-    setChildren(newChildren)
-  }
-
-  const addChild = () => {
-    setChildren([...children, { id: '', name: '', classLevel: '' }])
-  }
-
-  const removeChild = (index: number) => {
-    if (children.length > 1) {
-      setChildren(children.filter((_, i) => i !== index))
-    }
-  }
+  // Pas besoin de fonctions de gestion des enfants multiples
 
   // Soumission du formulaire
   const handleSignUp = async (e: React.FormEvent) => {
@@ -151,8 +142,8 @@ export default function SignUpPage() {
           return
         }
       } else if (role === 'teacher') {
-        if (!invitationCode || teachingLevels.length === 0) {
-          setError('Veuillez remplir tous les champs obligatoires')
+        if (!invitationCode) {
+          setError('Veuillez entrer le code d\'invitation')
           return
         }
       } else if (role === 'parent') {
@@ -161,10 +152,14 @@ export default function SignUpPage() {
           return
         }
         
-        // Vérifier que chaque enfant a un nom et une classe
-        const invalidChildren = children.some(child => !child.name || !child.classLevel)
-        if (invalidChildren) {
-          setError('Veuillez remplir les informations pour tous les enfants')
+        if (!invitationCode) {
+          setError('Veuillez entrer le code de classe fourni par l\'enseignant')
+          return
+        }
+        
+        // Vérifier que le prénom de l'enfant est renseigné
+        if (!childFirstName) {
+          setError('Veuillez entrer le prénom de votre enfant')
           return
         }
       }
@@ -186,12 +181,12 @@ export default function SignUpPage() {
           school_email: schoolEmail
         }),
         ...(role === 'teacher' && {
-          invitation_code: invitationCode,
-          teaching_levels: teachingLevels
+          invitation_code: invitationCode
+          // Les niveaux d'enseignement seront définis par l'administrateur
         }),
         ...(role === 'parent' && {
           pin_code: pinCode,
-          children: children
+          children: [{ name: childFirstName }]
         })
       }
       
@@ -207,7 +202,12 @@ export default function SignUpPage() {
       const data = await response.json()
       
       if (!response.ok) {
-        throw new Error(data.error || 'Une erreur est survenue lors de l\'inscription')
+        // Gérer spécifiquement l'erreur d'email déjà enregistré
+        if (data.error && data.error.includes('already been registered')) {
+          throw new Error('Un utilisateur avec cette adresse email existe déjà. Veuillez utiliser une autre adresse email ou vous connecter.')
+        } else {
+          throw new Error(data.error || 'Une erreur est survenue lors de l\'inscription')
+        }
       }
       
       // Stocker l'email dans le localStorage pour la page de vérification
@@ -638,8 +638,9 @@ export default function SignUpPage() {
                     <input
                       id="pinCode"
                       type="text"
-                      maxLength={4}
+                      inputMode="numeric"
                       pattern="[0-9]{4}"
+                      maxLength={4}
                       value={pinCode}
                       onChange={(e) => setPinCode(e.target.value)}
                       required
@@ -648,77 +649,40 @@ export default function SignUpPage() {
                     <p className="text-xs text-gray-400 mt-1">Ce code vous permettra de vous connecter rapidement</p>
                   </div>
                   
-                  <div className="space-y-4">
-                    <label className="block text-sm font-medium text-white/70">
-                      Informations sur vos enfants *
-                    </label>
-                    
-                    {children.map((child, index) => (
-                      <div key={index} className="p-3 border border-gray-600 rounded-md">
-                        <div className="flex justify-between items-center mb-2">
-                          <h4 className="text-sm font-medium">Enfant {index + 1}</h4>
-                          {children.length > 1 && (
-                            <button 
-                              type="button" 
-                              onClick={() => removeChild(index)}
-                              className="text-red-400 text-sm hover:text-red-300"
-                            >
-                              Supprimer
-                            </button>
-                          )}
-                        </div>
-                        
-                        <div className="space-y-3">
-                          <div>
-                            <label 
-                              htmlFor={`childName-${index}`} 
-                              className="block text-sm font-medium text-white/70 mb-1"
-                            >
-                              Nom complet
-                            </label>
-                            <input
-                              id={`childName-${index}`}
-                              type="text"
-                              value={child.name}
-                              onChange={(e) => handleChildChange(index, 'name', e.target.value)}
-                              required
-                              className="w-full px-3 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                            />
-                          </div>
-                          
-                          <div>
-                            <label 
-                              htmlFor={`childClass-${index}`} 
-                              className="block text-sm font-medium text-white/70 mb-1"
-                            >
-                              Niveau de classe
-                            </label>
-                            <select
-                              id={`childClass-${index}`}
-                              value={child.classLevel}
-                              onChange={(e) => handleChildChange(index, 'classLevel', e.target.value)}
-                              required
-                              className="w-full px-3 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                            >
-                              <option value="">Sélectionnez une classe</option>
-                              {CLASS_OPTIONS.map((option) => (
-                                <option key={option} value={option}>
-                                  {option}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                    
-                    <button 
-                      type="button" 
-                      onClick={addChild}
-                      className="w-full px-3 py-2 rounded-md bg-gray-700 text-white border border-gray-600 hover:bg-gray-600"
+                  <div>
+                    <label 
+                      htmlFor="parentInvitationCode" 
+                      className="block text-sm font-medium text-white/70 mb-2"
                     >
-                      + Ajouter un enfant
-                    </button>
+                      Code de classe *
+                    </label>
+                    <input
+                      id="parentInvitationCode"
+                      type="text"
+                      value={invitationCode}
+                      onChange={(e) => setInvitationCode(e.target.value)}
+                      required
+                      className="w-full px-3 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    />
+                    <p className="text-xs text-gray-400 mt-1">Ce code vous a été fourni par l'enseignant ou l'administrateur</p>
+                  </div>
+                  
+                  <div>
+                    <label 
+                      htmlFor="childFirstName" 
+                      className="block text-sm font-medium text-white/70 mb-2"
+                    >
+                      Prénom de l'enfant *
+                    </label>
+                    <input
+                      id="childFirstName"
+                      type="text"
+                      value={childFirstName}
+                      onChange={(e) => setChildFirstName(e.target.value)}
+                      required
+                      className="w-full px-3 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    />
+                    <p className="text-xs text-gray-400 mt-1">Vous pourrez ajouter d'autres enfants après l'inscription</p>
                   </div>
                   
                   <div className="flex space-x-4 mt-6">
