@@ -211,22 +211,28 @@ export default function SignUpPage() {
       
       // Gérer la réponse de manière plus robuste
       let data;
+      
+      // Vérifier d'abord le statut de la réponse
+      if (!response.ok) {
+        console.error('Erreur API:', response.status, response.statusText);
+        throw new Error(`Erreur ${response.status}: ${response.statusText}`);
+      }
+      
       try {
+        // Lire le corps de la réponse une seule fois
         data = await response.json();
       } catch (jsonError) {
         console.error('Erreur lors du parsing JSON:', jsonError);
-        console.error('Status:', response.status, response.statusText);
-        console.error('Réponse brute:', await response.text());
-        throw new Error(`Erreur lors du parsing de la réponse (${response.status}): ${response.statusText}`);
+        throw new Error(`Erreur lors du parsing de la réponse: ${jsonError.message}`);
       }
       
-      if (!response.ok) {
-        console.error('Erreur API:', response.status, data);
+      // Gérer les erreurs spécifiques basées sur les données retournées
+      if (data.error) {
         // Gérer spécifiquement l'erreur d'email déjà enregistré
-        if (data.error && data.error.includes('already been registered')) {
-          throw new Error('Un utilisateur avec cette adresse email existe déjà. Veuillez utiliser une autre adresse email ou vous connecter.')
+        if (data.error.includes('already been registered')) {
+          throw new Error('Un utilisateur avec cette adresse email existe déjà. Veuillez utiliser une autre adresse email ou vous connecter.');
         } else {
-          throw new Error(data.error || `Erreur ${response.status}: ${response.statusText}`)
+          throw new Error(data.error);
         }
       }
       
