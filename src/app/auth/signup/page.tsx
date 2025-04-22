@@ -186,7 +186,10 @@ export default function SignUpPage() {
         }),
         ...(role === 'parent' && {
           pin_code: pinCode,
-          children: [{ name: childFirstName }]
+          children: [{ 
+            name: childFirstName,
+            class_level: 'CP' // Valeur par défaut pour maintenir la compatibilité avec l'API
+          }]
         })
       }
       
