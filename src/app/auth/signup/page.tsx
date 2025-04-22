@@ -14,7 +14,7 @@ type UserRole = 'admin' | 'teacher' | 'parent';
 interface Child {
   id: string
   name: string
-  classLevel: string
+  class_level: string
 }
 
 // Validation d'email
@@ -194,7 +194,14 @@ export default function SignUpPage() {
       }
       
       // Appel à l'API pour créer le compte
-      const response = await fetch('/api/auth/signup', {
+      // Utiliser l'URL complète en production et le chemin relatif en développement
+      const apiUrl = process.env.NODE_ENV === 'production'
+        ? `${window.location.origin}/api/auth/signup`
+        : '/api/auth/signup';
+      
+      console.log('Calling API at:', apiUrl); // Log pour débogage
+      
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -202,14 +209,24 @@ export default function SignUpPage() {
         body: JSON.stringify(userData)
       })
       
-      const data = await response.json()
+      // Gérer la réponse de manière plus robuste
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        console.error('Erreur lors du parsing JSON:', jsonError);
+        console.error('Status:', response.status, response.statusText);
+        console.error('Réponse brute:', await response.text());
+        throw new Error(`Erreur lors du parsing de la réponse (${response.status}): ${response.statusText}`);
+      }
       
       if (!response.ok) {
+        console.error('Erreur API:', response.status, data);
         // Gérer spécifiquement l'erreur d'email déjà enregistré
         if (data.error && data.error.includes('already been registered')) {
           throw new Error('Un utilisateur avec cette adresse email existe déjà. Veuillez utiliser une autre adresse email ou vous connecter.')
         } else {
-          throw new Error(data.error || 'Une erreur est survenue lors de l\'inscription')
+          throw new Error(data.error || `Erreur ${response.status}: ${response.statusText}`)
         }
       }
       
@@ -220,6 +237,7 @@ export default function SignUpPage() {
       router.push('/auth/verify')
       
     } catch (err: any) {
+      console.error('Erreur lors de l\'inscription:', err);
       setError(err.message || 'Une erreur est survenue lors de l\'inscription')
     } finally {
       setLoading(false)
