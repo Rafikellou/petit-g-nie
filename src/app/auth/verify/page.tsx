@@ -18,17 +18,19 @@ export default function VerifyPage() {
   }, [])
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-gray-900 to-gray-800 p-4 md:p-8">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-white">Petit Génie</h1>
-          <h2 className="mt-2 text-xl font-semibold text-white">Vérifiez votre email</h2>
-        </div>
+    <div className="min-h-screen flex flex-col justify-center bg-background px-4">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <h2 className="text-center text-2xl font-bold text-white mb-2">
+          Vérifiez votre email
+        </h2>
+      </div>
+      
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
 
-        <div className="rounded-lg border border-gray-700 bg-gray-800/50 p-6 backdrop-blur-sm">
+        <div className="glass-card p-8 space-y-6 bg-gray-900/70 backdrop-blur-xl border border-white/10 rounded-2xl">
           <div className="flex flex-col items-center justify-center space-y-6 text-center">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-blue-500/20">
-              <Mail className="h-10 w-10 text-blue-400" />
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-indigo-500/20">
+              <Mail className="h-10 w-10 text-indigo-400" />
             </div>
             
             <div className="space-y-2">
@@ -37,7 +39,7 @@ export default function VerifyPage() {
               <p className="text-gray-400">
                 {email ? (
                   <>
-                    Un email de confirmation a été envoyé à <span className="text-blue-400">{email}</span>.
+                    Un email de confirmation a été envoyé à <span className="text-indigo-400">{email}</span>.
                   </>
                 ) : (
                   <>
@@ -78,7 +80,7 @@ export default function VerifyPage() {
             
             <Link 
               href="/auth" 
-              className="flex items-center text-blue-400 hover:text-blue-300 transition-colors"
+              className="flex items-center text-indigo-400 hover:text-indigo-300 transition-colors"
             >
               <ArrowLeft className="h-4 w-4 mr-1" />
               Retour à la page de connexion

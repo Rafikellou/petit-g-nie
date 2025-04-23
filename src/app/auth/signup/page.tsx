@@ -251,15 +251,17 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-gray-900 to-gray-800 p-4 md:p-8">
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-white">Petit Génie</h1>
-          <h2 className="mt-2 text-xl font-semibold text-white">Créer un compte</h2>
-          <p className="mt-2 text-sm text-gray-400">
-            Créez un compte pour accéder à Petit Génie
-          </p>
-        </div>
+    <div className="min-h-screen flex flex-col justify-center bg-background px-4">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <h2 className="text-center text-2xl font-bold text-white mb-2">
+          Créer un compte
+        </h2>
+        <p className="text-center text-sm text-white/70">
+          Créez un compte pour accéder à Petit Génie
+        </p>
+      </div>
+      
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
 
         {/* Indicateur d'étape */}
         <div className="flex justify-between mb-4">
@@ -277,7 +279,7 @@ export default function SignUpPage() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-gray-700 bg-gray-800/50 p-6 backdrop-blur-sm">
+        <div className="glass-card p-8 space-y-6 bg-gray-900/70 backdrop-blur-xl border border-white/10 rounded-2xl">
           {/* Étape 1 - Informations de base */}
           {step === 1 && (
             <div className="space-y-6">
@@ -295,7 +297,7 @@ export default function SignUpPage() {
                     value={surname}
                     onChange={(e) => setSurname(e.target.value)}
                     required
-                    className="w-full px-3 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    className="mt-1 block w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-white placeholder-white/50 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   />
                 </div>
 
@@ -312,7 +314,7 @@ export default function SignUpPage() {
                     value={familyName}
                     onChange={(e) => setFamilyName(e.target.value)}
                     required
-                    className="w-full px-3 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    className="mt-1 block w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-white placeholder-white/50 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   />
                 </div>
 
@@ -329,7 +331,7 @@ export default function SignUpPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    className="w-full px-3 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    className="mt-1 block w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-white placeholder-white/50 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   />
                 </div>
 
@@ -346,7 +348,7 @@ export default function SignUpPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="w-full px-3 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    className="mt-1 block w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-white placeholder-white/50 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   />
                 </div>
 
@@ -363,20 +365,20 @@ export default function SignUpPage() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
-                    className="w-full px-3 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    className="mt-1 block w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-white placeholder-white/50 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                   />
                 </div>
 
                 <button 
                   type="submit" 
-                  className="w-full px-3 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-600 focus:ring-1 focus:ring-blue-500"
+                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
                   Continuer
                 </button>
               </form>
 
               {error && (
-                <div className="p-3 rounded bg-red-500/20 border border-red-500 text-red-200">
+                <div className="text-sm text-red-500">
                   {error}
                 </div>
               )}
@@ -449,14 +451,14 @@ export default function SignUpPage() {
                   <button 
                     type="button" 
                     onClick={handlePreviousStep}
-                    className="w-1/2 px-3 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:ring-1 focus:ring-blue-500"
+                    className="w-1/2 flex justify-center py-2 px-4 border border-gray-600 rounded-md shadow-sm text-sm font-medium text-white bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                   >
                     Retour
                   </button>
                   
                   <button 
                     type="submit" 
-                    className="w-1/2 px-3 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-600 focus:ring-1 focus:ring-blue-500"
+                    className="w-1/2 flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                   >
                     Continuer
                   </button>
@@ -464,7 +466,7 @@ export default function SignUpPage() {
               </form>
 
               {error && (
-                <div className="p-3 rounded bg-red-500/20 border border-red-500 text-red-200">
+                <div className="text-sm text-red-500">
                   {error}
                 </div>
               )}
@@ -496,7 +498,7 @@ export default function SignUpPage() {
                       value={schoolName}
                       onChange={(e) => setSchoolName(e.target.value)}
                       required
-                      className="w-full px-3 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      className="mt-1 block w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-white placeholder-white/50 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
                   </div>
                   
@@ -513,7 +515,7 @@ export default function SignUpPage() {
                       value={schoolAddress}
                       onChange={(e) => setSchoolAddress(e.target.value)}
                       required
-                      className="w-full px-3 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      className="mt-1 block w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-white placeholder-white/50 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
                   </div>
                   
@@ -531,7 +533,7 @@ export default function SignUpPage() {
                         value={schoolPostalCode}
                         onChange={(e) => setSchoolPostalCode(e.target.value)}
                         required
-                        className="w-full px-3 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        className="mt-1 block w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-white placeholder-white/50 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                       />
                     </div>
                     
@@ -548,7 +550,7 @@ export default function SignUpPage() {
                         value={schoolCity}
                         onChange={(e) => setSchoolCity(e.target.value)}
                         required
-                        className="w-full px-3 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        className="mt-1 block w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-white placeholder-white/50 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                       />
                     </div>
                   </div>
@@ -565,7 +567,7 @@ export default function SignUpPage() {
                       type="tel"
                       value={schoolPhone}
                       onChange={(e) => setSchoolPhone(e.target.value)}
-                      className="w-full px-3 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      className="mt-1 block w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-white placeholder-white/50 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
                   </div>
                   
@@ -581,7 +583,7 @@ export default function SignUpPage() {
                       type="email"
                       value={schoolEmail}
                       onChange={(e) => setSchoolEmail(e.target.value)}
-                      className="w-full px-3 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      className="mt-1 block w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-white placeholder-white/50 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
                   </div>
                   
@@ -589,7 +591,7 @@ export default function SignUpPage() {
                     <button 
                       type="button" 
                       onClick={handlePreviousStep}
-                      className="w-1/2 px-3 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:ring-1 focus:ring-blue-500"
+                      className="w-1/2 flex justify-center py-2 px-4 border border-gray-600 rounded-md shadow-sm text-sm font-medium text-white bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                     >
                       Retour
                     </button>
@@ -597,7 +599,7 @@ export default function SignUpPage() {
                     <button 
                       type="submit"
                       disabled={loading}
-                      className="w-1/2 px-3 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-600 focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
+                      className="w-1/2 flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {loading ? 'Chargement...' : 'Créer un compte'}
                     </button>
@@ -621,7 +623,7 @@ export default function SignUpPage() {
                       value={invitationCode}
                       onChange={(e) => setInvitationCode(e.target.value)}
                       required
-                      className="w-full px-3 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      className="mt-1 block w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-white placeholder-white/50 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
                     <p className="text-xs text-gray-400 mt-1">Ce code vous a été fourni par l'administrateur de votre école</p>
                   </div>
@@ -636,7 +638,7 @@ export default function SignUpPage() {
                     <button 
                       type="button" 
                       onClick={handlePreviousStep}
-                      className="w-1/2 px-3 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:ring-1 focus:ring-blue-500"
+                      className="w-1/2 flex justify-center py-2 px-4 border border-gray-600 rounded-md shadow-sm text-sm font-medium text-white bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                     >
                       Retour
                     </button>
@@ -644,7 +646,7 @@ export default function SignUpPage() {
                     <button 
                       type="submit"
                       disabled={loading}
-                      className="w-1/2 px-3 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-600 focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
+                      className="w-1/2 flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {loading ? 'Chargement...' : 'Créer un compte'}
                     </button>
@@ -671,7 +673,7 @@ export default function SignUpPage() {
                       value={pinCode}
                       onChange={(e) => setPinCode(e.target.value)}
                       required
-                      className="w-full px-3 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      className="mt-1 block w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-white placeholder-white/50 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
                     <p className="text-xs text-gray-400 mt-1">Ce code vous permettra de vous connecter rapidement</p>
                   </div>
@@ -689,7 +691,7 @@ export default function SignUpPage() {
                       value={invitationCode}
                       onChange={(e) => setInvitationCode(e.target.value)}
                       required
-                      className="w-full px-3 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      className="mt-1 block w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-white placeholder-white/50 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
                     <p className="text-xs text-gray-400 mt-1">Ce code vous a été fourni par l'enseignant ou l'administrateur</p>
                   </div>
@@ -707,7 +709,7 @@ export default function SignUpPage() {
                       value={childFirstName}
                       onChange={(e) => setChildFirstName(e.target.value)}
                       required
-                      className="w-full px-3 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      className="mt-1 block w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-white placeholder-white/50 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
                     />
                     <p className="text-xs text-gray-400 mt-1">Vous pourrez ajouter d'autres enfants après l'inscription</p>
                   </div>
@@ -716,7 +718,7 @@ export default function SignUpPage() {
                     <button 
                       type="button" 
                       onClick={handlePreviousStep}
-                      className="w-1/2 px-3 py-2 rounded-md bg-gray-700 text-white border border-gray-600 focus:ring-1 focus:ring-blue-500"
+                      className="w-1/2 flex justify-center py-2 px-4 border border-gray-600 rounded-md shadow-sm text-sm font-medium text-white bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                     >
                       Retour
                     </button>
@@ -724,7 +726,7 @@ export default function SignUpPage() {
                     <button 
                       type="submit"
                       disabled={loading}
-                      className="w-1/2 px-3 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-600 focus:ring-1 focus:ring-blue-500 disabled:opacity-50"
+                      className="w-1/2 flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {loading ? 'Chargement...' : 'Créer un compte'}
                     </button>
@@ -733,7 +735,7 @@ export default function SignUpPage() {
               )}
 
               {error && (
-                <div className="p-3 rounded bg-red-500/20 border border-red-500 text-red-200">
+                <div className="text-sm text-red-500">
                   {error}
                 </div>
               )}
@@ -741,13 +743,10 @@ export default function SignUpPage() {
           )}
         </div>
 
-        <div className="text-center text-sm text-gray-400">
-          <p>
-            Déjà inscrit ?{' '}
-            <Link href="/auth" className="text-blue-400 hover:text-blue-300">
-              Connectez-vous
-            </Link>
-          </p>
+        <div className="mt-6 text-center">
+          <Link href="/auth" className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors">
+            Déjà inscrit ? Connectez-vous
+          </Link>
         </div>
       </div>
     </div>
