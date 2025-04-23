@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { Quiz, QuizQuestion, mathQuizCE1, frenchQuizCE1, teacherRecommendedQuiz } from '@/data/quizData';
-import { ArrowLeft, GraduationCap, Book, CheckCircle, XCircle, Award } from 'lucide-react';
+import { ArrowLeft, BookOpen, Brain, Check, Clock, Pencil, X, CheckCircle, Award, GraduationCap, Book } from 'lucide-react';
+import Header from '@/components/common/Header';
 import { Button } from '@/components/ui/ios-button';
 import confetti from 'canvas-confetti';
 
@@ -219,21 +220,12 @@ const QuizPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background safe-area-inset">
-      <header className="bg-surface-dark border-b border-white/10 pt-safe-top">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Link 
-              href="/"
-              className="flex items-center space-x-2 text-white hover:text-white/80 transition tap-target touch-manipulation"
-              aria-label="Retour à l'accueil"
-            >
-              <ArrowLeft className="w-6 h-6" />
-              <span className="text-lg font-medium">Retour</span>
-            </Link>
-            <h1 className="text-xl font-bold">Quiz</h1>
-          </div>
-        </div>
-      </header>
+      <Header 
+        showBackButton={true} 
+        backUrl="/" 
+        title="Quiz" 
+        hideNotifications={true} 
+      />
 
       <main className="max-w-2xl mx-auto px-4 sm:px-6 py-8">
         {selectedQuiz ? (

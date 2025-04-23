@@ -3,6 +3,7 @@
 import { FC } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Brain, Gamepad2, Grid, Trophy, Star, Clock, LucideIcon } from 'lucide-react';
+import Header from '@/components/common/Header';
 
 interface GameStats {
   highScore: number;
@@ -76,21 +77,12 @@ const JeuxPage: FC = () => {
 
   return (
     <div className="min-h-screen bg-background safe-area-inset">
-      <header className="bg-surface-dark border-b border-white/10 pt-safe-top">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Link 
-              href="/"
-              className="flex items-center space-x-2 text-white hover:text-white/80 transition tap-target touch-manipulation"
-              aria-label="Retour à l'accueil"
-            >
-              <ArrowLeft className="w-6 h-6" />
-              <span className="text-lg font-medium">Retour</span>
-            </Link>
-            <h1 className="text-xl font-bold">Jeux</h1>
-          </div>
-        </div>
-      </header>
+      <Header 
+        showBackButton={true} 
+        backUrl="/" 
+        title="Jeux" 
+        hideNotifications={true} 
+      />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
         <div className="text-center">
