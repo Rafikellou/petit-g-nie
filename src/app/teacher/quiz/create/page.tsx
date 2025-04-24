@@ -6,6 +6,8 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import ChatInterface from '@/components/chat/ChatInterface';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import GenerationAnimation from '@/components/quiz/GenerationAnimation';
+import QuestionReview from '@/components/quiz/QuestionReview';
 
 interface QuizQuestion {
   question: string;
@@ -194,6 +196,13 @@ export default function CreateQuizPage() {
     }
     
     setIsGeneratingVariations(true);
+    
+    // Afficher un toast de longue durée pour indiquer que la génération est en cours
+    toast.loading('Génération des questions en cours...', {
+      duration: 60000, // 60 secondes, sera automatiquement fermé si la génération se termine avant
+      id: 'generation-toast'
+    });
+    
     try {
       // Créer un message pour demander des variations basées sur la master question
       const message = `Voici ma question modèle: ${JSON.stringify(masterQuestion)}. Génère-moi 10 questions similaires en difficulté et format, mais avec un contenu différent.`;
@@ -217,6 +226,9 @@ export default function CreateQuizPage() {
           context: "Tu es un assistant pédagogique nommé 'Futur Génie'. Je t'ai fourni une question modèle. Génère 10 questions similaires en termes de difficulté et de format, mais avec un contenu différent. IMPORTANT: Ta réponse doit être un tableau JSON valide et rien d'autre. Voici le format exact que tu dois suivre:\n\n[\n  {\n    \"question\": \"Texte de la question 1\",\n    \"options\": {\n      \"A\": \"Option A\",\n      \"B\": \"Option B\",\n      \"C\": \"Option C\",\n      \"D\": \"Option D\"\n    },\n    \"correctAnswer\": \"A\",\n    \"explanation\": \"Explication de la réponse\"\n  }\n]\n\nNe mets AUCUN texte avant ou après le JSON. Ne mets pas de ``` ou de marqueurs de code. Renvoie uniquement le tableau JSON."
         }),
       });
+      
+      // Fermer le toast de chargement
+      toast.dismiss('generation-toast');
       
       if (!response.ok) {
         const errorData = await response.json();
@@ -302,7 +314,7 @@ export default function CreateQuizPage() {
       }
 
       // Afficher un toast pour indiquer que l'enregistrement est en cours
-      toast.loading('Enregistrement du quiz en cours...');
+      const toastId = toast.loading('Enregistrement du quiz en cours...');
       
       // Enregistrer d'abord la question maîtresse si elle existe
       if (masterQuestion) {
@@ -339,12 +351,19 @@ export default function CreateQuizPage() {
 
       if (activityError) throw activityError;
 
+      toast.dismiss(toastId);
       toast.success('Quiz créé et publié avec succès !');
       router.push('/teacher/activities'); // Rediriger vers la liste des activités
     } catch (error) {
       console.error('Error creating activity:', error);
       toast.error('Erreur lors de la création de l\'activité');
     }
+  };
+  
+  // Fonction pour mettre à jour les questions validées
+  const handleUpdateQuestions = (updatedQuestions: QuizQuestion[]) => {
+    setValidatedQuestions(updatedQuestions);
+    toast.success('Questions mises à jour avec succès!');
   };
 
   return (
@@ -395,20 +414,32 @@ export default function CreateQuizPage() {
             <p className="text-gray-400">
               1. Vos questions ont été générées
               <br />
-              2. Vérifiez les questions et cliquez sur "Générer l'activité" pour publier le quiz
+              2. Vous pouvez modifier chaque question individuellement
+              <br />
+              3. Cliquez sur "Créer le quiz" pour publier l'activité
             </p>
           )}
         </div>
 
-        <ChatInterface
-          onSendMessage={handleSendMessage}
-          onValidateMessage={handleValidateQuestion}
-          onGenerateActivity={handleGenerateActivity}
-          systemPrompt={systemPrompt}
-        />
+        {/* Afficher l'interface de chat uniquement dans les étapes de création de question maître */}
+        {(step === 'create_master' || step === 'generate_variations') && (
+          <ChatInterface
+            onSendMessage={handleSendMessage}
+            onValidateMessage={handleValidateQuestion}
+            onGenerateActivity={handleGenerateActivity}
+            systemPrompt={systemPrompt}
+          />
+        )}
+        
+        {/* Animation de génération pendant le chargement */}
+        {isGeneratingVariations && (
+          <div className="mt-6">
+            <GenerationAnimation />
+          </div>
+        )}
         
         {/* Bouton pour générer des variations après validation de la master question */}
-        {step === 'generate_variations' && masterQuestion && (
+        {step === 'generate_variations' && masterQuestion && !isGeneratingVariations && (
           <div className="mt-6 p-4 bg-gray-800 rounded-lg">
             <h3 className="text-lg font-semibold mb-2">Question modèle validée</h3>
             <div className="mb-4 p-3 bg-gray-700 rounded">
@@ -421,34 +452,26 @@ export default function CreateQuizPage() {
                 <li>D: {masterQuestion.options.D}</li>
               </ul>
               <p><strong>Réponse correcte:</strong> {masterQuestion.correctAnswer}</p>
+              <p><strong>Explication:</strong> {masterQuestion.explanation}</p>
             </div>
             <Button 
               onClick={handleGenerateVariations} 
               disabled={isGeneratingVariations}
               className="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 rounded-lg font-medium"
             >
-              {isGeneratingVariations ? 'Génération en cours...' : 'Générer 10 questions similaires'}
+              Générer 10 questions similaires
             </Button>
           </div>
         )}
 
-        {validatedQuestions.length > 0 && (
+        {/* Interface de révision des questions */}
+        {step === 'review' && validatedQuestions.length > 0 && (
           <div className="mt-6">
-            <h3 className="text-lg font-semibold mb-2">
-              Questions validées ({validatedQuestions.length})
-            </h3>
-            <div className="text-sm text-gray-400 mb-4">
-              Ces questions seront incluses dans le quiz final
-            </div>
-            
-            {/* Aperçu des questions validées */}
-            <div className="space-y-2 max-h-60 overflow-y-auto p-2 bg-gray-800 rounded-lg">
-              {validatedQuestions.map((q, idx) => (
-                <div key={idx} className="p-2 bg-gray-700 rounded text-sm">
-                  <p><strong>{idx + 1}.</strong> {q.question.substring(0, 100)}{q.question.length > 100 ? '...' : ''}</p>
-                </div>
-              ))}
-            </div>
+            <QuestionReview 
+              questions={validatedQuestions}
+              onUpdateQuestions={handleUpdateQuestions}
+              onGenerateActivity={handleGenerateActivity}
+            />
           </div>
         )}
       </div>

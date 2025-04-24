@@ -39,6 +39,13 @@ export async function POST(request: Request) {
       }
     ];
 
+    console.log('Sending request to Deepseek API with payload:', JSON.stringify({
+      model: "deepseek-chat",
+      messages: messages.map(m => ({ role: m.role, content: m.content.substring(0, 50) + '...' })),
+      temperature: 0.7,
+      max_tokens: 2000,
+    }));
+    
     const response = await fetch(API_URL, {
       method: 'POST',
       headers: {
@@ -52,10 +59,23 @@ export async function POST(request: Request) {
         max_tokens: 2000,
       }),
     });
+    
+    console.log('Deepseek API response status:', response.status, response.statusText);
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      console.error('Deepseek API error:', {
+      // Tenter de récupérer le texte brut de la réponse d'abord
+      const responseText = await response.text();
+      console.error('Deepseek API error - Raw response:', responseText);
+      
+      // Essayer de parser le JSON si possible
+      let errorData = null;
+      try {
+        errorData = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('Failed to parse error response as JSON:', parseError);
+      }
+      
+      console.error('Deepseek API error details:', {
         status: response.status,
         statusText: response.statusText,
         error: errorData
@@ -64,13 +84,30 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { 
           error: 'Deepseek API error', 
-          details: errorData || response.statusText 
+          details: errorData || responseText || response.statusText 
         },
         { status: response.status }
       );
     }
 
-    const data = await response.json();
+    // Récupérer d'abord le texte brut de la réponse pour le débogage
+    const responseText = await response.text();
+    console.log('Deepseek API raw response:', responseText);
+    
+    // Tenter de parser le JSON
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (parseError) {
+      console.error('Failed to parse Deepseek response as JSON:', parseError);
+      return NextResponse.json(
+        { 
+          error: 'Invalid JSON response from Deepseek', 
+          rawResponse: responseText.substring(0, 1000) // Limiter la taille pour éviter des logs trop volumineux
+        },
+        { status: 500 }
+      );
+    }
     
     if (!data.choices?.[0]?.message?.content) {
       console.error('Unexpected Deepseek response format:', data);

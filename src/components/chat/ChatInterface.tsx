@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send, Mic, MicOff, Paperclip, Check } from 'lucide-react';
 import { toast } from 'sonner';
+import QuestionDisplay from './QuestionDisplay';
 
 interface Message {
   role: 'user' | 'assistant' | 'system';
@@ -176,7 +177,11 @@ export default function ChatInterface({
                   Système
                 </div>
               )}
-              <div className="whitespace-pre-wrap">{message.content}</div>
+              {message.role === 'assistant' ? (
+                <QuestionDisplay content={message.content} />
+              ) : (
+                <div className="whitespace-pre-wrap">{message.content}</div>
+              )}
               {message.role === 'assistant' && !message.validated && onValidateMessage && (
                 <button
                   onClick={() => handleValidate(message)}
