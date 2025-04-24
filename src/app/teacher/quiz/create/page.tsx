@@ -126,23 +126,101 @@ export default function CreateQuizPage() {
 
   // La fonction cleanAndParseJSON a été remplacée par l'API de formatage
   
-  const handleValidateQuestion = (message: Message) => {
+  const handleValidateQuestion = async (message: Message) => {
     try {
-      console.log('Message validé:', message);
+      console.log('Message à valider:', message);
       
-      // Vérifier que le message contient des données formatées
-      if (!message.formattedContent) {
-        throw new Error('Aucune donnée formatée disponible');
+      // Étape 1: Si le message n'a pas encore été validé, nous devons le formater
+      if (!message.validated) {
+        console.log('Première étape: validation du message textuel');
+        
+        // Marquer le message comme validé
+        const updatedMessage = { ...message, validated: true };
+        
+        // Mettre à jour l'historique de conversation
+        setConversationHistory(prev => {
+          return prev.map(msg => 
+            msg === message ? updatedMessage : msg
+          );
+        });
+        
+        // Envoyer la réponse à l'API de formatage pour la convertir en JSON
+        try {
+          const isArray = step === 'generate_variations'; // Si nous sommes à l'étape des variations, nous attendons un tableau
+          
+          toast.loading('Formatage de la réponse en cours...', {
+            id: 'format-toast',
+            duration: 10000
+          });
+          
+          const formatResponse = await fetch('/api/deepseek/format', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              rawResponse: message.content,
+              isArray
+            }),
+          });
+          
+          toast.dismiss('format-toast');
+          
+          if (!formatResponse.ok) {
+            const errorData = await formatResponse.json();
+            throw new Error(errorData.error || 'Erreur lors du formatage de la réponse');
+          }
+          
+          const formatData = await formatResponse.json();
+          const formattedContent = formatData.formattedResponse;
+          
+          console.log('Contenu formaté:', formattedContent);
+          
+          // Mettre à jour le message avec le contenu formaté
+          const finalMessage = { ...updatedMessage, formattedContent };
+          
+          setConversationHistory(prev => {
+            return prev.map(msg => 
+              msg === updatedMessage ? finalMessage : msg
+            );
+          });
+          
+          // Maintenant que nous avons le contenu formaté, nous pouvons le traiter
+          processFormattedContent(formattedContent);
+        } catch (formatError) {
+          console.error('Erreur lors du formatage:', formatError);
+          toast.error(`Erreur lors du formatage: ${formatError instanceof Error ? formatError.message : 'Erreur inconnue'}`);
+        }
+      } else if (message.formattedContent) {
+        // Étape 2: Le message a déjà été validé et formaté, nous pouvons traiter directement le contenu formaté
+        console.log('Deuxième étape: traitement du contenu déjà formaté');
+        processFormattedContent(message.formattedContent);
+      } else {
+        throw new Error('Le message a été validé mais ne contient pas de données formatées');
       }
-      
-      const questionData = message.formattedContent;
-      console.log('Données de question formatées:', questionData);
+    } catch (error) {
+      console.error('Erreur lors de la validation:', error);
+      toast.error(`Format de question invalide: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+    }
+  };
+  
+  // Fonction pour traiter le contenu formaté
+  const processFormattedContent = (questionData: any) => {
+    try {
+      console.log('Traitement des données formatées:', questionData);
       
       // Vérifier que les données ont le bon format
       if (Array.isArray(questionData)) {
         // C'est un tableau de questions
-        if (questionData.length === 0 || !questionData[0].question || !questionData[0].options || !questionData[0].correctAnswer) {
-          throw new Error('Format de questions invalide dans le tableau');
+        if (questionData.length === 0) {
+          throw new Error('Le tableau de questions est vide');
+        }
+        
+        // Vérifier que chaque question a le bon format
+        for (const question of questionData) {
+          if (!question.question || !question.options || !question.correctAnswer) {
+            console.warn('Question incomplète dans le tableau:', question);
+          }
         }
       } else {
         // C'est une seule question
@@ -180,8 +258,8 @@ export default function CreateQuizPage() {
         }
       }
     } catch (error) {
-      console.error('Erreur lors de la validation:', error);
-      toast.error(`Format de question invalide: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+      console.error('Erreur lors du traitement des données formatées:', error);
+      throw error; // Propager l'erreur pour qu'elle soit gérée par handleValidateQuestion
     }
   };
   
@@ -200,8 +278,8 @@ export default function CreateQuizPage() {
     });
     
     try {
-      // Créer un message pour demander des variations basées sur la master question
-      const message = `Voici ma question modèle: ${JSON.stringify(masterQuestion)}. Génère-moi 10 questions similaires en difficulté et format, mais avec un contenu différent.`;
+      // Étape 1: Demander à Deepseek de générer des variations en langage naturel
+      const message = `Voici ma question modèle: ${JSON.stringify(masterQuestion)}. Génère-moi 10 questions similaires en difficulté et format, mais avec un contenu différent. Pour chaque question, assure-toi d'inclure: la question, les 4 options (A, B, C, D), la réponse correcte, et une explication. Présente-les de façon structurée et claire.`;
       
       // Utiliser l'historique actuel pour maintenir le contexte
       const formattedHistory = conversationHistory
@@ -219,14 +297,12 @@ export default function CreateQuizPage() {
         body: JSON.stringify({
           message,
           history: formattedHistory,
-          context: "Tu es un assistant pédagogique nommé 'Futur Génie'. Je t'ai fourni une question modèle. Génère 10 questions similaires en termes de difficulté et de format, mais avec un contenu différent. IMPORTANT: Ta réponse doit être un tableau JSON valide et rien d'autre. Voici le format exact que tu dois suivre:\n\n[\n  {\n    \"question\": \"Texte de la question 1\",\n    \"options\": {\n      \"A\": \"Option A\",\n      \"B\": \"Option B\",\n      \"C\": \"Option C\",\n      \"D\": \"Option D\"\n    },\n    \"correctAnswer\": \"A\",\n    \"explanation\": \"Explication de la réponse\"\n  }\n]\n\nNe mets AUCUN texte avant ou après le JSON. Ne mets pas de ``` ou de marqueurs de code. Renvoie uniquement le tableau JSON."
+          context: "Tu es un assistant pédagogique nommé 'Futur Génie'. Je t'ai fourni une question modèle. Génère 10 questions similaires en termes de difficulté et de format, mais avec un contenu différent. Utilise un langage naturel, convivial et pédagogique. Explique ta démarche et présente les questions générées de manière claire et structurée. Chaque question doit être un QCM avec 4 options (A, B, C, D) dont une seule est correcte."
         }),
       });
       
-      // Fermer le toast de chargement
-      toast.dismiss('generation-toast');
-      
       if (!response.ok) {
+        toast.dismiss('generation-toast');
         const errorData = await response.json();
         throw new Error(errorData.error || 'Erreur lors de la communication avec Deepseek');
       }
@@ -248,9 +324,14 @@ export default function CreateQuizPage() {
       
       setConversationHistory(prev => [...prev, userMessage, assistantMessage]);
       
-      // Utiliser l'API de formatage pour traiter la réponse
+      // Étape 2: Envoyer la réponse textuelle à l'API de formatage
       try {
-        console.log('Réponse brute de Deepseek:', data.response);
+        console.log('Réponse brute de Deepseek:', data.response.substring(0, 200) + '...');
+        
+        // Mettre à jour le toast
+        toast.loading('Formatage des questions générées...', {
+          id: 'generation-toast'
+        });
         
         // Envoyer la réponse brute à l'API de formatage
         const formatResponse = await fetch('/api/deepseek/format', {
@@ -264,6 +345,9 @@ export default function CreateQuizPage() {
           }),
         });
         
+        // Fermer le toast de chargement
+        toast.dismiss('generation-toast');
+        
         if (!formatResponse.ok) {
           const errorData = await formatResponse.json();
           throw new Error(errorData.error || 'Erreur lors du formatage des questions générées');
@@ -272,7 +356,23 @@ export default function CreateQuizPage() {
         const formatData = await formatResponse.json();
         const formattedQuestions = formatData.formattedResponse;
         
-        console.log('Questions générées après formatage:', formattedQuestions);
+        console.log('Questions générées après formatage:', 
+          Array.isArray(formattedQuestions) 
+            ? `${formattedQuestions.length} questions` 
+            : 'Format inattendu');
+        
+        // Mettre à jour le message de l'assistant avec le contenu formaté
+        const updatedAssistantMessage = {
+          ...assistantMessage,
+          formattedContent: formattedQuestions,
+          validated: true
+        };
+        
+        setConversationHistory(prev => {
+          return prev.map(msg => 
+            msg === assistantMessage ? updatedAssistantMessage : msg
+          );
+        });
         
         if (Array.isArray(formattedQuestions) && formattedQuestions.length > 0) {
           // Vérifier que chaque question a le bon format
