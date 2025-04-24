@@ -24,21 +24,22 @@ interface QuestionDisplayProps {
 const QuestionDisplay: React.FC<QuestionDisplayProps> = ({ content, showRawContent = true }) => {
   const [showFormatted, setShowFormatted] = useState(false);
   
-  // Tente de parser le contenu JSON
+  // Vérifie si le contenu est un JSON formaté (provenant de formattedContent)
+  const isJsonContent = typeof content === 'string' && (
+    (content.startsWith('{') && content.endsWith('}')) ||
+    (content.startsWith('[') && content.endsWith(']'))
+  );
+  
+  // Tente de parser le contenu JSON seulement s'il a l'air d'être déjà au format JSON
   const tryParseQuestion = (): QuestionData | null => {
+    if (!isJsonContent) return null;
+    
     try {
-      // Essayer de trouver un objet JSON dans le contenu
-      const jsonRegex = /\{[\s\S]*\}|\[[\s\S]*\]/;
-      const match = content.match(jsonRegex);
+      const parsed = JSON.parse(content);
       
-      if (match) {
-        const jsonContent = match[0];
-        const parsed = JSON.parse(jsonContent);
-        
-        // Vérifier si c'est une question valide
-        if (parsed.question && parsed.options && parsed.correctAnswer) {
-          return parsed as QuestionData;
-        }
+      // Vérifier si c'est une question valide
+      if (parsed.question && parsed.options && parsed.correctAnswer) {
+        return parsed as QuestionData;
       }
       return null;
     } catch (error) {
@@ -49,8 +50,9 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({ content, showRawConte
 
   const questionData = tryParseQuestion();
   
-  // Afficher le contenu brut si demandé et que le mode formaté n'est pas activé
-  if (showRawContent && !showFormatted) {
+  // Par défaut, afficher toujours le contenu brut pour les réponses non formatées
+  // ou si showRawContent est true et que le mode formaté n'est pas activé
+  if (!isJsonContent || (showRawContent && !showFormatted)) {
     return (
       <div className="space-y-4">
         <div className="whitespace-pre-wrap">{content}</div>

@@ -103,38 +103,22 @@ function generatePrompt(question: MasterQuestion): string {
 }
 
 export async function generateSimilarQuestions(masterQuestion: any, count: number = 3) {
-  const prompt = `Tu dois générer ${count} questions similaires à celle-ci, en suivant EXACTEMENT le même format JSON :
+  const prompt = `Tu dois générer ${count} questions similaires à celle-ci, en utilisant un langage naturel et pédagogique :
   ${JSON.stringify(masterQuestion, null, 2)}
-
-  IMPORTANT : Tu dois répondre UNIQUEMENT avec un tableau JSON, sans aucun texte avant ou après.
-  Chaque question dans le tableau doit avoir exactement la même structure que la question ci-dessus.
 
   Les questions doivent :
   1. Être du même niveau de difficulté
   2. Porter sur le même concept mathématique
   3. Avoir une structure similaire
   4. Être variées dans leurs énoncés
+  
+  Chaque question doit avoir :
+  - Un énoncé clair
+  - 4 options de réponse (A, B, C, D)
+  - Une réponse correcte
+  - Une explication pédagogique
 
-  Format de réponse STRICT :
-  [
-    {
-      "question": "Énoncé de la question",
-      "options": {
-        "A": "Première option",
-        "B": "Deuxième option",
-        "C": "Troisième option",
-        "D": "Quatrième option"
-      },
-      "correctAnswer": "A",
-      "explanation": "Explication pédagogique",
-      "type": "${masterQuestion.type}"
-    },
-    {
-      // autres questions au même format...
-    }
-  ]
-
-  NE RÉPONDS QU'AVEC LE TABLEAU JSON, SANS AUCUN TEXTE AVANT OU APRÈS.`;
+  N'hésite pas à être créatif et à adapter ton langage au niveau scolaire concerné.`;
 
   try {
     const response = await fetch('/api/deepseek', {
@@ -154,38 +138,15 @@ export async function generateSimilarQuestions(masterQuestion: any, count: numbe
     console.log("Réponse du service pour les questions similaires:", data);
     
     if (data.content) {
-      try {
-        // Nettoyer la réponse des caractères d'échappement superflus
-        let content = data.content;
-        if (typeof content === 'string') {
-          content = content.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
-          // Si la réponse est une chaîne, essayer de la parser
-          content = JSON.parse(content);
-        }
-        
-        // Validation du format des questions
-        if (!Array.isArray(content)) {
-          throw new Error("Le format de réponse doit être un tableau de questions");
-        }
-
-        content.forEach((q, index) => {
-          if (!q.question || !q.options || !q.correctAnswer || !q.explanation) {
-            throw new Error(`La question ${index + 1} ne contient pas tous les champs requis`);
-          }
-          if (!q.options.A || !q.options.B || !q.options.C || !q.options.D) {
-            throw new Error(`La question ${index + 1} doit avoir exactement 4 options (A, B, C, D)`);
-          }
-          if (!["A", "B", "C", "D"].includes(q.correctAnswer)) {
-            throw new Error(`La réponse correcte de la question ${index + 1} doit être A, B, C ou D`);
-          }
-        });
-
-        return content;
-      } catch (parseError) {
-        console.error("Erreur lors du parsing des questions similaires:", parseError);
-        console.error("Contenu qui a causé l'erreur:", data.content);
-        throw new Error("Format de réponse invalide pour les questions similaires");
+      // Nettoyer la réponse des caractères d'échappement superflus
+      let content = data.content;
+      if (typeof content === 'string') {
+        content = content.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
       }
+      
+      // Retourner le contenu tel quel, sans essayer de le parser
+      // La validation et le parsing se feront lors de l'étape de validation par l'utilisateur
+      return content;
     } else {
       console.error("Réponse inattendue de l'API:", data);
       throw new Error("Format de réponse inattendu de l'API");
