@@ -263,6 +263,24 @@ export default function CreateQuizPage() {
     }
   };
   
+  // Fonction pour nettoyer le Markdown (astérisques, etc.) des réponses de Deepseek
+  const cleanMarkdown = (text: string): string => {
+    // Supprimer les astérisques utilisés pour le gras et l'italique
+    let cleaned = text.replace(/\*\*(.+?)\*\*/g, '$1'); // Supprimer les ** pour le gras
+    cleaned = cleaned.replace(/\*(.+?)\*/g, '$1');       // Supprimer les * pour l'italique
+    
+    // Supprimer les délimiteurs de titres
+    cleaned = cleaned.replace(/^#+\s+(.+)$/gm, '$1');
+    
+    // Supprimer les délimiteurs de code inline
+    cleaned = cleaned.replace(/`([^`]+)`/g, '$1');
+    
+    // Supprimer les liens Markdown mais garder le texte
+    cleaned = cleaned.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+    
+    return cleaned;
+  };
+
   const handleGenerateVariations = async () => {
     if (!masterQuestion) {
       toast.error('Vous devez d\'abord valider une question modèle');
@@ -297,7 +315,7 @@ export default function CreateQuizPage() {
         body: JSON.stringify({
           message,
           history: formattedHistory,
-          context: "Tu es un assistant pédagogique nommé 'Futur Génie'. Je t'ai fourni une question modèle. Génère 10 questions similaires en termes de difficulté et de format, mais avec un contenu différent. Utilise un langage naturel, convivial et pédagogique. Explique ta démarche et présente les questions générées de manière claire et structurée. Chaque question doit être un QCM avec 4 options (A, B, C, D) dont une seule est correcte."
+          context: "Tu es un assistant pédagogique nommé 'Futur Génie'. Je t'ai fourni une question modèle. Génère 10 questions similaires en termes de difficulté et de format, mais avec un contenu différent. Utilise un langage naturel, convivial et pédagogique. Explique ta démarche et présente les questions générées de manière claire et structurée. Chaque question doit être un QCM avec 4 options (A, B, C, D) dont une seule est correcte. N'utilise pas de formatage Markdown comme les astérisques pour le gras ou l'italique."
         }),
       });
       
@@ -309,6 +327,9 @@ export default function CreateQuizPage() {
       
       const data = await response.json();
       
+      // Nettoyer le Markdown de la réponse
+      const cleanedResponse = cleanMarkdown(data.response);
+      
       // Ajouter les messages à l'historique
       const userMessage: Message = {
         role: 'user',
@@ -318,92 +339,20 @@ export default function CreateQuizPage() {
       
       const assistantMessage: Message = {
         role: 'assistant',
-        content: data.response,
-        timestamp: new Date()
+        content: cleanedResponse,
+        timestamp: new Date(),
+        validated: false // Marquer comme non validé initialement
       };
       
       setConversationHistory(prev => [...prev, userMessage, assistantMessage]);
       
-      // Étape 2: Envoyer la réponse textuelle à l'API de formatage
-      try {
-        console.log('Réponse brute de Deepseek:', data.response.substring(0, 200) + '...');
-        
-        // Mettre à jour le toast
-        toast.loading('Formatage des questions générées...', {
-          id: 'generation-toast'
-        });
-        
-        // Envoyer la réponse brute à l'API de formatage
-        const formatResponse = await fetch('/api/deepseek/format', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            rawResponse: data.response,
-            isArray: true
-          }),
-        });
-        
-        // Fermer le toast de chargement
-        toast.dismiss('generation-toast');
-        
-        if (!formatResponse.ok) {
-          const errorData = await formatResponse.json();
-          throw new Error(errorData.error || 'Erreur lors du formatage des questions générées');
-        }
-        
-        const formatData = await formatResponse.json();
-        const formattedQuestions = formatData.formattedResponse;
-        
-        console.log('Questions générées après formatage:', 
-          Array.isArray(formattedQuestions) 
-            ? `${formattedQuestions.length} questions` 
-            : 'Format inattendu');
-        
-        // Mettre à jour le message de l'assistant avec le contenu formaté
-        const updatedAssistantMessage = {
-          ...assistantMessage,
-          formattedContent: formattedQuestions,
-          validated: true
-        };
-        
-        setConversationHistory(prev => {
-          return prev.map(msg => 
-            msg === assistantMessage ? updatedAssistantMessage : msg
-          );
-        });
-        
-        if (Array.isArray(formattedQuestions) && formattedQuestions.length > 0) {
-          // Vérifier que chaque question a le bon format
-          const validQuestions = formattedQuestions.filter(q => 
-            q && q.question && q.options && 
-            q.options.A && q.options.B && q.options.C && q.options.D && 
-            q.correctAnswer && q.explanation
-          );
-          
-          if (validQuestions.length === 0) {
-            throw new Error('Aucune question valide n\'a été générée');
-          }
-          
-          if (validQuestions.length < formattedQuestions.length) {
-            console.warn(`Seulement ${validQuestions.length}/${formattedQuestions.length} questions sont valides`);
-          }
-          
-          setValidatedQuestions(validQuestions);
-          setStep('review');
-          toast.success(`${validQuestions.length} questions générées avec succès!`);
-        } else {
-          throw new Error('Format de réponse incorrect: pas un tableau de questions');
-        }
-      } catch (parseError) {
-        console.error('Erreur lors du parsing des questions générées:', parseError);
-        toast.error(`Impossible de traiter les questions générées: ${parseError instanceof Error ? parseError.message : 'Erreur inconnue'}`);
-      }
+      // Fermer le toast de génération
+      toast.dismiss('generation-toast');
+      toast.success('Questions générées! Veuillez valider pour continuer.');
+      setIsGeneratingVariations(false);
     } catch (error) {
       console.error('Erreur lors de la génération des variations:', error);
       toast.error('Erreur lors de la génération des variations');
-    } finally {
       setIsGeneratingVariations(false);
     }
   };

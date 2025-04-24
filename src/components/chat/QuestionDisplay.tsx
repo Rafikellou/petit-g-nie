@@ -21,6 +21,26 @@ interface QuestionDisplayProps {
   showRawContent?: boolean;
 }
 
+// Fonction pour nettoyer le Markdown (astérisques, etc.) des réponses de Deepseek
+const cleanMarkdown = (text: string): string => {
+  if (!text) return '';
+  
+  // Supprimer les astérisques utilisés pour le gras et l'italique
+  let cleaned = text.replace(/\*\*(.+?)\*\*/g, '$1'); // Supprimer les ** pour le gras
+  cleaned = cleaned.replace(/\*(.+?)\*/g, '$1');       // Supprimer les * pour l'italique
+  
+  // Supprimer les délimiteurs de titres
+  cleaned = cleaned.replace(/^#+\s+(.+)$/gm, '$1');
+  
+  // Supprimer les délimiteurs de code inline
+  cleaned = cleaned.replace(/`([^`]+)`/g, '$1');
+  
+  // Supprimer les liens Markdown mais garder le texte
+  cleaned = cleaned.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+  
+  return cleaned;
+};
+
 const QuestionDisplay: React.FC<QuestionDisplayProps> = ({ content, showRawContent = true }) => {
   const [showFormatted, setShowFormatted] = useState(false);
   
@@ -50,12 +70,15 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({ content, showRawConte
 
   const questionData = tryParseQuestion();
   
+  // Nettoyer le contenu Markdown pour l'affichage
+  const cleanedContent = cleanMarkdown(content);
+  
   // Par défaut, afficher toujours le contenu brut pour les réponses non formatées
   // ou si showRawContent est true et que le mode formaté n'est pas activé
   if (!isJsonContent || (showRawContent && !showFormatted)) {
     return (
       <div className="space-y-4">
-        <div className="whitespace-pre-wrap">{content}</div>
+        <div className="whitespace-pre-wrap">{cleanedContent}</div>
         
         {questionData && (
           <button 
@@ -71,8 +94,21 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({ content, showRawConte
 
   // Si le contenu n'est pas une question valide, l'afficher tel quel
   if (!questionData) {
-    return <div className="whitespace-pre-wrap">{content}</div>;
+    return <div className="whitespace-pre-wrap">{cleanedContent}</div>;
   }
+
+  // Nettoyer les champs de la question pour l'affichage
+  const cleanedQuestion = {
+    ...questionData,
+    question: cleanMarkdown(questionData.question),
+    options: {
+      A: cleanMarkdown(questionData.options.A),
+      B: cleanMarkdown(questionData.options.B),
+      C: cleanMarkdown(questionData.options.C),
+      D: cleanMarkdown(questionData.options.D)
+    },
+    explanation: cleanMarkdown(questionData.explanation)
+  };
 
   // Afficher la question dans un format plus lisible
   return (
@@ -86,14 +122,14 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({ content, showRawConte
         </button>
       )}
       
-      <div className="font-medium">{questionData.question}</div>
+      <div className="font-medium">{cleanedQuestion.question}</div>
       
       <div className="space-y-2">
-        {Object.entries(questionData.options).map(([key, value]) => (
+        {Object.entries(cleanedQuestion.options).map(([key, value]) => (
           <div 
             key={key} 
             className={`p-2 rounded-md ${
-              key === questionData.correctAnswer 
+              key === cleanedQuestion.correctAnswer 
                 ? 'bg-green-900/30 border border-green-500/50' 
                 : 'bg-gray-800 border border-gray-700'
             }`}
@@ -103,10 +139,10 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({ content, showRawConte
         ))}
       </div>
       
-      {questionData.explanation && (
+      {cleanedQuestion.explanation && (
         <div className="mt-4 p-3 bg-blue-900/30 border border-blue-500/50 rounded-md">
           <div className="font-medium mb-1">Explication:</div>
-          <div>{questionData.explanation}</div>
+          <div>{cleanedQuestion.explanation}</div>
         </div>
       )}
     </div>
