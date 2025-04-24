@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Send, Mic, MicOff, Paperclip, Check } from 'lucide-react';
+import { Send, Mic, MicOff, Paperclip, Check, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import QuestionDisplay from './QuestionDisplay';
 
@@ -10,6 +10,7 @@ interface Message {
   content: string;
   timestamp: Date;
   validated?: boolean;
+  formattedContent?: any; // Contenu JSON formaté après validation
 }
 
 interface ChatInterfaceProps {
@@ -133,14 +134,56 @@ export default function ChatInterface({
     toast.info('L\'upload de fichiers sera bientôt disponible');
   };
 
-  const handleValidate = (message: Message) => {
-    if (onValidateMessage) {
-      onValidateMessage(message);
+  const handleValidate = async (message: Message) => {
+    // Afficher un toast de chargement
+    const toastId = toast.loading('Formatage de la réponse en cours...');
+    
+    try {
+      // Déterminer si la réponse devrait être un tableau ou un objet
+      const isArray = message.content.includes('[') && message.content.includes(']');
+      
+      // Envoyer la réponse brute à l'API de formatage
+      const response = await fetch('/api/deepseek/format', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          rawResponse: message.content,
+          isArray
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Erreur lors du formatage de la réponse');
+      }
+      
+      const data = await response.json();
+      
+      // Mettre à jour le message avec le contenu formaté
+      const updatedMessage = { 
+        ...message, 
+        validated: true,
+        formattedContent: data.formattedResponse 
+      };
+      
       setMessages(prev => 
-        prev.map(m => 
-          m === message ? { ...m, validated: true } : m
-        )
+        prev.map(m => m === message ? updatedMessage : m)
       );
+      
+      // Fermer le toast de chargement et afficher un toast de succès
+      toast.dismiss(toastId);
+      toast.success('Réponse formatée avec succès');
+      
+      // Appeler le callback de validation avec le message mis à jour
+      if (onValidateMessage) {
+        onValidateMessage(updatedMessage);
+      }
+    } catch (error) {
+      console.error('Erreur lors du formatage:', error);
+      toast.dismiss(toastId);
+      toast.error(`Erreur lors du formatage: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
     }
   };
 
@@ -178,18 +221,24 @@ export default function ChatInterface({
                 </div>
               )}
               {message.role === 'assistant' ? (
-                <QuestionDisplay content={message.content} />
+                <>
+                  <QuestionDisplay 
+                    content={message.formattedContent ? JSON.stringify(message.formattedContent) : message.content} 
+                    showRawContent={!message.validated}
+                  />
+                  
+                  {!message.validated && onValidateMessage && (
+                    <button
+                      onClick={() => handleValidate(message)}
+                      className="mt-4 flex items-center gap-2 text-sm bg-green-600 hover:bg-green-700 px-3 py-2 rounded-md"
+                    >
+                      <Check size={16} />
+                      Valider cette réponse
+                    </button>
+                  )}
+                </>
               ) : (
                 <div className="whitespace-pre-wrap">{message.content}</div>
-              )}
-              {message.role === 'assistant' && !message.validated && onValidateMessage && (
-                <button
-                  onClick={() => handleValidate(message)}
-                  className="mt-2 flex items-center gap-2 text-sm text-indigo-400 hover:text-indigo-300"
-                >
-                  <Check size={16} />
-                  Valider cette réponse
-                </button>
               )}
             </div>
           </div>

@@ -32,6 +32,7 @@ interface Message {
   content: string;
   timestamp: Date;
   validated?: boolean;
+  formattedContent?: any; // Contenu JSON formaté après validation
 }
 
 export default function CreateQuizPage() {
@@ -123,94 +124,46 @@ export default function CreateQuizPage() {
     }
   };
 
-  // Fonction utilitaire pour nettoyer le JSON avant de le parser
-  const cleanAndParseJSON = (jsonString: string) => {
-    try {
-      // Essayer de parser directement
-      return JSON.parse(jsonString);
-    } catch (initialError) {
-      console.log('Tentative de nettoyage du JSON avant parsing');
-      try {
-        // Supprimer tout texte avant le premier { ou [ et après le dernier } ou ]
-        let cleanedString = jsonString;
-        
-        // Rechercher les délimiteurs de code markdown
-        if (cleanedString.includes('```json')) {
-          const jsonMatch = cleanedString.match(/```json\s*([\s\S]*?)\s*```/);
-          if (jsonMatch && jsonMatch[1]) {
-            cleanedString = jsonMatch[1].trim();
-            console.log('JSON extrait des délimiteurs de code');
-          }
-        } else if (cleanedString.includes('```')) {
-          const codeMatch = cleanedString.match(/```\s*([\s\S]*?)\s*```/);
-          if (codeMatch && codeMatch[1]) {
-            cleanedString = codeMatch[1].trim();
-            console.log('Code extrait des délimiteurs');
-          }
-        }
-        
-        // Extraire le JSON valide à l'aide d'expressions régulières
-        const jsonRegex = /\{[\s\S]*\}|\[[\s\S]*\]/;
-        const match = cleanedString.match(jsonRegex);
-        
-        if (match && match[0]) {
-          console.log('JSON extrait:', match[0]);
-          return JSON.parse(match[0]);
-        }
-        
-        // Dernière tentative: supprimer tout ce qui n'est pas entre accolades ou crochets
-        const firstBrace = cleanedString.indexOf('{');
-        const firstBracket = cleanedString.indexOf('[');
-        const lastBrace = cleanedString.lastIndexOf('}');
-        const lastBracket = cleanedString.lastIndexOf(']');
-        
-        let start = -1;
-        let end = -1;
-        
-        if (firstBrace !== -1 && (firstBracket === -1 || firstBrace < firstBracket)) {
-          start = firstBrace;
-          end = lastBrace;
-        } else if (firstBracket !== -1) {
-          start = firstBracket;
-          end = lastBracket;
-        }
-        
-        if (start !== -1 && end !== -1 && end > start) {
-          const extractedJson = cleanedString.substring(start, end + 1);
-          console.log('JSON extrait par délimiteurs:', extractedJson);
-          return JSON.parse(extractedJson);
-        }
-        
-        console.error('Contenu de la réponse problématique:', jsonString);
-        throw new Error('Impossible de trouver un JSON valide dans la réponse');
-      } catch (cleaningError) {
-        console.error('Erreur après tentative de nettoyage:', cleaningError);
-        throw cleaningError;
-      }
-    }
-  };
+  // La fonction cleanAndParseJSON a été remplacée par l'API de formatage
   
   const handleValidateQuestion = (message: Message) => {
     try {
-      console.log('Contenu du message à valider:', message.content);
+      console.log('Message validé:', message);
       
-      // Nettoyer et parser le JSON
-      const questionData = cleanAndParseJSON(message.content);
-      console.log('Données de question parsées:', questionData);
+      // Vérifier que le message contient des données formatées
+      if (!message.formattedContent) {
+        throw new Error('Aucune donnée formatée disponible');
+      }
+      
+      const questionData = message.formattedContent;
+      console.log('Données de question formatées:', questionData);
       
       // Vérifier que les données ont le bon format
-      if (!questionData.question || !questionData.options || !questionData.correctAnswer) {
-        if (Array.isArray(questionData) && questionData.length > 0 && 
-            questionData[0].question && questionData[0].options && questionData[0].correctAnswer) {
-          // C'est un tableau de questions valide
-        } else {
+      if (Array.isArray(questionData)) {
+        // C'est un tableau de questions
+        if (questionData.length === 0 || !questionData[0].question || !questionData[0].options || !questionData[0].correctAnswer) {
+          throw new Error('Format de questions invalide dans le tableau');
+        }
+      } else {
+        // C'est une seule question
+        if (!questionData.question || !questionData.options || !questionData.correctAnswer) {
           throw new Error('Format de question incomplet');
         }
       }
       
       if (step === 'create_master') {
         // Si nous sommes à l'étape de création de la master question
-        setMasterQuestion(questionData);
+        // Vérifier que c'est bien une seule question et pas un tableau
+        if (Array.isArray(questionData)) {
+          // Si c'est un tableau mais qu'il ne contient qu'une seule question, on prend la première
+          if (questionData.length === 1) {
+            setMasterQuestion(questionData[0]);
+          } else {
+            throw new Error('Une seule question modèle est attendue, pas un tableau de questions');
+          }
+        } else {
+          setMasterQuestion(questionData);
+        }
         setStep('generate_variations');
         toast.success('Question modèle validée! Vous pouvez maintenant générer des variations.');
       } else if (step === 'generate_variations') {
@@ -295,17 +248,35 @@ export default function CreateQuizPage() {
       
       setConversationHistory(prev => [...prev, userMessage, assistantMessage]);
       
-      // Tenter de parser les questions générées
+      // Utiliser l'API de formatage pour traiter la réponse
       try {
         console.log('Réponse brute de Deepseek:', data.response);
         
-        // Utiliser notre fonction de nettoyage et parsing
-        const generatedQuestions = cleanAndParseJSON(data.response);
-        console.log('Questions générées après parsing:', generatedQuestions);
+        // Envoyer la réponse brute à l'API de formatage
+        const formatResponse = await fetch('/api/deepseek/format', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            rawResponse: data.response,
+            isArray: true
+          }),
+        });
         
-        if (Array.isArray(generatedQuestions) && generatedQuestions.length > 0) {
+        if (!formatResponse.ok) {
+          const errorData = await formatResponse.json();
+          throw new Error(errorData.error || 'Erreur lors du formatage des questions générées');
+        }
+        
+        const formatData = await formatResponse.json();
+        const formattedQuestions = formatData.formattedResponse;
+        
+        console.log('Questions générées après formatage:', formattedQuestions);
+        
+        if (Array.isArray(formattedQuestions) && formattedQuestions.length > 0) {
           // Vérifier que chaque question a le bon format
-          const validQuestions = generatedQuestions.filter(q => 
+          const validQuestions = formattedQuestions.filter(q => 
             q && q.question && q.options && 
             q.options.A && q.options.B && q.options.C && q.options.D && 
             q.correctAnswer && q.explanation
@@ -315,8 +286,8 @@ export default function CreateQuizPage() {
             throw new Error('Aucune question valide n\'a été générée');
           }
           
-          if (validQuestions.length < generatedQuestions.length) {
-            console.warn(`Seulement ${validQuestions.length}/${generatedQuestions.length} questions sont valides`);
+          if (validQuestions.length < formattedQuestions.length) {
+            console.warn(`Seulement ${validQuestions.length}/${formattedQuestions.length} questions sont valides`);
           }
           
           setValidatedQuestions(validQuestions);

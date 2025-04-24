@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 
 interface QuestionOptions {
   A: string;
@@ -18,9 +18,12 @@ interface QuestionData {
 
 interface QuestionDisplayProps {
   content: string;
+  showRawContent?: boolean;
 }
 
-const QuestionDisplay: React.FC<QuestionDisplayProps> = ({ content }) => {
+const QuestionDisplay: React.FC<QuestionDisplayProps> = ({ content, showRawContent = true }) => {
+  const [showFormatted, setShowFormatted] = useState(false);
+  
   // Tente de parser le contenu JSON
   const tryParseQuestion = (): QuestionData | null => {
     try {
@@ -45,6 +48,24 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({ content }) => {
   };
 
   const questionData = tryParseQuestion();
+  
+  // Afficher le contenu brut si demandé et que le mode formaté n'est pas activé
+  if (showRawContent && !showFormatted) {
+    return (
+      <div className="space-y-4">
+        <div className="whitespace-pre-wrap">{content}</div>
+        
+        {questionData && (
+          <button 
+            onClick={() => setShowFormatted(true)}
+            className="mt-2 text-sm text-indigo-400 hover:text-indigo-300"
+          >
+            Afficher en format quiz
+          </button>
+        )}
+      </div>
+    );
+  }
 
   // Si le contenu n'est pas une question valide, l'afficher tel quel
   if (!questionData) {
@@ -54,6 +75,15 @@ const QuestionDisplay: React.FC<QuestionDisplayProps> = ({ content }) => {
   // Afficher la question dans un format plus lisible
   return (
     <div className="space-y-4">
+      {showRawContent && (
+        <button 
+          onClick={() => setShowFormatted(false)}
+          className="mb-2 text-sm text-indigo-400 hover:text-indigo-300"
+        >
+          Afficher le texte brut
+        </button>
+      )}
+      
       <div className="font-medium">{questionData.question}</div>
       
       <div className="space-y-2">
