@@ -131,14 +131,57 @@ export default function CreateQuizPage() {
     } catch (initialError) {
       console.log('Tentative de nettoyage du JSON avant parsing');
       try {
+        // Supprimer tout texte avant le premier { ou [ et après le dernier } ou ]
+        let cleanedString = jsonString;
+        
+        // Rechercher les délimiteurs de code markdown
+        if (cleanedString.includes('```json')) {
+          const jsonMatch = cleanedString.match(/```json\s*([\s\S]*?)\s*```/);
+          if (jsonMatch && jsonMatch[1]) {
+            cleanedString = jsonMatch[1].trim();
+            console.log('JSON extrait des délimiteurs de code');
+          }
+        } else if (cleanedString.includes('```')) {
+          const codeMatch = cleanedString.match(/```\s*([\s\S]*?)\s*```/);
+          if (codeMatch && codeMatch[1]) {
+            cleanedString = codeMatch[1].trim();
+            console.log('Code extrait des délimiteurs');
+          }
+        }
+        
         // Extraire le JSON valide à l'aide d'expressions régulières
         const jsonRegex = /\{[\s\S]*\}|\[[\s\S]*\]/;
-        const match = jsonString.match(jsonRegex);
+        const match = cleanedString.match(jsonRegex);
         
         if (match && match[0]) {
           console.log('JSON extrait:', match[0]);
           return JSON.parse(match[0]);
         }
+        
+        // Dernière tentative: supprimer tout ce qui n'est pas entre accolades ou crochets
+        const firstBrace = cleanedString.indexOf('{');
+        const firstBracket = cleanedString.indexOf('[');
+        const lastBrace = cleanedString.lastIndexOf('}');
+        const lastBracket = cleanedString.lastIndexOf(']');
+        
+        let start = -1;
+        let end = -1;
+        
+        if (firstBrace !== -1 && (firstBracket === -1 || firstBrace < firstBracket)) {
+          start = firstBrace;
+          end = lastBrace;
+        } else if (firstBracket !== -1) {
+          start = firstBracket;
+          end = lastBracket;
+        }
+        
+        if (start !== -1 && end !== -1 && end > start) {
+          const extractedJson = cleanedString.substring(start, end + 1);
+          console.log('JSON extrait par délimiteurs:', extractedJson);
+          return JSON.parse(extractedJson);
+        }
+        
+        console.error('Contenu de la réponse problématique:', jsonString);
         throw new Error('Impossible de trouver un JSON valide dans la réponse');
       } catch (cleaningError) {
         console.error('Erreur après tentative de nettoyage:', cleaningError);

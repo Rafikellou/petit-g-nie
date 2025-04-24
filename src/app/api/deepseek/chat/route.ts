@@ -143,10 +143,42 @@ export async function POST(request: Request) {
       const jsonRegex = /\{[\s\S]*\}|\[[\s\S]*\]/;
       const jsonMatch = responseContent.match(jsonRegex);
       if (jsonMatch && jsonMatch[0]) {
-        // Vérifier que c'est un JSON valide en le parsant puis en le stringifiant à nouveau
-        const parsedJson = JSON.parse(jsonMatch[0]);
-        responseContent = JSON.stringify(parsedJson);
-        console.log('JSON valide extrait et reformatté');
+        try {
+          // Vérifier que c'est un JSON valide en le parsant puis en le stringifiant à nouveau
+          const parsedJson = JSON.parse(jsonMatch[0]);
+          responseContent = JSON.stringify(parsedJson);
+          console.log('JSON valide extrait et reformatté');
+        } catch (parseError) {
+          console.warn('Erreur lors du parsing du JSON extrait:', parseError);
+          // Essayer une approche plus agressive pour nettoyer le JSON
+          const firstBrace = responseContent.indexOf('{');
+          const firstBracket = responseContent.indexOf('[');
+          const lastBrace = responseContent.lastIndexOf('}');
+          const lastBracket = responseContent.lastIndexOf(']');
+          
+          let start = -1;
+          let end = -1;
+          
+          if (firstBrace !== -1 && (firstBracket === -1 || firstBrace < firstBracket)) {
+            start = firstBrace;
+            end = lastBrace;
+          } else if (firstBracket !== -1) {
+            start = firstBracket;
+            end = lastBracket;
+          }
+          
+          if (start !== -1 && end !== -1 && end > start) {
+            const extractedJson = responseContent.substring(start, end + 1);
+            console.log('Tentative de parsing avec JSON extrait par délimiteurs:', extractedJson);
+            try {
+              const parsedJson = JSON.parse(extractedJson);
+              responseContent = JSON.stringify(parsedJson);
+              console.log('JSON valide extrait par délimiteurs et reformatté');
+            } catch (finalError) {
+              console.error('Impossible de parser le JSON même après extraction agressive:', finalError);
+            }
+          }
+        }
       }
     } catch (error) {
       console.warn('Erreur lors du nettoyage de la réponse JSON:', error);
