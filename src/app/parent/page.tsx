@@ -97,12 +97,12 @@ export default function ParentPage() {
       <div className="container mx-auto px-4 py-8">
         <div>
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white mb-2">
+            <h1 className="text-3xl font-bold text-white">
               Contrôle parental {user?.surname_child ? `- ${user.surname_child}` : ''}
             </h1>
             <p className="text-gray-400">
               Gérez le temps d'utilisation et les restrictions d'accès
-              {user.ecole && ` - ${user.ecole.nom_ecole}`}
+              {user?.ecole && ` - ${user.ecole.nom_ecole}`}
             </p>
           </div>
 
