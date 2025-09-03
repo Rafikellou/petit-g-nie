@@ -3,6 +3,27 @@ import { supabase } from '@/lib/supabase'
 import { User } from '@/types/auth'
 
 export function useUser() {
+  // AUTHENTICATION DISABLED - Returns a mock user to bypass all authentication checks
+  console.log('[useUser] Authentication disabled - returning mock user');
+  
+  const mockUser = {
+    id: 'mock-user-id',
+    email: 'demo@example.com',
+    role: 'parent' as const,
+    surname_child: 'Demo User',
+    class_level: 'CP',
+    class_id: 'mock-class-id',
+    pin: '1234',
+    ecole_id: 'mock-school-id'
+  };
+
+  return { 
+    user: mockUser, 
+    loading: false, 
+    error: null 
+  };
+
+  /* ORIGINAL AUTHENTICATION CODE COMMENTED OUT
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -138,4 +159,5 @@ export function useUser() {
   }, [supabase]);
 
   return { user, loading, error }
+  */
 }

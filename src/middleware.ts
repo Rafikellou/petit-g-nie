@@ -21,6 +21,12 @@ const ROLE_ROUTES = {
 }
 
 export async function middleware(req: NextRequest) {
+  // MIDDLEWARE DISABLED - Authentication and role-based redirections are bypassed
+  // All requests are allowed to pass through without authentication checks
+  console.log('Middleware disabled - allowing all requests to pass through')
+  return NextResponse.next()
+  
+  /* ORIGINAL CODE COMMENTED OUT
   try {
     // Vérifier si nous sommes déjà en train de rediriger vers /auth pour éviter les boucles
     if (req.nextUrl.pathname === '/auth' && req.nextUrl.searchParams.get('redirected')) {
@@ -104,6 +110,7 @@ export async function middleware(req: NextRequest) {
     console.error('Erreur dans le middleware:', error)
     return redirectToHome(req)
   }
+  */
 }
 
 function redirectToAuth(req: NextRequest, addRedirectFlag = false) {

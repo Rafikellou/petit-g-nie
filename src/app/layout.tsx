@@ -23,10 +23,16 @@ export default function RootLayout({ children }: RootLayoutProps) {
   const { user, loading } = useUser();
 
   useEffect(() => {
+    // CLIENT-SIDE AUTHENTICATION REDIRECTION DISABLED
+    // Original code that redirected to /auth when no user was found has been commented out
+    console.log('Authentication check bypassed - allowing access without authentication');
+    
+    /* ORIGINAL AUTHENTICATION CODE COMMENTED OUT
     // Rediriger vers la page de connexion si l'utilisateur n'est pas connecté
     if (!loading && !user) {
       router.push('/auth');
     }
+    */
   }, [user, loading, router]);
 
   return (

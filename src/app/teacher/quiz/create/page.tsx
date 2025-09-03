@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import GenerationAnimation from '@/components/quiz/GenerationAnimation';
 import QuestionReview from '@/components/quiz/QuestionReview';
+import QuizPreview from '@/components/quiz/QuizPreview';
 
 interface QuizQuestion {
   question: string;
@@ -47,6 +48,10 @@ export default function CreateQuizPage() {
   const [masterQuestion, setMasterQuestion] = useState<QuizQuestion | null>(null);
   const [step, setStep] = useState<'create_master' | 'generate_variations' | 'review'>('create_master');
   const [isGeneratingVariations, setIsGeneratingVariations] = useState(false);
+  const [isTestMode, setIsTestMode] = useState(false);
+  const [masterQuestionId, setMasterQuestionId] = useState<string | null>(null);
+  const [classInfo, setClassInfo] = useState<{ id: string, name: string, level: string } | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     async function loadTeacherInfo() {
@@ -62,10 +67,26 @@ export default function CreateQuizPage() {
         // Récupérer le prénom depuis les métadonnées utilisateur
         const surname = user.user_metadata?.surname || 'Enseignant';
         
+        // Récupérer les informations de classe de l'enseignant
+        const { data: classes, error: classesError } = await supabase
+          .from('classes')
+          .select('id, name, class_level')
+          .eq('teacher_id', user.id);
+        
+        if (classesError) {
+          console.error('Erreur lors de la récupération des classes:', classesError);
+        } else if (classes && classes.length > 0) {
+          // Utiliser la première classe trouvée
+          setClassInfo({
+            id: classes[0].id,
+            name: classes[0].name,
+            level: classes[0].class_level
+          });
+        }
+        
         setTeacherInfo({
           surname: surname,
-          // Nous n'avons pas besoin de la classe pour l'affichage initial
-          class_name: 'Votre classe'
+          class_name: classes && classes.length > 0 ? classes[0].name : 'Votre classe'
         });
         
         // Mettre à jour le message système avec le prénom de l'enseignant
@@ -205,7 +226,7 @@ export default function CreateQuizPage() {
   };
   
   // Fonction pour traiter le contenu formaté
-  const processFormattedContent = (questionData: any) => {
+  const processFormattedContent = async (questionData: any) => {
     try {
       console.log('Traitement des données formatées:', questionData);
       
@@ -232,16 +253,52 @@ export default function CreateQuizPage() {
       if (step === 'create_master') {
         // Si nous sommes à l'étape de création de la master question
         // Vérifier que c'est bien une seule question et pas un tableau
+        let masterQuestionData;
         if (Array.isArray(questionData)) {
           // Si c'est un tableau mais qu'il ne contient qu'une seule question, on prend la première
           if (questionData.length === 1) {
-            setMasterQuestion(questionData[0]);
+            masterQuestionData = questionData[0];
+            setMasterQuestion(masterQuestionData);
           } else {
             throw new Error('Une seule question modèle est attendue, pas un tableau de questions');
           }
         } else {
-          setMasterQuestion(questionData);
+          masterQuestionData = questionData;
+          setMasterQuestion(masterQuestionData);
         }
+        
+        // Sauvegarder la question modèle dans la base de données si nous avons les informations de classe
+        if (classInfo?.id) {
+          try {
+            const toastId = toast.loading('Enregistrement de la question modèle...');
+            
+            const response = await fetch('/api/teacher/master-questions', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                masterQuestion: masterQuestionData,
+                classId: classInfo.id
+              }),
+            });
+            
+            if (!response.ok) {
+              const errorData = await response.json();
+              throw new Error(errorData.error || 'Erreur lors de l\'enregistrement de la question modèle');
+            }
+            
+            const data = await response.json();
+            setMasterQuestionId(data.data.id);
+            
+            toast.dismiss(toastId);
+            toast.success('Question modèle enregistrée avec succès!');
+          } catch (error) {
+            console.error('Erreur lors de l\'enregistrement de la question modèle:', error);
+            toast.error('Erreur lors de l\'enregistrement de la question modèle');
+          }
+        }
+        
         setStep('generate_variations');
         toast.success('Question modèle validée! Vous pouvez maintenant générer des variations.');
       } else if (step === 'generate_variations') {
@@ -364,46 +421,28 @@ export default function CreateQuizPage() {
     }
 
     try {
+      setIsSubmitting(true);
+      
       // Récupérer l'ID de l'utilisateur connecté
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Non authentifié');
       
-      // Demander à l'utilisateur de sélectionner une classe
-      const classLevel = prompt('Pour quelle classe souhaitez-vous créer ce quiz? (ex: CP, CE1, CE2, CM1, CM2)');
-      
-      if (!classLevel) {
-        toast.error('Vous devez spécifier une classe pour créer le quiz.');
+      // Vérifier si nous avons les informations de classe
+      if (!classInfo) {
+        toast.error('Informations de classe non disponibles. Veuillez rafraîchir la page.');
+        setIsSubmitting(false);
         return;
       }
 
       // Afficher un toast pour indiquer que l'enregistrement est en cours
       const toastId = toast.loading('Enregistrement du quiz en cours...');
       
-      // Enregistrer d'abord la question maîtresse si elle existe
-      if (masterQuestion) {
-        console.log('Enregistrement de la question maîtresse:', masterQuestion);
-        const { error: masterQuestionError } = await supabase
-          .from('master_questions')
-          .insert({
-            teacher_id: user.id,
-            content: masterQuestion,
-            created_at: new Date().toISOString()
-          });
-        
-        if (masterQuestionError) {
-          console.error('Erreur lors de l\'enregistrement de la question maîtresse:', masterQuestionError);
-          // Continuer même en cas d'erreur
-        } else {
-          console.log('Question maîtresse enregistrée avec succès');
-        }
-      }
-
-      // Créer l'activité
+      // Créer l'activité dans Supabase
       const { data: activity, error: activityError } = await supabase
         .from('activities')
         .insert({
           type: 'quiz',
-          class_level: classLevel,
+          class_level: classInfo.level,
           teacher_id: user.id,
           content: validatedQuestions,
           created_at: new Date().toISOString(),
@@ -412,7 +451,65 @@ export default function CreateQuizPage() {
         .select()
         .single();
 
-      if (activityError) throw activityError;
+      if (activityError) {
+        console.error('Erreur lors de la création de l\'activité:', activityError);
+        throw new Error('Erreur lors de la création de l\'activité');
+      }
+
+      // Enregistrer les questions dans la table question_activite_teacher
+      if (activity) {
+        try {
+          const response = await fetch('/api/teacher/quiz-questions', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              questions: validatedQuestions,
+              masterQuestionId: masterQuestionId,
+              quizId: activity.id,
+              classId: classInfo.id
+            }),
+          });
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.error('Erreur lors de l\'enregistrement des questions:', errorData);
+            // Continuer même en cas d'erreur
+          }
+        } catch (error) {
+          console.error('Erreur lors de l\'enregistrement des questions:', error);
+          // Continuer même en cas d'erreur
+        }
+        
+        // Envoyer des notifications aux élèves
+        try {
+          const notificationResponse = await fetch('/api/teacher/notifications', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              classId: classInfo.id,
+              activityId: activity.id,
+              message: `Votre enseignant(e) a créé un nouveau quiz pour vous!`,
+              type: 'new_quiz'
+            }),
+          });
+          
+          if (!notificationResponse.ok) {
+            const errorData = await notificationResponse.json();
+            console.error('Erreur lors de l\'envoi des notifications:', errorData);
+            // Continuer même en cas d'erreur
+          } else {
+            const notificationData = await notificationResponse.json();
+            console.log('Notifications envoyées:', notificationData);
+          }
+        } catch (error) {
+          console.error('Erreur lors de l\'envoi des notifications:', error);
+          // Continuer même en cas d'erreur
+        }
+      }
 
       toast.dismiss(toastId);
       toast.success('Quiz créé et publié avec succès !');
@@ -420,6 +517,8 @@ export default function CreateQuizPage() {
     } catch (error) {
       console.error('Error creating activity:', error);
       toast.error('Erreur lors de la création de l\'activité');
+    } finally {
+      setIsSubmitting(false);
     }
   };
   
@@ -427,6 +526,16 @@ export default function CreateQuizPage() {
   const handleUpdateQuestions = (updatedQuestions: QuizQuestion[]) => {
     setValidatedQuestions(updatedQuestions);
     toast.success('Questions mises à jour avec succès!');
+  };
+  
+  // Fonction pour basculer entre le mode édition et le mode test
+  const toggleTestMode = () => {
+    setIsTestMode(!isTestMode);
+  };
+  
+  // Fonction appelée lorsque le test du quiz est terminé
+  const handleTestFinish = () => {
+    setIsTestMode(false);
   };
 
   return (
@@ -527,13 +636,37 @@ export default function CreateQuizPage() {
           </div>
         )}
 
-        {/* Interface de révision des questions */}
-        {step === 'review' && validatedQuestions.length > 0 && (
+        {/* Interface de révision des questions - visible uniquement si nous ne sommes pas en mode test */}
+        {step === 'review' && validatedQuestions.length > 0 && !isTestMode && (
           <div className="mt-6">
             <QuestionReview 
               questions={validatedQuestions}
               onUpdateQuestions={handleUpdateQuestions}
               onGenerateActivity={handleGenerateActivity}
+            />
+            
+            {/* Bouton pour tester le quiz */}
+            <div className="mt-6">
+              <Button
+                onClick={toggleTestMode}
+                className="w-full py-3 bg-blue-600 hover:bg-blue-700 flex items-center justify-center"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                </svg>
+                Tester le quiz comme un élève
+              </Button>
+            </div>
+          </div>
+        )}
+        
+        {/* Mode test du quiz */}
+        {step === 'review' && validatedQuestions.length > 0 && isTestMode && (
+          <div className="mt-6">
+            <QuizPreview
+              questions={validatedQuestions}
+              onFinish={handleGenerateActivity}
+              onEdit={handleTestFinish}
             />
           </div>
         )}
