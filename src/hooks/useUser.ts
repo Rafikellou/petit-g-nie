@@ -14,7 +14,11 @@ export function useUser() {
     class_level: 'CP',
     class_id: 'mock-class-id',
     pin: '1234',
-    ecole_id: 'mock-school-id'
+    ecole_id: 'mock-school-id',
+    ecole: {
+      id: 'mock-school-id',
+      nom_ecole: 'École Démo'
+    }
   };
 
   return { 
